@@ -1,7 +1,7 @@
 #ifndef __ROS_SUBSCRIBER_ABSTRACT_H_INCLUDED__
 #define __ROS_SUBSCRIBER_ABSTRACT_H_INCLUDED__
 
-#include <ros/event.h>
+#include <ros/msg_wrapped.h>
 #include <iostream>
 
 namespace ros
@@ -10,7 +10,7 @@ namespace ros
 class SubscriberAbstract
 {
  public:
-  virtual void Dispatch(boost::shared_ptr<MsgAbstract> msg) = 0;
+  virtual void Dispatch(MsgWrappedAbstract::Ptr msg) = 0;
 };
 
 }

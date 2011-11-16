@@ -9,6 +9,6 @@ find_package(Boost COMPONENTS system thread)
 
 include_directories(include)
 
-add_executable( component1 src/component1.cpp src/main.cpp src/node.cpp)
+add_executable( node1 src/component1.cpp src/component2 src/main.cpp src/node.cpp)
 
-target_link_libraries(component1 "-lstdc++" ${Boost_LIBRARIES})
+target_link_libraries(node1 "-lstdc++" ${Boost_LIBRARIES})

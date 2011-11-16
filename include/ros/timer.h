@@ -2,6 +2,7 @@
 #define __ROS_TIMER_H_INCLUDED__
 
 #include <boost/asio.hpp>
+#include <boost/function.hpp>
 #include <ros/component.h>
 
 namespace ros

@@ -1,11 +1,11 @@
 #ifndef __ROS_SUBSCRIBER_H_INCLUDED__
 #define __ROS_SUBSCRIBER_H_INCLUDED__
 
-#include <ros/event.h>
+#include <iostream>
 #include <boost/function.hpp>
+#include <ros/msg_wrapped.h>
 #include <ros/component.h>
 #include <ros/subscriber_abstract.h>
-#include <iostream>
 
 namespace ros
 {
@@ -30,12 +30,11 @@ public:
   }
 
   // impl
-  void Dispatch(boost::shared_ptr<MsgAbstract> msg)
+  void Dispatch(MsgWrappedAbstract::Ptr msg_w)
   {
     //todo: other ways than dynamic cast?
-    boost::shared_ptr<MsgImpl<T> > msg_impl = boost::dynamic_pointer_cast<MsgImpl<T> >( msg );
-    owner_->GetIOService().post( boost::bind( &Subscriber::Receive, this, msg_impl->msg_ ) );
-    //    callback_( msg_impl->msg_ );
+    typename MsgWrapped<T>::Ptr msg_wt = boost::dynamic_pointer_cast<MsgWrapped<T> >( msg_w );
+    owner_->GetIOService().post( boost::bind( &Subscriber::Receive, this, msg_wt->msg_ ) );
   }
 
   void Receive(MsgPtrType& msg)

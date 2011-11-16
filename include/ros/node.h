@@ -57,7 +57,7 @@ public:
     subscriber_list_[topic] = sub;
   }
 
-  void DispatchToLocalSubscribers( const std::string& topic, boost::shared_ptr< MsgAbstract > msg )
+  void DispatchToLocalSubscribers( const std::string& topic, MsgWrappedAbstract::Ptr msg )
   {
     if( subscriber_list_.count(topic) != 0 )
     {
@@ -68,8 +68,8 @@ public:
   template<typename T>
   void Publish(const std::string& topic, boost::shared_ptr<T> msg)
   {
-    boost::shared_ptr< MsgImpl<T> > msg_impl( new MsgImpl<T>( msg ) );
-    DispatchToLocalSubscribers( topic, msg_impl );
+    typename MsgWrapped<T>::Ptr msg_w( new MsgWrapped<T>(msg) );
+    DispatchToLocalSubscribers( topic, msg_w );
   }
 
 };
