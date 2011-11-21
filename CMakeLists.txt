@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(roscpp_asio)
+project(darc)
 
 if(FILT)
   set(CMAKE_CXX_COMPILER "/u/mkjargaard/usr/bin/g++")
