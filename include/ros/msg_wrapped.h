@@ -15,6 +15,11 @@ namespace ros
     virtual ~MsgWrappedAbstract() {};
   };
 
+  class MsgSerialized
+  {
+    
+  }
+
   template<typename T>
   class MsgWrapped : public MsgWrappedAbstract
   {

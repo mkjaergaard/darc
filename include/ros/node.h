@@ -20,6 +20,7 @@ class Node
   typedef std::map<const std::string, SubscriberAbstract* > SubscriberListType; // todo use weak ptr since we dont own it
   SubscriberListType subscriber_list_;
 
+  typedef std::vector<
 
 public:
   typedef boost::shared_ptr<Node> Ptr;
@@ -30,7 +31,7 @@ public:
   std::vector<boost::shared_ptr<boost::thread> > threads_;
 
 public:
-  static boost::shared_ptr<Node> Instance()
+  static boost::shared_ptr<Node> Instance() //todo: not thread safe
   {
     if( instance_.get() == 0 )
     {
@@ -39,7 +40,7 @@ public:
     return instance_;
   }
 
-  static int RegisterComponent(ros::Component* component)
+  static int RegisterComponent(ros::Component* component) //todo: not thread safe
   {
     Instance()->component_list_.push_back(component);
     std::cout << "Registered Component: " << component->getName() << std::endl;
@@ -51,6 +52,7 @@ public:
   }
 
   // called by the Subscriber
+  // todo: not thread safe
   void RegisterSubscriber( const std::string& topic, SubscriberAbstract* sub )
   {
     // todo: map cannot handle several subscribers per topic
