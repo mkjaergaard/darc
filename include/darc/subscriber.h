@@ -1,45 +1,28 @@
 #ifndef __DARC_SUBSCRIBER_H_INCLUDED__
 #define __DARC_SUBSCRIBER_H_INCLUDED__
 
-#include <iostream>
-#include <boost/function.hpp>
-#include <darc/msg_wrapped.h>
-#include <darc/component.h>
-#include <darc/subscriber_abstract.h>
+#include <boost/smart_ptr.hpp>
+
+#include <darc/subscriber_impl.h>
+
+// Wraps a SubscriberImpl in a smart pointer so the lifetime of SubscriberImpl is dependent by the lifetime of Subscriber
 
 namespace darc
 {
 
 template<typename T>
-class Subscriber : public SubscriberAbstract
+class Subscriber
 {
 private:
-  typedef boost::shared_ptr<T> MsgPtrType;
+  boost::shared_ptr<SubscriberImpl<T> > impl_;
 
-  typedef boost::function<void(MsgPtrType)> CallbackType;
-  CallbackType callback_;
-
-  Component * owner_;
+  typedef boost::function<void( boost::shared_ptr<T> )> CallbackType;
 
 public:
   Subscriber(darc::Component * owner, const std::string& topic, CallbackType callback) :
-    callback_(callback),
-    owner_(owner)
+  impl_( new SubscriberImpl<T>( owner->GetIOService(), topic, callback ) )
   {
-    owner->GetNode()->RegisterSubscriber(topic, this);
-  }
-
-  // impl
-  void Dispatch(MsgWrappedAbstract::Ptr msg_w)
-  {
-    //todo: other ways than dynamic cast?
-    typename MsgWrapped<T>::Ptr msg_wt = boost::dynamic_pointer_cast<MsgWrapped<T> >( msg_w );
-    owner_->GetIOService().post( boost::bind( &Subscriber::Receive, this, msg_wt->msg_ ) );
-  }
-
-  void Receive(MsgPtrType& msg)
-  {
-    callback_( msg );
+    owner->GetNode()->RegisterSubscriber(topic, impl_);
   }
 
 };

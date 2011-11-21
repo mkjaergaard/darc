@@ -18,7 +18,7 @@ namespace darc
   class MsgSerialized
   {
     
-  }
+  };
 
   template<typename T>
   class MsgWrapped : public MsgWrappedAbstract

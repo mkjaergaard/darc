@@ -19,7 +19,7 @@ class Timer : public boost::asio::deadline_timer
 
 public:
   Timer(darc::Component * owner, CallbackType callback, boost::posix_time::time_duration period) :
-    boost::asio::deadline_timer( owner->GetIOService(), period ),
+  boost::asio::deadline_timer( *(owner->GetIOService()), period ),
     callback_(callback),
     period_(period)
   {

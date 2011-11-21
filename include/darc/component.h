@@ -4,9 +4,6 @@
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <darc/subscriber_abstract.h>
-
-class Subscriber;
 
 namespace darc
 {
@@ -28,9 +25,9 @@ class Component
   }
 
  public:
-  boost::asio::io_service& GetIOService()
+  boost::asio::io_service * GetIOService()
   {
-    return io_service_;
+    return &io_service_;
   }
 
   boost::shared_ptr<Node> GetNode()
