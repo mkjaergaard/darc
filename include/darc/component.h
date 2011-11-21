@@ -1,14 +1,14 @@
-#ifndef __ROS_COMPONENT_H_INCLUDED__
-#define __ROS_COMPONENT_H_INCLUDED__
+#ifndef __DARC_COMPONENT_H_INCLUDED__
+#define __DARC_COMPONENT_H_INCLUDED__
 
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <ros/subscriber_abstract.h>
+#include <darc/subscriber_abstract.h>
 
 class Subscriber;
 
-namespace ros
+namespace darc
 {
 
 class Node;

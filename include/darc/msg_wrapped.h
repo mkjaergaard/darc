@@ -1,9 +1,9 @@
-#ifndef __ROS_EVENT_H_INCLUDED__
-#define __ROS_EVENT_H_INCLUDED__
+#ifndef __DARC_EVENT_H_INCLUDED__
+#define __DARC_EVENT_H_INCLUDED__
 
 #include <boost/shared_ptr.hpp>
 
-namespace ros
+namespace darc
 {
 
   class MsgWrappedAbstract

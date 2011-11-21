@@ -1,13 +1,13 @@
-#include <ros/node.h>
-#include <ros/component.h>
-#include <ros/publisher.h>
-#include <ros/timer.h>
+#include <darc/node.h>
+#include <darc/component.h>
+#include <darc/publisher.h>
+#include <darc/timer.h>
 
-class TestComponent : public ros::Component
+class TestComponent : public darc::Component
 {
 public:
-  ros::Publisher<int> pub_;
-  ros::Timer timer_;
+  darc::Publisher<int> pub_;
+  darc::Timer timer_;
 
   void TimerHandler( )
   {
@@ -16,7 +16,7 @@ public:
     pub_.Publish(msg);
   }
   
-  TestComponent( ros::Node::Ptr node ) : ros::Component("component1", node),
+  TestComponent( darc::Node::Ptr node ) : darc::Component("component1", node),
 		    pub_(this, "test"),
 		    timer_(this, boost::bind(&TestComponent::TimerHandler, this), boost::posix_time::seconds(2))
   {
@@ -25,5 +25,5 @@ public:
 };
 
 // wrap in macro if this is the way to do it
-static int blah = ros::Node::RegisterComponent( new TestComponent( ros::Node::Instance()) );
+static int blah = darc::Node::RegisterComponent( new TestComponent( darc::Node::Instance()) );
 

@@ -1,20 +1,20 @@
-#ifndef __ROS_NODE_H_INCLUDED__
-#define __ROS_NODE_H_INCLUDED__
+#ifndef __DARC_NODE_H_INCLUDED__
+#define __DARC_NODE_H_INCLUDED__
 
+#include <vector>
+#include <iostream>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
-#include <vector>
-#include <iostream>
 
-#include <ros/component.h>
+#include <darc/component.h>
 
-namespace ros
+namespace darc
 {
 
 class Node
 {
-  typedef std::vector<ros::Component*> ComponentListType;
+  typedef std::vector<darc::Component*> ComponentListType;
   ComponentListType component_list_;
 
   typedef std::map<const std::string, SubscriberAbstract* > SubscriberListType; // todo use weak ptr since we dont own it
@@ -40,12 +40,12 @@ public:
     return instance_;
   }
 
-  static int RegisterComponent(ros::Component* component) //todo: not thread safe
+  static int RegisterComponent(darc::Component* component) //todo: not thread safe
   {
     Instance()->component_list_.push_back(component);
     std::cout << "Registered Component: " << component->getName() << std::endl;
 
-    boost::shared_ptr<boost::thread> thread(new boost::thread( boost::bind(&ros::Component::run, component)));
+    boost::shared_ptr<boost::thread> thread(new boost::thread( boost::bind(&darc::Component::run, component)));
     Instance()->threads_.push_back(thread);
 
     return 0;

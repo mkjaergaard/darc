@@ -1,7 +1,7 @@
-#include <ros/node.h>
-#include <ros/component.h>
+#include <darc/node.h>
+#include <darc/component.h>
 
-namespace ros
+namespace darc
 {
 
 template<typename T>
@@ -9,10 +9,10 @@ class Publisher
 {
  protected:
   std::string topic_;
-  ros::Component* owner_;
+  darc::Component* owner_;
 
  public:
- Publisher(ros::Component* owner, const std::string& topic) :
+ Publisher(darc::Component* owner, const std::string& topic) :
   topic_(topic),
     owner_(owner)
   {

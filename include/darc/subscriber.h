@@ -1,13 +1,13 @@
-#ifndef __ROS_SUBSCRIBER_H_INCLUDED__
-#define __ROS_SUBSCRIBER_H_INCLUDED__
+#ifndef __DARC_SUBSCRIBER_H_INCLUDED__
+#define __DARC_SUBSCRIBER_H_INCLUDED__
 
 #include <iostream>
 #include <boost/function.hpp>
-#include <ros/msg_wrapped.h>
-#include <ros/component.h>
-#include <ros/subscriber_abstract.h>
+#include <darc/msg_wrapped.h>
+#include <darc/component.h>
+#include <darc/subscriber_abstract.h>
 
-namespace ros
+namespace darc
 {
 
 template<typename T>
@@ -22,7 +22,7 @@ private:
   Component * owner_;
 
 public:
-  Subscriber(ros::Component * owner, const std::string& topic, CallbackType callback) :
+  Subscriber(darc::Component * owner, const std::string& topic, CallbackType callback) :
     callback_(callback),
     owner_(owner)
   {

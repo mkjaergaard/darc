@@ -1,9 +1,9 @@
-#ifndef __ROS_REMOTE_NODE_H_INCLUDED__
-#define __ROS_REMOTE_NODE_H_INCLUDED__
+#ifndef __DARC_REMOTE_NODE_H_INCLUDED__
+#define __DARC_REMOTE_NODE_H_INCLUDED__
 
 #include <boost/asio.hpp>
 
-namespace ros
+namespace darc
 {
   
   // todo: make this an abstract class wrapping different ways to connect remotely

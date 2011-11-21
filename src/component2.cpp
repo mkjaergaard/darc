@@ -1,14 +1,14 @@
-#include <ros/node.h>
-#include <ros/component.h>
-#include <ros/publisher.h>
-#include <ros/subscriber.h>
-#include <ros/timer.h>
+#include <darc/node.h>
+#include <darc/component.h>
+#include <darc/publisher.h>
+#include <darc/subscriber.h>
+#include <darc/timer.h>
 
-class TestComponent2 : public ros::Component
+class TestComponent2 : public darc::Component
 {
 public:
-  ros::Subscriber<int> sub_;
-  ros::Timer timer_;
+  darc::Subscriber<int> sub_;
+  darc::Timer timer_;
 
   void SubHandler( const boost::shared_ptr<int> msg )
   {
@@ -21,7 +21,7 @@ public:
   }
 
 
-  TestComponent2( ros::Node::Ptr node ) : ros::Component("component2", node),
+  TestComponent2( darc::Node::Ptr node ) : darc::Component("component2", node),
 					  sub_(this, "test", boost::bind(&TestComponent2::SubHandler, this, _1) ),
 					  timer_(this, boost::bind(&TestComponent2::TimerHandler, this), boost::posix_time::seconds(10))
   {
@@ -30,5 +30,5 @@ public:
 };
 
 // wrap in macro if this is the way to do it
-static int blah2 = ros::Node::RegisterComponent( new TestComponent2( ros::Node::Instance()) );
+static int blah2 = darc::Node::RegisterComponent( new TestComponent2( darc::Node::Instance()) );
 

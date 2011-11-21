@@ -1,11 +1,12 @@
-#ifndef __ROS_TIMER_H_INCLUDED__
-#define __ROS_TIMER_H_INCLUDED__
+#ifndef __DARC_TIMER_H_INCLUDED__
+#define __DARC_TIMER_H_INCLUDED__
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
-#include <ros/component.h>
 
-namespace ros
+#include <darc/component.h>
+
+namespace darc
 {
 
 class Timer : public boost::asio::deadline_timer
@@ -17,7 +18,7 @@ class Timer : public boost::asio::deadline_timer
   boost::posix_time::time_duration period_;
 
 public:
-  Timer(ros::Component * owner, CallbackType callback, boost::posix_time::time_duration period) :
+  Timer(darc::Component * owner, CallbackType callback, boost::posix_time::time_duration period) :
     boost::asio::deadline_timer( owner->GetIOService(), period ),
     callback_(callback),
     period_(period)

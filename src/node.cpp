@@ -1,6 +1,6 @@
-#include <ros/node.h>
+#include <darc/node.h>
 
-namespace ros
+namespace darc
 {
 
   boost::shared_ptr<Node> Node::instance_;
