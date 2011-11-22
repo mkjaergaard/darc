@@ -9,6 +9,8 @@ find_package(Boost COMPONENTS system thread)
 
 include_directories(include)
 
+set(CMAKE_CXX_FLAGS "-Wall")
+
 add_executable( node1 src/component1.cpp src/component2 src/main.cpp src/node.cpp)
 
 target_link_libraries(node1 "-lstdc++" ${Boost_LIBRARIES})

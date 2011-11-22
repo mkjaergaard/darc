@@ -9,6 +9,8 @@
 
 #include <darc/local_dispatcher.h>
 #include <darc/component.h>
+#include <darc/subscriber_impl.h>
+#include <darc/publisher_impl.h>
 
 namespace darc
 {
@@ -53,34 +55,50 @@ public:
   // called by the Subscriber
   // todo: not thread safe
   template<typename T>
-    void RegisterSubscriber( const std::string& topic, boost::shared_ptr<SubscriberImpl<T> > sub )
+  void RegisterSubscriber( const std::string& topic, boost::shared_ptr<SubscriberImpl<T> > sub )
   {
+    boost::shared_ptr<LocalDispatcher<T> > disp = GetLocalDispatcher<T>(topic);
+    disp->RegisterSubscriber( sub );
+  }
+
+  // Called by Publisher
+  // todo: not thread safe
+  template<typename T>
+  void RegisterPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
+  {
+    boost::shared_ptr<LocalDispatcher<T> > disp = GetLocalDispatcher<T>(topic);
+    pub->RegisterDispatcher(disp);
+  }
+
+  // Will be called to dispatch remote messages
+  template<typename T>
+  void DispatchToLocalSubscribers( const std::string& topic, boost::shared_ptr<T> &msg )
+  {
+    assert(0);
+  }
+
+private:
+  template<typename T>
+  boost::shared_ptr<LocalDispatcher<T> > GetLocalDispatcher( const std::string& topic )
+  {
+    // do single lookup with
     if( local_dispatcher_list_.count( topic ) == 0 )
     {
       boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>() );
       local_dispatcher_list_[ topic ] = disp;
-      disp->RegisterSubscriber( sub );
+      return disp;
     }
     else
     {
-      assert(0); // impl this part
+      boost::shared_ptr<LocalDispatcherAbstract> disp_a = local_dispatcher_list_[topic];
+      // todo, try
+      boost::shared_ptr<LocalDispatcher<T> > disp = boost::dynamic_pointer_cast<LocalDispatcher<T> >(disp_a);
+      return disp;
     }
+    
   }
+  
 
-  template<typename T>
-  void DispatchToLocalSubscribers( const std::string& topic, boost::shared_ptr<T> &msg )
-  {
-    if( local_dispatcher_list_.count(topic) != 0 )
-    {
-      //      local_dispatcher_list_[topic]->Dispatch(msg);
-    }
-  }
-
-  template<typename T>
-  void Publish(const std::string& topic, boost::shared_ptr<T> &msg)
-  {
-    //    DispatchToLocalSubscribers( topic, msg );
-  }
 
 };
 

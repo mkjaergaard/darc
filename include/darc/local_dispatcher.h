@@ -28,8 +28,6 @@ class LocalDispatcher : public LocalDispatcherAbstract
 {
 public:
   typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType;
-  //typedef std::vector< boost::shared_ptr<SubscriberImpl<int> > > SubscriberListType;
-
   SubscriberListType subscriber_list_;
 
   //void RegisterSubscriber( SubscriberImpl<T>::WeakPtr sub )
@@ -40,13 +38,12 @@ public:
   
   void DispatchMessage( boost::shared_ptr<T> &msg )
   {
-    /*    SubscriberListType::iterator it = subscriber_list_.begin();
-    for( it = subscriber_list_.begin();
+    for( typename SubscriberListType::iterator it = subscriber_list_.begin();
          it != subscriber_list_.end();
          it++)
     {
       (*it)->Dispatch( msg );
-      }*/
+    }
   }
 };
 
