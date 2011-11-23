@@ -11,6 +11,9 @@
 #include <darc/component.h>
 #include <darc/subscriber_impl.h>
 #include <darc/publisher_impl.h>
+#include <darc/udp_link.h>
+
+#include <std_msgs/String.h>
 
 namespace darc
 {
@@ -27,11 +30,40 @@ public:
   typedef boost::shared_ptr<Node> Ptr;
   
 public:
-  // threading stuff
-  static boost::shared_ptr<Node> instance_;
-  std::vector<boost::shared_ptr<boost::thread> > threads_;
+  // link stuff
+  boost::asio::io_service io_service_;
+
+  UDPLink udp1_;
+  UDPLink udp2_;
 
 public:
+ Node() :
+  udp1_(&io_service_, 19000),
+  udp2_(&io_service_, 19001)
+  {
+  }
+
+  void doSomeFun()
+  {
+    boost::shared_ptr<boost::thread> thread(new boost::thread( boost::bind(&darc::Node::run, this)));
+    Instance()->threads_.push_back(thread);
+
+    udp1_.addRemoteNode( 0, "127.0.0.1", "19001");
+
+    boost::shared_ptr<SerializedMessage> msg_s( new SerializedMessage() );
+    boost::shared_ptr<std_msgs::String> b( new std_msgs::String() );
+    b->data = "test";
+    msg_s->serializeMsg(b);
+    
+    udp1_.dispatch( 0, msg_s);
+  }
+
+  void run()
+  {
+    std::cout << "Running Node" << std::endl;
+    io_service_.run();
+  }
+
   static boost::shared_ptr<Node> Instance() //todo: not thread safe
   {
     if( instance_.get() == 0 )

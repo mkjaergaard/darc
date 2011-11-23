@@ -7,6 +7,7 @@
 #include <boost/weak_ptr.hpp>
 
 #include <darc/subscriber_impl.h>
+#include <darc/serialized_message.h>
 
 namespace darc
 {

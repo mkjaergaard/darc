@@ -29,6 +29,3 @@ public:
 
 };
 
-// wrap in macro if this is the way to do it
-static int blah2 = darc::Node::RegisterComponent( new TestComponent2( darc::Node::Instance()) );
-
