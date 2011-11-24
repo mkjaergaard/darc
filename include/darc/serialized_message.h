@@ -10,6 +10,10 @@ namespace darc
 class SerializedMessage
 {
 public:
+  typedef boost::shared_ptr<SerializedMessage> Ptr;
+  typedef const boost::shared_ptr<const SerializedMessage> ConstPtr;
+
+public:
   uint8_t * data_;
   uint32_t buffer_size_;
   uint32_t data_size_;
@@ -20,6 +24,12 @@ public:
     buffer_size_(0),
     data_size_(0)
   {
+  }
+
+  template<typename T>
+  explicit SerializedMessage( const boost::shared_ptr<const T> &msg )
+  {
+    serializeMsg(msg);
   }
 
   ~SerializedMessage()

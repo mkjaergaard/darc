@@ -6,18 +6,17 @@
 namespace darc
 {
   
-  // todo: make this an abstract class wrapping different ways to connect remotely
-class LocalDispatcher
+class LocalNode
 {
-  virtual void LocalDispatch( const std::string& topic, MsgWrappedAbstract::Ptr msg ) = 0;
+  virtual void LocalDispatch( const std::string& topic, ::Ptr msg ) = 0;
 };
   
-class RemoteDispatcher
+class RemoteNodeLink
 {
-  virtual void RemoteDispatch( const std::string& topic, MsgWrappedAbstract::Ptr msg ) = 0;
+  virtual void Dispatch( const std::string& topic, SerializedMessage msg ) = 0;
 };
 
-class UDPSource
+class UDPLinkListener
 {
   boost::io_service * io_service_;
   LocalDispatcher * local_dispatcher_;
@@ -53,6 +52,8 @@ class UDPSource
   }
   
 };
+
+class 
 
 }
 

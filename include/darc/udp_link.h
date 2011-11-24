@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 
 #include <darc/serialized_message.h>
+#include <darc/remote_node_link.h>
 
 namespace darc
 {
@@ -15,7 +16,7 @@ public:
   virtual void MsgReceived( const std::string &topic, boost::shared_ptr<SerializedMessage> msg_s ) = 0;
 };
   
-class UDPLink
+class UDPLink : public RemoteNodeLink
 {
   boost::asio::io_service * io_service_;
   LinkCallback * link_callback_;
@@ -53,7 +54,8 @@ class UDPLink
     endpoints_[id] = *resolver.resolve(query);
   }
 
-  void dispatch( int id, boost::shared_ptr<darc::SerializedMessage> msg)
+  // impl of virtual
+  void dispatchToRemoteNode( int id, SerializedMessage::ConstPtr msg)
   {
     // todo: to do an async send_to, msg must be kept alive until the send is finished. How to do this?
     //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....

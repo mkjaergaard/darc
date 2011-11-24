@@ -4,7 +4,7 @@
 #include <darc/subscriber.h>
 #include <darc/timer.h>
 
-class TestComponent2 : public darc::Component
+class Component2 : public darc::Component
 {
 public:
   darc::Subscriber<int> sub_;
@@ -21,11 +21,12 @@ public:
   }
 
 
-  TestComponent2( darc::Node::Ptr node ) : darc::Component("component2", node),
-					  sub_(this, "test", boost::bind(&TestComponent2::SubHandler, this, _1) ),
-					  timer_(this, boost::bind(&TestComponent2::TimerHandler, this), boost::posix_time::seconds(10))
+  Component2( const std::string& instance_name, darc::Node::Ptr node ) : darc::Component(instance_name, node),
+					  sub_(this, "test", boost::bind(&Component2::SubHandler, this, _1) ),
+					  timer_(this, boost::bind(&Component2::TimerHandler, this), boost::posix_time::seconds(10))
   {
   }
 
 };
 
+static int blah2 =  darc::ComponentRegister::RegisterComponent( "Component2", boost::bind(&darc::Component::instantiate<Component2>, _1, _2) );

@@ -12,8 +12,9 @@ find_package(ROS 12.04 COMPONENTS cpp_common rostime roscpp_traits roscpp_serial
 
 include_directories(include)
 
+#
 set(CMAKE_CXX_FLAGS "-Wall")
 
-add_executable( node1 src/component1.cpp src/component2 src/main.cpp src/node.cpp)
+add_executable( node1 src/component1.cpp src/component2 src/main.cpp src/component_register.cpp)
 
 target_link_libraries(node1 "-lstdc++" ${Boost_LIBRARIES} ${ROS_LIBRARIES})

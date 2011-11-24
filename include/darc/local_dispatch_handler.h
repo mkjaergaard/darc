@@ -1,5 +1,5 @@
-#ifndef __DARC_NODE_H_INCLUDED__
-#define __DARC_NODE_H_INCLUDED__
+#ifndef __DARC_LOCAL_DISPATCH_HANDLER_H_INCLUDED__
+#define __DARC_LOCAL_DISPATCH_HANDLER_H_INCLUDED__
 
 #include <vector>
 #include <iostream>
@@ -7,17 +7,17 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <darc/remote_node_callback.h>
 #include <darc/local_dispatcher.h>
 #include <darc/subscriber_impl.h>
 #include <darc/publisher_impl.h>
-#include <darc/udp_link.h>
 
 #include <std_msgs/String.h>
 
 namespace darc
 {
 
-class Node
+class LocalDispatchHandler
 {
   typedef std::map<const std::string, boost::shared_ptr<LocalDispatcherAbstract> > LocalDispatcherListType;
   LocalDispatcherListType local_dispatcher_list_;
@@ -27,39 +27,12 @@ public:
   
 public:
   // link stuff
-  boost::asio::io_service io_service_;
-
-  UDPLink udp1_;
-  UDPLink udp2_;
+  boost::asio::io_service * io_service_;
 
 public:
- Node() :
-  udp1_(&io_service_, 19000),
-  udp2_(&io_service_, 19001)
+  LocalDispatchHandler() :
+    io_service_(&io_service)
   {
-  }
-
-  void doSomeFun()
-  {
-    /*
-    boost::shared_ptr<boost::thread> thread(new boost::thread( boost::bind(&darc::Node::run, this)));
-    Instance()->threads_.push_back(thread);
-
-    udp1_.addRemoteNode( 0, "127.0.0.1", "19001");
-
-    boost::shared_ptr<SerializedMessage> msg_s( new SerializedMessage() );
-    boost::shared_ptr<std_msgs::String> b( new std_msgs::String() );
-    b->data = "test";
-    msg_s->serializeMsg(b);
-    
-    udp1_.dispatch( 0, msg_s);
-    */
-  }
-
-  void run()
-  {
-    std::cout << "Running Node" << std::endl;
-    io_service_.run();
   }
 
   // called by the Subscriber
@@ -81,8 +54,8 @@ public:
   }
 
   // Will be called to dispatch remote messages
-  template<typename T>
-  void DispatchToLocalSubscribers( const std::string& topic, boost::shared_ptr<T> &msg )
+  // impl of virtual
+  void dispatchFromRemoteNode( int id_, darc::SerializedMessage::ConstPtr msg_s )
   {
     assert(0);
   }

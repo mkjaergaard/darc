@@ -1,20 +1,25 @@
 #include <iostream>
 #include <darc/node.h>
+#include <darc/component_register.h>
 
 int main(int argc, const char* argv[])
 {
-  // todo: figure out the best way to handle threads, starting components etc.
-  //       right now they are started automatically in their own thread
-  std::vector<boost::shared_ptr<boost::thread> > threads_;
+  // Create Node
+  darc::Node::Ptr node( new darc::Node() );
 
+  // Create and run Component1
+  darc::Component::Ptr c1 = darc::ComponentRegister::InstantiateComponent( "Component1", node );
+  boost::shared_ptr<boost::thread> c1_thread(new boost::thread( boost::bind(&darc::Component::run, c1)));
 
-  boost::asio::io_service io;
-  darc::Node::Instance()->doSomeFun();
-  while(1)
-  {
-    boost::asio::deadline_timer idle_timer(io, boost::posix_time::seconds(5));
-    idle_timer.wait();
-  }
+  // Create and run Component2
+  darc::Component::Ptr c2 = darc::ComponentRegister::InstantiateComponent( "Component2", node );
+  boost::shared_ptr<boost::thread> c2_thread(new boost::thread( boost::bind(&darc::Component::run, c2)));
+
+  // You can also manually construct a component and call the run() method if you want.
+  // But using the register allows for other cool stuff. E.g. starting remotely.
+
+  // Run Node in main thread
+  node->run();
   return 0;
 }
 
