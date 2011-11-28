@@ -11,6 +11,7 @@
 #include <darc/subscriber_impl.h>
 #include <darc/publisher_impl.h>
 #include <darc/udp_link.h>
+#include <darc/remote_dispatch_handler.h>
 
 #include <std_msgs/String.h>
 
@@ -25,15 +26,17 @@ class Node
 public:
   typedef boost::shared_ptr<Node> Ptr;
   
-public:
-  // link stuff
+private:
   boost::asio::io_service io_service_;
+
+  RemoteDispatchHandler remote_dispatch_handler_;
 
   UDPLink udp1_;
   UDPLink udp2_;
 
 public:
  Node() :
+  remote_dispatch_handler(&io_service_),
   udp1_(&io_service_, 19000),
   udp2_(&io_service_, 19001)
   {
@@ -94,7 +97,7 @@ private:
     // do single lookup with
     if( local_dispatcher_list_.count( topic ) == 0 )
     {
-      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>() );
+      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( &remote_dispatch_handler_) );
       local_dispatcher_list_[ topic ] = disp;
       return disp;
     }

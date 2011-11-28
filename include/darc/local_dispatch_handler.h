@@ -11,6 +11,7 @@
 #include <darc/local_dispatcher.h>
 #include <darc/subscriber_impl.h>
 #include <darc/publisher_impl.h>
+#include <darc/remote_dispatch_handler.h>
 
 #include <std_msgs/String.h>
 
@@ -21,6 +22,8 @@ class LocalDispatchHandler
 {
   typedef std::map<const std::string, boost::shared_ptr<LocalDispatcherAbstract> > LocalDispatcherListType;
   LocalDispatcherListType local_dispatcher_list_;
+
+  RemoteDispatchHandler * remote_dispatch_handler_;
 
 public:
   typedef boost::shared_ptr<Node> Ptr;
