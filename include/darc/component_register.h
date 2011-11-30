@@ -21,7 +21,7 @@ private:
   ComponentRegister() {}
   static ComponentRegister * instance_;
 
-public:
+private:
   static ComponentRegister * Instance()
   {
     if( instance_ == 0 )
@@ -31,6 +31,7 @@ public:
     return instance_;
   }
 
+public:
   static int RegisterComponent( const std::string& component_name, InstantiateComponentMethod method )
   {
     ComponentRegister * inst = Instance();
@@ -48,6 +49,7 @@ public:
     }
     else
     {
+      assert(0);
       darc::Component::Ptr n;
       return n;
     }
