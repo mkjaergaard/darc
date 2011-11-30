@@ -69,7 +69,7 @@ private:
     // do single lookup with
     if( local_dispatcher_list_.count( topic ) == 0 )
     {
-      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>() );
+      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( remote_dispatch_handler_ ) );
       local_dispatcher_list_[ topic ] = disp;
       return disp;
     }

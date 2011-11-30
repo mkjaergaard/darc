@@ -3,16 +3,19 @@
 #include <darc/publisher.h>
 #include <darc/timer.h>
 
+#include <std_msgs/String.h>
+
 class Component1 : public darc::Component
 {
 public:
-  darc::Publisher<int> pub_;
+  darc::Publisher<std_msgs::String> pub_;
   darc::Timer timer_;
 
   void TimerHandler( )
   {
     std::cout << "Timer" << std::endl;
-    boost::shared_ptr<int> msg( new int(5) );
+    boost::shared_ptr<std_msgs::String> msg( new std_msgs::String() );
+    msg->data = "blop";
     pub_.Publish(msg);
   }
   

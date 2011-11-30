@@ -1,6 +1,7 @@
 #include <iostream>
 #include <darc/node.h>
 #include <darc/component_register.h>
+#include <darc/udp_link.h>
 
 int main(int argc, const char* argv[])
 {
@@ -17,6 +18,10 @@ int main(int argc, const char* argv[])
 
   // You can also manually construct a component and call the run() method if you want.
   // But using the register allows for other cool stuff. E.g. starting remotely.
+
+  darc::UDPLink::Ptr link1( new darc::UDPLink(&(node->io_service_), 7001) );
+  link1->addRemoteNode(1, "127.0.0.1", "7002");
+  node->remote_dispatch_handler_.addRemoteLink(0, link1);
 
   // Run Node in main thread
   node->run();

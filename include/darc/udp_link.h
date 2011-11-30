@@ -1,5 +1,5 @@
-#ifndef __DARC_REMOTE_NODE_H_INCLUDED__
-#define __DARC_REMOTE_NODE_H_INCLUDED__
+#ifndef __DARC_UDP_LINK_H_INCLUDED__
+#define __DARC_UDP_LINK_H_INCLUDED__
 
 #include <boost/asio.hpp>
 
@@ -18,6 +18,10 @@ public:
   
 class UDPLink : public RemoteNodeLink
 {
+public:
+  typedef boost::shared_ptr<UDPLink> Ptr;
+
+private:
   boost::asio::io_service * io_service_;
   LinkCallback * link_callback_;
   
@@ -28,12 +32,12 @@ class UDPLink : public RemoteNodeLink
 
   std::map<int, boost::asio::ip::udp::endpoint> endpoints_;
 
- public:
- UDPLink(boost::asio::io_service * io_service,/* LinkCallback * link_callback,*/ unsigned int local_port):
+public:
+  UDPLink(boost::asio::io_service * io_service,/* LinkCallback * link_callback,*/ unsigned int local_port):
     io_service_(io_service),
-      /*    link_callback_(link_callback),*/
-      socket_(*io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), local_port)),
-      local_port_(local_port)
+    /*    link_callback_(link_callback),*/
+    socket_(*io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), local_port)),
+    local_port_(local_port)
   {
     startReceive();
   }
@@ -65,7 +69,14 @@ class UDPLink : public RemoteNodeLink
  public:
   void handleReceive(const boost::system::error_code& error, std::size_t size)
   {
-    std::cout << "Received: " << size << " on port " << local_port_ << std::endl;
+    if ( error )
+    {
+      std::cerr << "read error: " << boost::system::system_error(error).what() << std::endl;
+    }
+    else
+    {
+      std::cout << "Received: " << size << " on port " << local_port_ << std::endl;
+    }
     startReceive();
   }
 

@@ -25,7 +25,11 @@ public:
   typedef boost::shared_ptr<Node> Ptr;
   
 private:
+public: // tmp
   boost::asio::io_service io_service_;
+
+  //  boost::asio::signal_set signals_; not in boost 1.40
+
   boost::asio::posix::stream_descriptor key_input_;
   char key_pressed_;
 
@@ -37,13 +41,19 @@ private:
 
 public:
   Node() :
+    //    signals_(io_service, SIGTERM, SIGINT), not in boost 1.40
     key_input_(io_service_),
     remote_dispatch_handler_(&io_service_),
     local_dispatch_handler_(&io_service_, &remote_dispatch_handler_)
   {
-    // how to unbuffer STDIN????? or use something else
+    // signals_.async_wait(boost::bind(&Node::quitHandler, this)); not in boost 1.40
     key_input_.assign( STDIN_FILENO );
     readKeyInput();
+  }
+
+  void quitHandler()
+  {
+    exit(0);
   }
 
   void keyPressedHandler( const boost::system::error_code& error, size_t bytes_transferred )
