@@ -10,8 +10,8 @@
 #include <darc/local_dispatcher.h>
 #include <darc/subscriber_impl.h>
 #include <darc/publisher_impl.h>
-#include <darc/udp_link.h>
 #include <darc/remote_dispatch_handler.h>
+#include <darc/local_dispatch_handler.h>
 
 #include <std_msgs/String.h>
 
@@ -30,15 +30,12 @@ private:
   boost::asio::io_service io_service_;
 
   RemoteDispatchHandler remote_dispatch_handler_;
-
-  UDPLink udp1_;
-  UDPLink udp2_;
+  LocalDispatchHandler local_dispatch_handler_;
 
 public:
- Node() :
-  remote_dispatch_handler(&io_service_),
-  udp1_(&io_service_, 19000),
-  udp2_(&io_service_, 19001)
+  Node() :
+    remote_dispatch_handler_(&io_service_),
+    local_dispatch_handler_(&io_service_, &remote_dispatch_handler_)
   {
   }
 
@@ -70,8 +67,9 @@ public:
   template<typename T>
   void RegisterSubscriber( const std::string& topic, boost::shared_ptr<SubscriberImpl<T> > sub )
   {
-    boost::shared_ptr<LocalDispatcher<T> > disp = GetLocalDispatcher<T>(topic);
-    disp->RegisterSubscriber( sub );
+    local_dispatch_handler_.RegisterSubscriber<T>(topic, sub);
+    //    boost::shared_ptr<LocalDispatcher<T> > disp = GetLocalDispatcher<T>(topic);
+    //disp->RegisterSubscriber( sub );
   }
 
   // Called by Publisher
@@ -79,8 +77,9 @@ public:
   template<typename T>
   void RegisterPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
   {
-    boost::shared_ptr<LocalDispatcher<T> > disp = GetLocalDispatcher<T>(topic);
-    pub->RegisterDispatcher(disp);
+    local_dispatch_handler_.RegisterPublisher<T>(topic, pub);
+    //    boost::shared_ptr<LocalDispatcher<T> > disp = GetLocalDispatcher<T>(topic);
+    //    pub->RegisterDispatcher(disp);
   }
 
   // Will be called to dispatch remote messages
@@ -89,7 +88,7 @@ public:
   {
     assert(0);
   }
-
+  /*
 private:
   template<typename T>
   boost::shared_ptr<LocalDispatcher<T> > GetLocalDispatcher( const std::string& topic )
@@ -110,7 +109,7 @@ private:
     }
     
   }
-  
+  */
 
 
 };

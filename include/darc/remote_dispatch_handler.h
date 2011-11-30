@@ -20,8 +20,8 @@ private:
   LinkListType link_list_;
 
 public:
-  RemoteDispatchHandler( boost::asio::io_service io_service ) :
-    io_service_( &io_service )
+  RemoteDispatchHandler( boost::asio::io_service * io_service ) :
+    io_service_( io_service )
   {
   }
 

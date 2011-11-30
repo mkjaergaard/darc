@@ -23,18 +23,17 @@ class LocalDispatchHandler
   typedef std::map<const std::string, boost::shared_ptr<LocalDispatcherAbstract> > LocalDispatcherListType;
   LocalDispatcherListType local_dispatcher_list_;
 
-  RemoteDispatchHandler * remote_dispatch_handler_;
 
-public:
-  typedef boost::shared_ptr<Node> Ptr;
   
 public:
   // link stuff
   boost::asio::io_service * io_service_;
+  RemoteDispatchHandler * remote_dispatch_handler_;
 
 public:
-  LocalDispatchHandler() :
-    io_service_(&io_service)
+  LocalDispatchHandler( boost::asio::io_service * io_service, RemoteDispatchHandler * remote_dispatch_handler ) :
+    io_service_(io_service),
+    remote_dispatch_handler_(remote_dispatch_handler)
   {
   }
 
