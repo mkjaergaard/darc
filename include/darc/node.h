@@ -6,6 +6,7 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include <darc/local_dispatcher.h>
 #include <darc/subscriber_impl.h>
@@ -18,25 +19,58 @@
 namespace darc
 {
 
-class Node
+class Node : public boost::enable_shared_from_this<Node>
 {
-  typedef std::map<const std::string, boost::shared_ptr<LocalDispatcherAbstract> > LocalDispatcherListType;
-  LocalDispatcherListType local_dispatcher_list_;
-
 public:
   typedef boost::shared_ptr<Node> Ptr;
   
 private:
   boost::asio::io_service io_service_;
+  boost::asio::posix::stream_descriptor key_input_;
+  char key_pressed_;
 
   RemoteDispatchHandler remote_dispatch_handler_;
   LocalDispatchHandler local_dispatch_handler_;
 
+  typedef std::map<const std::string, boost::shared_ptr<LocalDispatcherAbstract> > LocalDispatcherListType;
+  LocalDispatcherListType local_dispatcher_list_;
+
 public:
   Node() :
+    key_input_(io_service_),
     remote_dispatch_handler_(&io_service_),
     local_dispatch_handler_(&io_service_, &remote_dispatch_handler_)
   {
+    // how to unbuffer STDIN????? or use something else
+    key_input_.assign( STDIN_FILENO );
+    readKeyInput();
+  }
+
+  void keyPressedHandler( const boost::system::error_code& error, size_t bytes_transferred )
+  {
+    /*if ( error ) {
+      std::cerr << "read error: " << boost::system::system_error(error).what() << std::endl;
+      return;
+      }*/
+
+    if ( key_pressed_ == 'q' )
+    {
+      exit(0);
+    }
+
+    readKeyInput();
+  }
+
+  void readKeyInput()
+  {
+    async_read( key_input_,
+		boost::asio::buffer( &key_pressed_, sizeof(key_pressed_) ),
+		boost::bind( &Node::keyPressedHandler,
+			     this,
+			     boost::asio::placeholders::error,
+			     boost::asio::placeholders::bytes_transferred
+			     )
+		);
   }
 
   void doSomeFun()
@@ -68,8 +102,6 @@ public:
   void RegisterSubscriber( const std::string& topic, boost::shared_ptr<SubscriberImpl<T> > sub )
   {
     local_dispatch_handler_.RegisterSubscriber<T>(topic, sub);
-    //    boost::shared_ptr<LocalDispatcher<T> > disp = GetLocalDispatcher<T>(topic);
-    //disp->RegisterSubscriber( sub );
   }
 
   // Called by Publisher
@@ -78,8 +110,6 @@ public:
   void RegisterPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
   {
     local_dispatch_handler_.RegisterPublisher<T>(topic, pub);
-    //    boost::shared_ptr<LocalDispatcher<T> > disp = GetLocalDispatcher<T>(topic);
-    //    pub->RegisterDispatcher(disp);
   }
 
   // Will be called to dispatch remote messages
@@ -88,29 +118,6 @@ public:
   {
     assert(0);
   }
-  /*
-private:
-  template<typename T>
-  boost::shared_ptr<LocalDispatcher<T> > GetLocalDispatcher( const std::string& topic )
-  {
-    // do single lookup with
-    if( local_dispatcher_list_.count( topic ) == 0 )
-    {
-      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( &remote_dispatch_handler_) );
-      local_dispatcher_list_[ topic ] = disp;
-      return disp;
-    }
-    else
-    {
-      boost::shared_ptr<LocalDispatcherAbstract> disp_a = local_dispatcher_list_[topic];
-      // todo, try
-      boost::shared_ptr<LocalDispatcher<T> > disp = boost::dynamic_pointer_cast<LocalDispatcher<T> >(disp_a);
-      return disp;
-    }
-    
-  }
-  */
-
 
 };
 
