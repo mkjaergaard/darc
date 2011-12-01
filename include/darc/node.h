@@ -13,6 +13,7 @@
 #include <darc/publisher_impl.h>
 #include <darc/remote_dispatch_handler.h>
 #include <darc/local_dispatch_handler.h>
+#include <darc/node_link_manager.h>
 
 #include <std_msgs/String.h>
 
