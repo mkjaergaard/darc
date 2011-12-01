@@ -28,6 +28,8 @@ public:
   void addRemoteLink( int id, RemoteNodeLink::Ptr link )
   {
     link_list_[id] = link;
+    link->setReceiveCallback( boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this, _1, _2) );
+    //boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this);
   }
 
   // Triggered by asio post
@@ -39,7 +41,7 @@ public:
     for( typename LinkListType::iterator it = link_list_.begin(); it != link_list_.end(); it++ )
     {
       std::cout << "Dispatching to remote node: " << it->first << std::endl;
-      it->second->dispatchToRemoteNode( msg_s );
+      it->second->dispatchToRemoteNode( it->first, msg_s );
     }
   }
 
@@ -49,6 +51,11 @@ public:
   {
     // if( remote subscribers )
     io_service_->post( boost::bind(&RemoteDispatchHandler::serializeAndDispatch<T>, this, msg) );
+  }
+
+  void receiveFromRemoteNode( int id, SerializedMessage::ConstPtr msg_s )
+  {
+    std::cout << "Received a message" << std::endl;
   }
 
 };

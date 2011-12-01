@@ -3,14 +3,15 @@
 #include <darc/publisher.h>
 #include <darc/subscriber.h>
 #include <darc/timer.h>
+#include <std_msgs/String.h>
 
 class Component2 : public darc::Component
 {
 public:
-  darc::Subscriber<int> sub_;
+  darc::Subscriber<std_msgs::String> sub_;
   darc::Timer timer_;
 
-  void SubHandler( const boost::shared_ptr<int> msg )
+  void SubHandler( const boost::shared_ptr<std_msgs::String> msg )
   {
     std::cout << *msg << std::endl;
   }

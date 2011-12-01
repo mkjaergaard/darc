@@ -3,6 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <ros/serialization.h>
+#include <darc/shared_buffer.h>
 
 namespace darc
 {
@@ -13,56 +14,47 @@ public:
   typedef boost::shared_ptr<SerializedMessage> Ptr;
   typedef const boost::shared_ptr<const SerializedMessage> ConstPtr;
 
-public:
-  uint8_t * data_;
-  uint32_t buffer_size_;
-  uint32_t data_size_;
+  SharedBuffer buffer_;
+  size_t data_size_;
 
 public:
   SerializedMessage() :
-    data_(0),
-    buffer_size_(0),
+    buffer_( SharedBuffer::create(10) ),
     data_size_(0)
   {
   }
 
-  template<typename T>
-  explicit SerializedMessage( const boost::shared_ptr<const T> &msg )
+  SerializedMessage( SharedBuffer buffer, size_t data_size ) :
+    buffer_(buffer),
+    data_size_(data_size)
   {
-    serializeMsg(msg);
   }
 
-  ~SerializedMessage()
+  template<typename T>
+  explicit SerializedMessage( const boost::shared_ptr<const T> &msg ) :
+    buffer_( SharedBuffer::create(10) ),
+    data_size_(0)
   {
-    clear();
+    serializeMsg(msg);
   }
 
   template<typename T>
   uint32_t serializeMsg(boost::shared_ptr<T> msg)
   {
-    // Delete existing data
-    clear();
     // Allocate proper buffer size
-    data_size_ = ros::serialization::Serializer<T>::serializedLength(*(msg.get()));
-    buffer_size_ = data_size_;
-    data_ = new uint8_t(buffer_size_);
+    data_size_ = 1024;//ros::serialization::Serializer<T>::serializedLength(*(msg.get()));
+    buffer_ = SharedBuffer::create( data_size_ );
     // Serialize into buffer
-    ros::serialization::OStream ostream(data_, buffer_size_);
+    ros::serialization::OStream ostream(buffer_.data(), buffer_.size());
     ros::serialization::serialize( ostream, *(msg.get()) );
     return data_size_;
   }
 
-private:
-  void clear()
+  const SharedBuffer& getBuffer() const
   {
-    if( data_ != 0 )
-    {
-      delete data_;
-      data_ = 0;
-    }
-    buffer_size_ = 0;
-    data_size_ = 0;
+    return buffer_;
   }
+
 };
 
 }
