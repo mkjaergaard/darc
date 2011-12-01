@@ -31,7 +31,6 @@ private:
   SubscriberListType subscriber_list_;
 
 public:
-
   LocalDispatcher( RemoteDispatchHandler * remote_dispatch_handler ) :
     remote_dispatch_handler_( remote_dispatch_handler ) {}
 

@@ -5,7 +5,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
 #include <darc/serialized_message.h>
-#include <darc/remote_node_link.h>
+#include <darc/node_link.h>
 
 namespace darc
 {
@@ -20,7 +20,7 @@ private:
   LocalDispatchFunctionType local_dispatch_function_;
 
   // Remote Connections
-  typedef std::map<int, RemoteNodeLink::Ptr > LinkListType;
+  typedef std::map<int, NodeLink::Ptr > LinkListType;
   LinkListType link_list_;
 
 public:
@@ -34,7 +34,7 @@ public:
     local_dispatch_function_ = local_dispatch_function;
   }
 
-  void addRemoteLink( int id, RemoteNodeLink::Ptr link )
+  void addRemoteLink( int id, NodeLink::Ptr link )
   {
     link_list_[id] = link;
     link->setReceiveCallback( boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this, _1, _2) );

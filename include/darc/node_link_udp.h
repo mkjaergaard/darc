@@ -1,20 +1,19 @@
-#ifndef __DARC_UDP_LINK_H_INCLUDED__
-#define __DARC_UDP_LINK_H_INCLUDED__
+#ifndef __DARC_NODE_LINK_UDP_H_INCLUDED__
+#define __DARC_NODE_LINK_UDP_H_INCLUDED__
 
 #include <boost/asio.hpp>
 
 #include <darc/serialized_message.h>
-#include <darc/remote_node_link.h>
+#include <darc/node_link.h>
 #include <darc/shared_buffer.h>
 
 namespace darc
 {
 
-  // todo: find a better name for the callback
-class UDPLink : public RemoteNodeLink
+class NodeLinkUDP : public NodeLink
 {
 public:
-  typedef boost::shared_ptr<UDPLink> Ptr;
+  typedef boost::shared_ptr<NodeLinkUDP> Ptr;
 
 private:
   boost::asio::io_service * io_service_;
@@ -29,7 +28,7 @@ private:
   std::map<int, boost::asio::ip::udp::endpoint> endpoints_;
 
 public:
-  UDPLink(boost::asio::io_service * io_service, unsigned int local_port):
+  NodeLinkUDP(boost::asio::io_service * io_service, unsigned int local_port):
     io_service_(io_service),
     socket_(*io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), local_port)),
     local_port_(local_port)
@@ -41,7 +40,7 @@ public:
   {
     SharedBuffer recv_buffer = SharedBuffer::create(4098);
     socket_.async_receive_from( boost::asio::buffer(recv_buffer.data(), recv_buffer.size()), remote_endpoint_,
-                                boost::bind(&UDPLink::handleReceive, this,
+                                boost::bind(&NodeLinkUDP::handleReceive, this,
 				recv_buffer,
                                 boost::asio::placeholders::error,
                                 boost::asio::placeholders::bytes_transferred));

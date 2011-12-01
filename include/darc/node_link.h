@@ -1,5 +1,5 @@
-#ifndef __DARC_REMOTE_NODE_LINK_H_INCLUDED__
-#define __DARC_REMOTE_NODE_LINK_H_INCLUDED__
+#ifndef __DARC_NODE_LINK_H_INCLUDED__
+#define __DARC_NODE_LINK_H_INCLUDED__
 
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
@@ -8,14 +8,14 @@
 namespace darc
 {
   
-class RemoteNodeLink
+class NodeLink
 {
 protected:
   typedef boost::function<void (int, SerializedMessage::ConstPtr)> ReceiveCallbackType;
   ReceiveCallbackType receive_callback_;
 
 public:
-  typedef boost::shared_ptr<RemoteNodeLink> Ptr;
+  typedef boost::shared_ptr<NodeLink> Ptr;
 
   virtual void dispatchToRemoteNode( int id, SerializedMessage::ConstPtr msg ) = 0;
 
