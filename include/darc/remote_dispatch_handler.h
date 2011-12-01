@@ -15,6 +15,10 @@ class RemoteDispatchHandler
 private:
   boost::asio::io_service * io_service_;
 
+  // Function to dispatch locally
+  typedef boost::function<void (int, SerializedMessage::ConstPtr)> LocalDispatchFunctionType;
+  LocalDispatchFunctionType local_dispatch_function_;
+
   // Remote Connections
   typedef std::map<int, RemoteNodeLink::Ptr > LinkListType;
   LinkListType link_list_;
@@ -25,11 +29,15 @@ public:
   {
   }
 
+  void setLocalDispatchFunction( LocalDispatchFunctionType local_dispatch_function )
+  {
+    local_dispatch_function_ = local_dispatch_function;
+  }
+
   void addRemoteLink( int id, RemoteNodeLink::Ptr link )
   {
     link_list_[id] = link;
     link->setReceiveCallback( boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this, _1, _2) );
-    //boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this);
   }
 
   // Triggered by asio post
@@ -56,6 +64,8 @@ public:
   void receiveFromRemoteNode( int id, SerializedMessage::ConstPtr msg_s )
   {
     std::cout << "Received a message" << std::endl;
+    // todo: check if we should route to other nodes
+    local_dispatch_function_(id, msg_s);    
   }
 
 };

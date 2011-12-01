@@ -50,6 +50,15 @@ public:
     return data_size_;
   }
 
+  template<typename T>
+  boost::shared_ptr<T> deserialize() const
+  {
+    boost::shared_ptr<T> msg( new T() );
+    ros::serialization::IStream in( buffer_.data(), buffer_.size() );
+    ros::serialization::deserialize(in, *(msg.get()) );
+    return msg;
+  }
+
   const SharedBuffer& getBuffer() const
   {
     return buffer_;

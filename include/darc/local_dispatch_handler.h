@@ -7,7 +7,6 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <darc/remote_node_callback.h>
 #include <darc/local_dispatcher.h>
 #include <darc/subscriber_impl.h>
 #include <darc/publisher_impl.h>
@@ -22,8 +21,6 @@ class LocalDispatchHandler
 {
   typedef std::map<const std::string, boost::shared_ptr<LocalDispatcherAbstract> > LocalDispatcherListType;
   LocalDispatcherListType local_dispatcher_list_;
-
-
   
 public:
   // link stuff
@@ -55,11 +52,15 @@ public:
     pub->RegisterDispatcher(disp);
   }
 
-  // Will be called to dispatch remote messages
-  // impl of virtual
-  void dispatchFromRemoteNode( int id_, darc::SerializedMessage::ConstPtr msg_s )
+  void receiveFromRemoteNode( int id, SerializedMessage::ConstPtr msg_s )
   {
-    assert(0);
+    std::string topic("test"); // todo get this from remote message
+
+    LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
+    if( elem != local_dispatcher_list_.end() )
+    {
+      elem->second->dispatchMessageLocally( msg_s );
+    }
   }
 
 private:
@@ -67,7 +68,8 @@ private:
   boost::shared_ptr<LocalDispatcher<T> > GetLocalDispatcher( const std::string& topic )
   {
     // do single lookup with
-    if( local_dispatcher_list_.count( topic ) == 0 )
+    LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
+    if( elem == local_dispatcher_list_.end() )
     {
       boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( remote_dispatch_handler_ ) );
       local_dispatcher_list_[ topic ] = disp;
@@ -75,15 +77,12 @@ private:
     }
     else
     {
-      boost::shared_ptr<LocalDispatcherAbstract> disp_a = local_dispatcher_list_[topic];
+      boost::shared_ptr<LocalDispatcherAbstract> &disp_a = elem->second;
       // todo, try
       boost::shared_ptr<LocalDispatcher<T> > disp = boost::dynamic_pointer_cast<LocalDispatcher<T> >(disp_a);
       return disp;
     }
-    
   }
-  
-
 
 };
 

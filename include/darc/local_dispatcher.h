@@ -18,10 +18,7 @@ class LocalDispatcherAbstract
 public:
   virtual ~LocalDispatcherAbstract() {}
 
-  void DispatchSerializedMessage()
-  {
-    // Some Stuff
-  }
+  virtual void dispatchMessageLocally( SerializedMessage::ConstPtr msg_s ) = 0;
 };
 
 template<typename T>
@@ -44,7 +41,13 @@ public:
   }
 
   // Called by the local publishers  
-  void DispatchMessage( boost::shared_ptr<T> &msg )
+  void DispatchMessage( boost::shared_ptr<T> msg )
+  {
+    dispatchMessageLocally(msg);
+    remote_dispatch_handler_->postRemoteDispatch<T>(msg);
+  }
+
+  void dispatchMessageLocally( boost::shared_ptr<T> msg )
   {
     for( typename SubscriberListType::iterator it = subscriber_list_.begin();
          it != subscriber_list_.end();
@@ -52,8 +55,14 @@ public:
     {
       (*it)->Dispatch( msg );
     }
-    remote_dispatch_handler_->postRemoteDispatch<T>(msg);
   }
+
+  // impl of virtual
+  void dispatchMessageLocally( SerializedMessage::ConstPtr msg_s )
+  {
+    dispatchMessageLocally( msg_s->deserialize<T>() );
+  }
+
 };
 
 }

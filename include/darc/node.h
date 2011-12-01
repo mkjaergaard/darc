@@ -49,6 +49,9 @@ public:
     // signals_.async_wait(boost::bind(&Node::quitHandler, this)); not in boost 1.40
     key_input_.assign( STDIN_FILENO );
     readKeyInput();
+    // Link the dispatch handlers
+    remote_dispatch_handler_.setLocalDispatchFunction( boost::bind( &LocalDispatchHandler::receiveFromRemoteNode,
+								    &local_dispatch_handler_, _1, _2 ) );
   }
 
   void quitHandler()
@@ -120,13 +123,6 @@ public:
   void RegisterPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
   {
     local_dispatch_handler_.RegisterPublisher<T>(topic, pub);
-  }
-
-  // Will be called to dispatch remote messages
-  template<typename T>
-  void DispatchToLocalSubscribers( const std::string& topic, boost::shared_ptr<T> &msg )
-  {
-    assert(0);
   }
 
 };
