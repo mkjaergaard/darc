@@ -21,7 +21,7 @@ private:
   LocalDispatchFunctionType local_dispatch_function_;
 
   // Remote Connections
-  typedef std::map<int, NodeLink::Ptr > LinkListType;
+  typedef std::map<uint32_t, NodeLink::Ptr > LinkListType;
   LinkListType link_list_;
 
 public:
@@ -43,32 +43,32 @@ public:
     local_dispatch_function_ = local_dispatch_function;
   }
 
-  void addRemoteLink( int id, NodeLink::Ptr link )
+  void addRemoteLink( uint32_t remote_node_id, NodeLink::Ptr link )
   {
-    link_list_[id] = link;
+    link_list_[remote_node_id] = link;
     link->setReceiveCallback( boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this, _1, _2, _3) );
-    link->setNodeID( node_id );
+    link->setNodeID( node_id_ );
   }
 
   // Triggered by asio post
   template<typename T>
-  void serializeAndDispatch( const boost::shared_ptr<const T> msg )
+  void serializeAndDispatch( const std::string topic, const boost::shared_ptr<const T> msg )
   {
     SerializedMessage::Ptr msg_s( new SerializedMessage(msg) );
     // todo find the right nodes to dispatch to
     for( typename LinkListType::iterator it = link_list_.begin(); it != link_list_.end(); it++ )
     {
       std::cout << "Dispatching to remote node: " << it->first << std::endl;
-      it->second->dispatchToRemoteNode( it->first, msg_s );
+      it->second->dispatchToRemoteNode( it->first, topic, msg_s );
     }
   }
 
   // Called by LocalDispatcher
   template<typename T>
-  void postRemoteDispatch( const boost::shared_ptr<const T> msg )
+  void postRemoteDispatch( const std::string& topic, const boost::shared_ptr<const T> msg )
   {
     // if( remote subscribers )
-    io_service_->post( boost::bind(&RemoteDispatchHandler::serializeAndDispatch<T>, this, msg) );
+    io_service_->post( boost::bind(&RemoteDispatchHandler::serializeAndDispatch<T>, this, topic, msg) );
   }
 
   void receiveFromRemoteNode( uint32_t remote_node_id, const std::string& topic, SerializedMessage::ConstPtr msg_s )

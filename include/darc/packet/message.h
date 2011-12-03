@@ -9,21 +9,30 @@ namespace darc
 namespace packet
 {
 
-struct Message
+struct Message//Header
 {
   std::string topic;
-  SerializedMessage::Ptr message_data;
 
-  size_t read( SharedBuffer buffer, size_t data_len )
+  Message()
+  {
+  }
+
+  Message(const std::string& topic) :
+    topic(topic)
+  {
+  }
+
+  size_t read( const uint8_t * data, size_t data_len )
   {
     // Topic
-    std::string topic;
-    size_t pos = Parser::readString(topic, buffer.data(), data_len);
-    // Actual Message
-    buffer.addOffset(pos);
-    message_data.reset( new SerializedMessage( buffer, data_len - pos ) );
-    return pos; //todo + msg size
+    return Parser::readString(topic, data, data_len);
   }
+
+  size_t write( uint8_t * data, size_t size )
+  {
+    return Parser::writeString(topic.c_str(), data, size);
+  }
+
 };
 
 } // namespace packet

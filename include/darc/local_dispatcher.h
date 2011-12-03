@@ -25,13 +25,15 @@ template<typename T>
 class LocalDispatcher : public LocalDispatcherAbstract
 {
 private:
+  std::string topic_;
   RemoteDispatchHandler * remote_dispatch_handler_;
 
   typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType;
   SubscriberListType subscriber_list_;
 
 public:
-  LocalDispatcher( RemoteDispatchHandler * remote_dispatch_handler ) :
+  LocalDispatcher( const std::string& topic, RemoteDispatchHandler * remote_dispatch_handler ) :
+    topic_(topic),
     remote_dispatch_handler_( remote_dispatch_handler ) {}
 
   void RegisterSubscriber( boost::shared_ptr<SubscriberImpl<T> > sub )
@@ -43,7 +45,7 @@ public:
   void DispatchMessage( boost::shared_ptr<T> msg )
   {
     dispatchMessageLocally(msg);
-    remote_dispatch_handler_->postRemoteDispatch<T>(msg);
+    remote_dispatch_handler_->postRemoteDispatch<T>(topic_, msg);
   }
 
   void dispatchMessageLocally( boost::shared_ptr<T> msg )

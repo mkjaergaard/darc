@@ -26,7 +26,7 @@ private:
   
   unsigned int local_port_;
 
-  std::map<int, boost::asio::ip::udp::endpoint> endpoints_;
+  std::map<uint32_t, boost::asio::ip::udp::endpoint> endpoints_;
 
 public:
   Link(boost::asio::io_service * io_service, unsigned int local_port):
@@ -47,27 +47,38 @@ public:
                                 boost::asio::placeholders::bytes_transferred));
   }
 
-  void addRemoteNode( int id, const std::string& host, const std::string& port)
+  void addRemoteNode( uint32_t remote_node_id, const std::string& host, const std::string& port)
   {
     // todo: do it async
     boost::asio::ip::udp::resolver resolver(*io_service_);
     boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), host, port);
-    endpoints_[id] = *resolver.resolve(query);
+    endpoints_[remote_node_id] = *resolver.resolve(query);
   }
 
   // impl of virtual
-  void dispatchToRemoteNode( int id, SerializedMessage::ConstPtr msg)
+  void dispatchToRemoteNode( uint32_t remote_node_id, const std::string& topic, SerializedMessage::ConstPtr msg)
   {
     // todo: to do an async send_to, msg must be kept alive until the send is finished. How to do this?
     //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....
+    //       Dude.... This is all messy right now....
 
     // Send Header
-    packet::Header header(node_id, packet::Header::MSG_PACKET);
-    
+    packet::Header header(node_id_, packet::Header::MSG_PACKET);
+    packet::Message msg_header(topic);
+
+    boost::array<uint8_t, 512> tmp_buf;
+
+    size_t pos = header.write( tmp_buf.data(), tmp_buf.size() );
+    msg_header.write( tmp_buf.data() + pos, tmp_buf.size() - pos );
+
+    boost::array<boost::asio::const_buffer, 2> tmp_bufs = {{
+      boost::asio::buffer(tmp_buf),
+      boost::asio::buffer(msg->getBuffer().data(), msg->getBuffer().size())
+      }};
     
     // Send Msg packet
 
-    socket_.send_to(boost::asio::buffer(msg->getBuffer().data(), msg->getBuffer().size()), endpoints_[id]);
+    socket_.send_to(tmp_bufs, endpoints_[remote_node_id]);
   }
 
  public:
@@ -89,8 +100,10 @@ public:
       {
 	recv_buffer.addOffset( packet::Header::size() );
 	packet::Message msg_packet;
-	msg_packet.read( recv_buffer, size - packet::Header::size() );
-	receive_callback_( header.sender_node_id, msg_packet.topic, msg_packet.message_data );
+	size_t msg_header_size = msg_packet.read( recv_buffer.data(), size - packet::Header::size() );
+	recv_buffer.addOffset( msg_header_size );
+	SerializedMessage::Ptr msg_s( new SerializedMessage( recv_buffer , size - packet::Header::size() - msg_header_size ) );
+	receive_callback_( header.sender_node_id, msg_packet.topic, msg_s );
       }
       else
       {

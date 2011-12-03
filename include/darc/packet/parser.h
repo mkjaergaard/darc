@@ -9,7 +9,7 @@ namespace packet
 class Parser
 {
 public:
-  static size_t readString(std::string& result, uint8_t * data, size_t len)
+  static size_t readString(std::string& result, const uint8_t * data, size_t len)
   {
     return 0;
   }

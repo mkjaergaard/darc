@@ -23,7 +23,7 @@ class LocalDispatchHandler
 public:
   // link stuff
   boost::asio::io_service * io_service_;
-  RemoteDispatchHandler * remote_dispatch_handler_;
+  RemoteDispatchHandler * remote_dispatch_handler_;  // todo: use bind instead
 
 public:
   LocalDispatchHandler( boost::asio::io_service * io_service, RemoteDispatchHandler * remote_dispatch_handler ) :
@@ -67,7 +67,7 @@ private:
     LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
     if( elem == local_dispatcher_list_.end() )
     {
-      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( remote_dispatch_handler_ ) );
+      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( topic, remote_dispatch_handler_ ) );
       local_dispatcher_list_[ topic ] = disp;
       return disp;
     }

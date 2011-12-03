@@ -26,12 +26,12 @@ public:
   {
   }
 
-  void setNodeId( uint32_t node_id )
+  void setNodeID( uint32_t node_id )
   {
     node_id_ = node_id;
   }
 
-  virtual void dispatchToRemoteNode( int id, SerializedMessage::ConstPtr msg ) = 0;
+  virtual void dispatchToRemoteNode( uint32_t remote_node_id, const std::string& topic, SerializedMessage::ConstPtr msg ) = 0;
 
   void setReceiveCallback( ReceiveCallbackType receive_callback )
   {
