@@ -13,9 +13,23 @@ class NodeLink
 protected:
   typedef boost::function<void (uint32_t, const std::string&, SerializedMessage::ConstPtr)> ReceiveCallbackType;
   ReceiveCallbackType receive_callback_;
+  uint32_t node_id_;
+
+  NodeLink() : node_id_(0xFFFFFFFF)
+  {
+  }
 
 public:
   typedef boost::shared_ptr<NodeLink> Ptr;
+
+  ~NodeLink()
+  {
+  }
+
+  void setNodeId( uint32_t node_id )
+  {
+    node_id_ = node_id;
+  }
 
   virtual void dispatchToRemoteNode( int id, SerializedMessage::ConstPtr msg ) = 0;
 

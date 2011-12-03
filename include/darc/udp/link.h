@@ -60,6 +60,13 @@ public:
   {
     // todo: to do an async send_to, msg must be kept alive until the send is finished. How to do this?
     //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....
+
+    // Send Header
+    packet::Header header(node_id, packet::Header::MSG_PACKET);
+    
+    
+    // Send Msg packet
+
     socket_.send_to(boost::asio::buffer(msg->getBuffer().data(), msg->getBuffer().size()), endpoints_[id]);
   }
 

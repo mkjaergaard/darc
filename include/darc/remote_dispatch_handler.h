@@ -35,6 +35,7 @@ public:
   void setNodeID( uint32_t node_id )
   {
     node_id_ = node_id;
+    // todo: update alle existing links
   }
 
   void setLocalDispatchFunction( LocalDispatchFunctionType local_dispatch_function )
@@ -46,6 +47,7 @@ public:
   {
     link_list_[id] = link;
     link->setReceiveCallback( boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this, _1, _2, _3) );
+    link->setNodeID( node_id );
   }
 
   // Triggered by asio post

@@ -15,6 +15,14 @@ struct Header
   uint8_t reserved8;
   uint16_t reserved16;
 
+  Header( uint32_t node_id, PayloadType payload_type):
+    sender_node_id(node_id),
+    payload_type(payload_type),
+    reserved8(0),
+    reserved16(0)
+  {
+  }
+
   Header():
     sender_node_id(0xFFFFFFFF),
     payload_type(NONE),
