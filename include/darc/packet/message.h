@@ -14,13 +14,15 @@ struct Message
   std::string topic;
   SerializedMessage::Ptr message_data;
 
-  size_t read( Shared_buffer data, size_t data_len )
+  size_t read( SharedBuffer buffer, size_t data_len )
   {
     // Topic
     std::string topic;
-    size_t pos = Parser::readString(topic, data, data_len);
+    size_t pos = Parser::readString(topic, buffer.data(), data_len);
     // Actual Message
-    message_data.reset( new SerializedMessage( data + pos, data_len - pos ) );
+    buffer.addOffset(pos);
+    message_data.reset( new SerializedMessage( buffer, data_len - pos ) );
+    return pos; //todo + msg size
   }
 };
 

@@ -19,7 +19,7 @@ struct Header
     sender_node_id(0xFFFFFFFF),
     payload_type(NONE),
     reserved8(0),
-    reserver16(0)
+    reserved16(0)
   {
   }
 
@@ -43,7 +43,7 @@ struct Header
     return size();
   }
 
-  size_t size() const
+  static size_t size()
   {
     return 8;
   }

@@ -50,10 +50,8 @@ public:
     pub->RegisterDispatcher(disp);
   }
 
-  void receiveFromRemoteNode( int id, SerializedMessage::ConstPtr msg_s )
+  void receiveFromRemoteNode( const std::string& topic, SerializedMessage::ConstPtr msg_s )
   {
-    std::string topic("test"); // todo get this from remote message
-
     LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
     if( elem != local_dispatcher_list_.end() )
     {

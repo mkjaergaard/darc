@@ -14,9 +14,10 @@ class RemoteDispatchHandler
 {
 private:
   boost::asio::io_service * io_service_;
+  uint32_t node_id_;
 
   // Function to dispatch locally
-  typedef boost::function<void (int, SerializedMessage::ConstPtr)> LocalDispatchFunctionType;
+  typedef boost::function<void (const std::string& topic, SerializedMessage::ConstPtr)> LocalDispatchFunctionType;
   LocalDispatchFunctionType local_dispatch_function_;
 
   // Remote Connections
@@ -25,8 +26,15 @@ private:
 
 public:
   RemoteDispatchHandler( boost::asio::io_service * io_service ) :
-    io_service_( io_service )
+    io_service_( io_service ),
+    node_id_(0xFFFF)
   {
+  }
+
+  // todo: right now it is set manually
+  void setNodeID( uint32_t node_id )
+  {
+    node_id_ = node_id;
   }
 
   void setLocalDispatchFunction( LocalDispatchFunctionType local_dispatch_function )
@@ -37,7 +45,7 @@ public:
   void addRemoteLink( int id, NodeLink::Ptr link )
   {
     link_list_[id] = link;
-    link->setReceiveCallback( boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this, _1, _2) );
+    link->setReceiveCallback( boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this, _1, _2, _3) );
   }
 
   // Triggered by asio post
@@ -61,11 +69,11 @@ public:
     io_service_->post( boost::bind(&RemoteDispatchHandler::serializeAndDispatch<T>, this, msg) );
   }
 
-  void receiveFromRemoteNode( int id, SerializedMessage::ConstPtr msg_s )
+  void receiveFromRemoteNode( uint32_t remote_node_id, const std::string& topic, SerializedMessage::ConstPtr msg_s )
   {
-    std::cout << "Received a message" << std::endl;
+    std::cout << "Received a message from node" << remote_node_id << " with topic " << topic << std::endl;
     // todo: check if we should route to other nodes
-    local_dispatch_function_(id, msg_s);    
+    local_dispatch_function_(topic, msg_s);    
   }
 
 };

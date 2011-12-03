@@ -5,6 +5,8 @@
 #include <darc/serialized_message.h>
 #include <darc/node_link.h>
 #include <darc/shared_buffer.h>
+#include <darc/packet/header.h>
+#include <darc/packet/message.h>
 
 namespace darc
 {
@@ -71,8 +73,22 @@ public:
     else
     {
       std::cout << "Received: " << size << " on port " << local_port_ << std::endl;
-      SerializedMessage::Ptr msg_s( new SerializedMessage(recv_buffer, size) );
-      receive_callback_(1, msg_s);
+
+      packet::Header header;
+      header.read( recv_buffer.data(), size );
+      
+      // switch on packet type
+      if (header.payload_type == packet::Header::MSG_PACKET)
+      {
+	recv_buffer.addOffset( packet::Header::size() );
+	packet::Message msg_packet;
+	msg_packet.read( recv_buffer, size - packet::Header::size() );
+	receive_callback_( header.sender_node_id, msg_packet.topic, msg_packet.message_data );
+      }
+      else
+      {
+	std::cout << "Unknown packet type received??" << std::endl;
+      }
     }
     startReceive();
   }
