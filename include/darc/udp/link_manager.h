@@ -11,17 +11,6 @@ namespace xp = boost::xpressive;
 namespace darc
 {
 
-// todo: put somewhere else
-class LinkManagerAbstract
-{
-public:
-  virtual ~LinkManagerAbstract() {}
-
-  virtual darc::NodeLink::Ptr accept( const std::string& url ) = 0;
-  virtual darc::NodeLink::Ptr connect( uint32_t remote_node_id, const std::string& url ) = 0;
-
-};
-
 namespace udp
 {
 

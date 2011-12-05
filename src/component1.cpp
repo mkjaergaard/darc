@@ -11,20 +11,20 @@ public:
   darc::Publisher<std_msgs::String> pub_;
   darc::Timer timer_;
 
-  void TimerHandler( )
+  void timerHandler( )
   {
     std::cout << "Timer" << std::endl;
     boost::shared_ptr<std_msgs::String> msg( new std_msgs::String() );
     msg->data = "blop";
-    pub_.Publish(msg);
+    pub_.publish(msg);
   }
   
   Component1( const std::string& instance_name, darc::Node::Ptr node ) : darc::Component(instance_name, node),
 		    pub_(this, "test"),
-		    timer_(this, boost::bind(&Component1::TimerHandler, this), boost::posix_time::seconds(2))
+		    timer_(this, boost::bind(&Component1::timerHandler, this), boost::posix_time::seconds(2))
   {
   }
 
 };
 
-static int blah =  darc::ComponentRegister::RegisterComponent( "Component1", boost::bind(&darc::Component::instantiate<Component1>, _1, _2) );
+static int blah =  darc::ComponentRegister::registerComponent( "Component1", boost::bind(&darc::Component::instantiate<Component1>, _1, _2) );

@@ -1,5 +1,5 @@
-#ifndef __DARC_NODE_LINK_MANAGER_H__
-#define __DARC_NODE_LINK_MANAGER_H__
+#ifndef __DARC_NODE_LINK_MANAGER_H_INCLUDED__
+#define __DARC_NODE_LINK_MANAGER_H_INCLUDED__
 
 #include <boost/xpressive/xpressive.hpp>
 #include <darc/udp/link_manager.h>

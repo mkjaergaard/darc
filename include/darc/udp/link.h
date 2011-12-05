@@ -2,6 +2,7 @@
 #define __DARC_UDP_LINK_H_INCLUDED__
 
 #include <boost/asio.hpp>
+#include <darc/link_manager_abstract.h>
 #include <darc/serialized_message.h>
 #include <darc/node_link.h>
 #include <darc/shared_buffer.h>

@@ -26,12 +26,12 @@ protected:
   }
 
 public:
-  boost::asio::io_service * GetIOService()
+  boost::asio::io_service * getIOService()
   {
     return &io_service_;
   }
 
-  boost::shared_ptr<Node> GetNode()
+  boost::shared_ptr<Node> getNode()
   {
     return node_;
   }
@@ -59,6 +59,7 @@ public:
 
 }
 
+// Include here so its available for the components
 #include <darc/component_register.h>
 
 #endif

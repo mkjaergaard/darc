@@ -6,7 +6,6 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
-
 #include <darc/local_dispatcher.h>
 #include <darc/subscriber_impl.h>
 #include <darc/publisher_impl.h>
@@ -35,19 +34,19 @@ public:
   // called by the Subscriber
   // todo: not thread safe
   template<typename T>
-  void RegisterSubscriber( const std::string& topic, boost::shared_ptr<SubscriberImpl<T> > sub )
+  void registerSubscriber( const std::string& topic, boost::shared_ptr<SubscriberImpl<T> > sub )
   {
-    boost::shared_ptr<LocalDispatcher<T> > disp = GetLocalDispatcher<T>(topic);
-    disp->RegisterSubscriber( sub );
+    boost::shared_ptr<LocalDispatcher<T> > disp = getLocalDispatcher<T>(topic);
+    disp->registerSubscriber( sub );
   }
 
   // Called by Publisher
   // todo: not thread safe
   template<typename T>
-  void RegisterPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
+  void registerPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
   {
-    boost::shared_ptr<LocalDispatcher<T> > disp = GetLocalDispatcher<T>(topic);
-    pub->RegisterDispatcher(disp);
+    boost::shared_ptr<LocalDispatcher<T> > disp = getLocalDispatcher<T>(topic);
+    pub->registerDispatcher(disp);
   }
 
   void receiveFromRemoteNode( const std::string& topic, SerializedMessage::ConstPtr msg_s )
@@ -61,7 +60,7 @@ public:
 
 private:
   template<typename T>
-  boost::shared_ptr<LocalDispatcher<T> > GetLocalDispatcher( const std::string& topic )
+  boost::shared_ptr<LocalDispatcher<T> > getLocalDispatcher( const std::string& topic )
   {
     // do single lookup with
     LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);

@@ -3,7 +3,6 @@
 
 #include <map>
 #include <iostream>
-
 #include <darc/component.h>
 #include <darc/node.h>
 
@@ -18,11 +17,12 @@ private:
   
   ComponentListType component_list_;
 
-  ComponentRegister() {}
   static ComponentRegister * instance_;
 
 private:
-  static ComponentRegister * Instance()
+  ComponentRegister() {}
+
+  static ComponentRegister * instance()
   {
     if( instance_ == 0 )
     {
@@ -32,17 +32,17 @@ private:
   }
 
 public:
-  static int RegisterComponent( const std::string& component_name, InstantiateComponentMethod method )
+  static int registerComponent( const std::string& component_name, InstantiateComponentMethod method )
   {
-    ComponentRegister * inst = Instance();
+    ComponentRegister * inst = instance();
     inst->component_list_[component_name] = method;
     std::cout << "Registered Component: " << component_name << std::endl;
     return 1;
   }
 
-  static darc::Component::Ptr InstantiateComponent( const std::string& instance_name, Node::Ptr node )
+  static darc::Component::Ptr instantiateComponent( const std::string& instance_name, Node::Ptr node )
   {
-    ComponentRegister * inst = Instance();
+    ComponentRegister * inst = instance();
     if( inst->component_list_.count(instance_name) )
     {
       return inst->component_list_[instance_name](instance_name, node);

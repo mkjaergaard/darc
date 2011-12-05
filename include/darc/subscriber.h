@@ -2,7 +2,6 @@
 #define __DARC_SUBSCRIBER_H_INCLUDED__
 
 #include <boost/smart_ptr.hpp>
-
 #include <darc/subscriber_impl.h>
 
 // Wraps a SubscriberImpl in a smart pointer so the lifetime of SubscriberImpl is dependent by the lifetime of Subscriber
@@ -20,10 +19,15 @@ private:
 
 public:
   Subscriber(darc::Component * owner, const std::string& topic, CallbackType callback) :
-  impl_( new SubscriberImpl<T>( owner->GetIOService(), topic, callback ) )
+  impl_( new SubscriberImpl<T>( owner->getIOService(), topic, callback ) )
   {
-    owner->GetNode()->RegisterSubscriber(topic, impl_);
+    owner->getNode()->registerSubscriber(topic, impl_);
   }
+
+  ~Subscriber()
+  {
+    // unregister subscriber
+  } 
 
 };
 

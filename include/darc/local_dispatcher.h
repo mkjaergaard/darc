@@ -1,25 +1,16 @@
-#ifndef __DARC_LOCAL_DISPATCHER_H__
-#define __DARC_LOCAL_DISPATCHER_H__
+#ifndef __DARC_LOCAL_DISPATCHER_H_INCLUDED___
+#define __DARC_LOCAL_DISPATCHER_H_INCLUDED___
 
 #include <vector>
-
 #include <boost/smart_ptr.hpp>
 #include <boost/weak_ptr.hpp>
-
+#include <darc/local_dispatcher_abstract.h>
 #include <darc/subscriber_impl.h>
 #include <darc/serialized_message.h>
 #include <darc/remote_dispatch_handler.h>
 
 namespace darc
 {
-
-class LocalDispatcherAbstract
-{
-public:
-  virtual ~LocalDispatcherAbstract() {}
-
-  virtual void dispatchMessageLocally( SerializedMessage::ConstPtr msg_s ) = 0;
-};
 
 template<typename T>
 class LocalDispatcher : public LocalDispatcherAbstract
@@ -36,13 +27,13 @@ public:
     topic_(topic),
     remote_dispatch_handler_( remote_dispatch_handler ) {}
 
-  void RegisterSubscriber( boost::shared_ptr<SubscriberImpl<T> > sub )
+  void registerSubscriber( boost::shared_ptr<SubscriberImpl<T> > sub )
   {
     subscriber_list_.push_back( sub );
   }
 
   // Called by the local publishers  
-  void DispatchMessage( boost::shared_ptr<T> msg )
+  void dispatchMessage( boost::shared_ptr<T> msg )
   {
     dispatchMessageLocally(msg);
     remote_dispatch_handler_->postRemoteDispatch<T>(topic_, msg);
@@ -54,7 +45,7 @@ public:
          it != subscriber_list_.end();
          it++)
     {
-      (*it)->Dispatch( msg );
+      (*it)->dispatch( msg );
     }
   }
 

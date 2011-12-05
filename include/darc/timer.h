@@ -3,7 +3,6 @@
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
-
 #include <darc/component.h>
 
 namespace darc
@@ -11,7 +10,6 @@ namespace darc
 
 class Timer : public boost::asio::deadline_timer
 {
-
   typedef boost::function<void()> CallbackType;
   CallbackType callback_;
 
@@ -19,17 +17,17 @@ class Timer : public boost::asio::deadline_timer
 
 public:
   Timer(darc::Component * owner, CallbackType callback, boost::posix_time::time_duration period) :
-  boost::asio::deadline_timer( *(owner->GetIOService()), period ),
+    boost::asio::deadline_timer( *(owner->getIOService()), period ),
     callback_(callback),
     period_(period)
   {
-    async_wait( boost::bind( &Timer::Handler, this ) );
+    async_wait( boost::bind( &Timer::handler, this ) );
   }
 
-  void Handler()// const boost::system::error_code& error )
+  void handler()// const boost::system::error_code& error )
   {
     expires_from_now( period_ );
-    async_wait( boost::bind( &Timer::Handler, this ) );
+    async_wait( boost::bind( &Timer::handler, this ) );
     callback_();
   }
 

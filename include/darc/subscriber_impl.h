@@ -2,7 +2,6 @@
 #define __DARC_SUBSCRIBER_IMPL_H_INCLUDED__
 
 #include <iostream>
-
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/function.hpp>
@@ -32,14 +31,14 @@ public:
   {
   }
 
-  void Dispatch( MsgPtrType &msg)
+  void dispatch( MsgPtrType &msg)
   {
     //typename MsgWrapped<T>::Ptr msg_wt = boost::dynamic_pointer_cast<MsgWrapped<T> >( msg_w );
-    io_service_->post( boost::bind( &SubscriberImpl::Receive, this, msg ) );
+    io_service_->post( boost::bind( &SubscriberImpl::receive, this, msg ) );
   }
 
 private:
-  void Receive(MsgPtrType& msg)
+  void receive(MsgPtrType& msg)
   {
     callback_( msg );
   }

@@ -1,9 +1,8 @@
 #ifndef __DARC_PUBLISHER_IMPL_H_INCLUDED__
 #define __DARC_PUBLISHER_IMPL_H_INCLUDED__
 
-#include <darc/local_dispatcher.h>
-
 #include <boost/shared_ptr.hpp>
+#include <darc/local_dispatcher.h>
 
 namespace darc
 {
@@ -19,16 +18,16 @@ public:
   {
   }
 
-  void RegisterDispatcher( boost::weak_ptr<LocalDispatcher<T> > dispatcher )
+  void registerDispatcher( boost::weak_ptr<LocalDispatcher<T> > dispatcher )
   {
     dispatcher_ = dispatcher;
   }
 
-  void Publish(boost::shared_ptr<T> msg)
+  void publish(boost::shared_ptr<T> msg)
   {
     if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
     {
-      dispatcher_sp->DispatchMessage(msg);
+      dispatcher_sp->dispatchMessage(msg);
     }
   }
 

@@ -7,15 +7,12 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-
 #include <darc/local_dispatcher.h>
 #include <darc/subscriber_impl.h>
 #include <darc/publisher_impl.h>
 #include <darc/remote_dispatch_handler.h>
 #include <darc/local_dispatch_handler.h>
 #include <darc/node_link_manager.h>
-
-#include <std_msgs/String.h>
 
 namespace darc
 {
@@ -87,23 +84,6 @@ public:
 		);
   }
 
-  void doSomeFun()
-  {
-    /*
-    boost::shared_ptr<boost::thread> thread(new boost::thread( boost::bind(&darc::Node::run, this)));
-    Instance()->threads_.push_back(thread);
-
-    udp1_.addRemoteNode( 0, "127.0.0.1", "19001");
-
-    boost::shared_ptr<SerializedMessage> msg_s( new SerializedMessage() );
-    boost::shared_ptr<std_msgs::String> b( new std_msgs::String() );
-    b->data = "test";
-    msg_s->serializeMsg(b);
-    
-    udp1_.dispatch( 0, msg_s);
-    */
-  }
-
   void run()
   {
     std::cout << "Running Node" << std::endl;
@@ -113,17 +93,17 @@ public:
   // called by the Subscriber
   // todo: not thread safe
   template<typename T>
-  void RegisterSubscriber( const std::string& topic, boost::shared_ptr<SubscriberImpl<T> > sub )
+  void registerSubscriber( const std::string& topic, boost::shared_ptr<SubscriberImpl<T> > sub )
   {
-    local_dispatch_handler_.RegisterSubscriber<T>(topic, sub);
+    local_dispatch_handler_.registerSubscriber<T>(topic, sub);
   }
 
   // Called by Publisher
   // todo: not thread safe
   template<typename T>
-  void RegisterPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
+  void registerPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
   {
-    local_dispatch_handler_.RegisterPublisher<T>(topic, pub);
+    local_dispatch_handler_.registerPublisher<T>(topic, pub);
   }
 
 };
