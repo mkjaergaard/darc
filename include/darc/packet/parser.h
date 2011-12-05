@@ -11,12 +11,14 @@ class Parser
 public:
   static size_t readString(std::string& result, const uint8_t * data, size_t len)
   {
-    return 0;
+    result = std::string((char*)data);
+    return result.length() + 1;
   }
 
-  static size_t writeString(const char * string, uint8_t * data, size_t len)
+  static size_t writeString(const std::string& string, uint8_t * data, size_t len)
   {
-    return 0;
+    strcpy( (char*)data, string.c_str() );
+    return string.length() + 1;
   }
 
   static size_t readUint32(uint32_t& result, uint8_t * data, size_t len)
@@ -52,14 +54,14 @@ public:
 
   static size_t writeUint64(uint64_t value, uint8_t * data, size_t len)
   {
-    data[0] =  value        % 0xFF;
-    data[1] = (value >> 8)  % 0xFF;
-    data[2] = (value >> 16) % 0xFF;
-    data[3] = (value >> 24) % 0xFF;
-    data[4] = (value >> 32) % 0xFF;
-    data[5] = (value >> 40) % 0xFF;
-    data[6] = (value >> 48) % 0xFF;
-    data[7] = (value >> 56) % 0xFF;
+    data[0] =  value        & 0xFF;
+    data[1] = (value >> 8)  & 0xFF;
+    data[2] = (value >> 16) & 0xFF;
+    data[3] = (value >> 24) & 0xFF;
+    data[4] = (value >> 32) & 0xFF;
+    data[5] = (value >> 40) & 0xFF;
+    data[6] = (value >> 48) & 0xFF;
+    data[7] = (value >> 56) & 0xFF;
     return 8;
   }
 

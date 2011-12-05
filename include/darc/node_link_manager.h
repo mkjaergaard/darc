@@ -26,8 +26,7 @@ public:
     manager_map_["udp"] = &udp_manager_;
   }
 
-
-  void accept( const std::string& url )
+  NodeLink::Ptr accept( const std::string& url )
   {
     xp::smatch what;
     if( regex_match( url, what, url_rex_ ) )
@@ -35,20 +34,22 @@ public:
       LinkManagerAbstract * mngr = getManager(what[1]);
       if( mngr )
       {
-	mngr->accept(what[2]);
+	return mngr->accept(what[2]);
       }
       else
       {
 	std::cout << "Unsupported protocol: " << what[1] << std::endl;
+	return NodeLink::Ptr();
       }
     }
     else
     {
       std::cout << "Invalid URL: " << url << std::endl;
+	return NodeLink::Ptr();
     }
   }
 
-  void connect( const std::string& url )
+  NodeLink::Ptr connect( uint32_t remote_node_id, const std::string& url )
   {
     xp::smatch what;
     if( regex_match( url, what, url_rex_ ) )
@@ -56,16 +57,19 @@ public:
       LinkManagerAbstract * mngr = getManager(what[1]);
       if( mngr )
       {
-	mngr->connect(what[2]);
+	return mngr->connect(remote_node_id, what[2]);
+	return NodeLink::Ptr();
       }
       else
       {
 	std::cout << "Unsupported protocol: " << what[1] << std::endl;
+	return NodeLink::Ptr();
       }
     }
     else
     {
       std::cout << "Invalid URL: " << url << std::endl;
+      return NodeLink::Ptr();
     }
 
   }

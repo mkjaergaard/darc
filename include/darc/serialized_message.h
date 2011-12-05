@@ -80,7 +80,7 @@ public:
         md5_value1 != ros::message_traits::MD5Sum<T>::static_value1 ||
         md5_value2 != ros::message_traits::MD5Sum<T>::static_value2 )
     {
-      std::cout << type_name << ";" << md5_value1 << ";" << md5_value2 << std::endl;
+      std::cout << type_name << ";" << std::hex << md5_value1 << ";" << md5_value2 << std::endl;
       assert(false);
     }
 

@@ -24,6 +24,10 @@ int main(int argc, const char* argv[])
   node->remote_dispatch_handler_.addRemoteLink(1, link1);
   */
 
+  node->remote_dispatch_handler_.setNodeID(120);
+  node->remote_dispatch_handler_.accept("udp://127.0.0.1:5005");
+  node->remote_dispatch_handler_.connect(123, "udp://127.0.0.1:5006");
+
   // Run Node in main thread
   node->run();
   return 0;

@@ -6,6 +6,7 @@
 #include <boost/asio.hpp>
 #include <darc/serialized_message.h>
 #include <darc/node_link.h>
+#include <darc/node_link_manager.h>
 
 namespace darc
 {
@@ -15,20 +16,39 @@ class RemoteDispatchHandler
 private:
   boost::asio::io_service * io_service_;
   uint32_t node_id_;
+  NodeLinkManager link_manager_;
 
   // Function to dispatch locally
   typedef boost::function<void (const std::string& topic, SerializedMessage::ConstPtr)> LocalDispatchFunctionType;
   LocalDispatchFunctionType local_dispatch_function_;
 
   // Remote Connections
-  typedef std::map<uint32_t, NodeLink::Ptr > LinkListType;
-  LinkListType link_list_;
+  typedef std::map<uint32_t, NodeLink::Ptr > ConnectionListType;
+  ConnectionListType connection_list_;
+
+  typedef std::vector<NodeLink::Ptr> AcceptorListType;
+  AcceptorListType acceptor_list_;
 
 public:
   RemoteDispatchHandler( boost::asio::io_service * io_service ) :
     io_service_( io_service ),
-    node_id_(0xFFFF)
+    node_id_(0xFFFF),
+    link_manager_( io_service )
   {
+  }
+
+  void accept( const std::string& url )
+  {
+    NodeLink::Ptr link = link_manager_.accept(url);
+    acceptor_list_.push_back( link );
+    link->setReceiveCallback( boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this, _1, _2, _3) );
+  }
+
+  void connect( uint32_t remote_node_id, const std::string& url )
+  {
+    NodeLink::Ptr link = link_manager_.connect(remote_node_id, url);
+    connection_list_[remote_node_id] = link;
+    link->setNodeID( node_id_ );
   }
 
   // todo: right now it is set manually
@@ -43,20 +63,13 @@ public:
     local_dispatch_function_ = local_dispatch_function;
   }
 
-  void addRemoteLink( uint32_t remote_node_id, NodeLink::Ptr link )
-  {
-    link_list_[remote_node_id] = link;
-    link->setReceiveCallback( boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this, _1, _2, _3) );
-    link->setNodeID( node_id_ );
-  }
-
   // Triggered by asio post
   template<typename T>
   void serializeAndDispatch( const std::string topic, const boost::shared_ptr<const T> msg )
   {
     SerializedMessage::Ptr msg_s( new SerializedMessage(msg) );
     // todo find the right nodes to dispatch to
-    for( typename LinkListType::iterator it = link_list_.begin(); it != link_list_.end(); it++ )
+    for( typename ConnectionListType::iterator it = connection_list_.begin(); it != connection_list_.end(); it++ )
     {
       std::cout << "Dispatching to remote node: " << it->first << std::endl;
       it->second->dispatchToRemoteNode( it->first, topic, msg_s );
@@ -73,7 +86,7 @@ public:
 
   void receiveFromRemoteNode( uint32_t remote_node_id, const std::string& topic, SerializedMessage::ConstPtr msg_s )
   {
-    std::cout << "Received a message from node" << remote_node_id << " with topic " << topic << std::endl;
+    std::cout << "Received a message from node " << remote_node_id << " with topic " << topic << std::endl;
     // todo: check if we should route to other nodes
     local_dispatch_function_(topic, msg_s);    
   }

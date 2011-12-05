@@ -17,8 +17,8 @@ class LinkManagerAbstract
 public:
   virtual ~LinkManagerAbstract() {}
 
-  virtual void accept( const std::string& url ) = 0;
-  virtual void connect( const std::string& url ) = 0;
+  virtual darc::NodeLink::Ptr accept( const std::string& url ) = 0;
+  virtual darc::NodeLink::Ptr connect( uint32_t remote_node_id, const std::string& url ) = 0;
 
 };
 
@@ -39,12 +39,12 @@ public:
   {
   }
 
-  void accept( const std::string& url )
+  darc::NodeLink::Ptr accept( const std::string& url )
   {
     xp::smatch what;
     if( regex_match( url, what, url_rex_ ) )
     {
-      if( link_.get() != 0 )
+      if( link_.get() == 0 ) // only works for one acceptor
       {
 	link_.reset( new udp::Link( io_service_, boost::lexical_cast<int>(what[2]) ) );
       }
@@ -57,16 +57,17 @@ public:
     {
       std::cout << "Invalid URL: " << url << std::endl;
     }
+    return link_;
   }
 
-  void connect( const std::string& url )
+  darc::NodeLink::Ptr connect( uint32_t remote_node_id, const std::string& url )
   {
     xp::smatch what;
     if( regex_match( url, what, url_rex_ ) )
     {
       if( link_.get() != 0 )
       {
-	link_->addRemoteNode(1, what[1], what[2]);
+	link_->addRemoteNode(remote_node_id, what[1], what[2]);
       }
       else
       {
@@ -77,7 +78,7 @@ public:
     {
       std::cout << "Invalid URL: " << url << std::endl;
     }
-
+    return link_;
   }
 
 };

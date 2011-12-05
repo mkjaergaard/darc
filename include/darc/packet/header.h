@@ -34,7 +34,7 @@ struct Header
   size_t read( const uint8_t * data, size_t len )
   {
     sender_node_id = (uint32_t)data[0] + ((uint32_t)data[1] << 8) + ((uint32_t)data[2] << 16) + ((uint32_t)data[3] << 24);
-    payload_type = (PayloadType)data[5];
+    payload_type = (PayloadType)data[4];
     return size();
   }
 

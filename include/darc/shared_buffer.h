@@ -29,7 +29,7 @@ public:
 
   void addOffset(size_t offset)
   {
-    start_offset_ =+ offset;
+    start_offset_ += offset;
   }
 
   static SharedBuffer create( size_t size )

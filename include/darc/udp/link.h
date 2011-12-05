@@ -69,11 +69,11 @@ public:
     boost::array<uint8_t, 512> tmp_buf;
 
     size_t pos = header.write( tmp_buf.data(), tmp_buf.size() );
-    msg_header.write( tmp_buf.data() + pos, tmp_buf.size() - pos );
+    pos += msg_header.write( tmp_buf.data() + pos, tmp_buf.size() - pos );
 
     boost::array<boost::asio::const_buffer, 2> tmp_bufs = {{
-      boost::asio::buffer(tmp_buf),
-      boost::asio::buffer(msg->getBuffer().data(), msg->getBuffer().size())
+	boost::asio::buffer(tmp_buf.data(), pos),
+	boost::asio::buffer(msg->getBuffer().data(), msg->getBuffer().size())
       }};
     
     // Send Msg packet
