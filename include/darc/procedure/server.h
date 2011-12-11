@@ -19,7 +19,7 @@ public:
   Server(darc::Component * owner, const std::string& name, typename ServerImpl<T_Arg, T_Ret, T_Sta>::MethodType method) :
     impl_( new ServerImpl<T_Arg, T_Ret, T_Sta>(owner->getIOService(), name, method) )
   {
-    owner->getNode()->getProcedureManager()->registerServer(name, impl_);
+    owner->getNode()->getProcedureManager().registerServer(name, impl_);
   }
 
   ~Server()

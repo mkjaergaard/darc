@@ -1,5 +1,5 @@
-#ifndef __DARC_REMOTE_DISPATCH_HANDLER_H_INCLUDED__
-#define __DARC_REMOTE_DISPATCH_HANDLER_H_INCLUDED__
+#ifndef __DARC_PUBLISH_REMOTE_DISPATCH_HANDLER_H_INCLUDED__
+#define __DARC_PUBLISH_REMOTE_DISPATCH_HANDLER_H_INCLUDED__
 
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -10,8 +10,10 @@
 
 namespace darc
 {
+namespace publish
+{
 
-class RemoteDispatchHandler
+class RemoteDispatcherManager
 {
 private:
   boost::asio::io_service * io_service_;
@@ -30,7 +32,7 @@ private:
   AcceptorListType acceptor_list_;
 
 public:
-  RemoteDispatchHandler( boost::asio::io_service * io_service ) :
+  RemoteDispatcherManager( boost::asio::io_service * io_service ) :
     io_service_( io_service ),
     node_id_(0xFFFF),
     link_manager_( io_service )
@@ -41,7 +43,7 @@ public:
   {
     NodeLink::Ptr link = link_manager_.accept(url);
     acceptor_list_.push_back( link );
-    link->setReceiveCallback( boost::bind(&RemoteDispatchHandler::receiveFromRemoteNode, this, _1, _2, _3) );
+    link->setReceiveCallback( boost::bind(&RemoteDispatcherManager::receiveFromRemoteNode, this, _1, _2, _3) );
   }
 
   void connect( uint32_t remote_node_id, const std::string& url )
@@ -81,7 +83,7 @@ public:
   void postRemoteDispatch( const std::string& topic, const boost::shared_ptr<const T> msg )
   {
     // if( remote subscribers )
-    io_service_->post( boost::bind(&RemoteDispatchHandler::serializeAndDispatch<T>, this, topic, msg) );
+    io_service_->post( boost::bind(&RemoteDispatcherManager::serializeAndDispatch<T>, this, topic, msg) );
   }
 
   void receiveFromRemoteNode( uint32_t remote_node_id, const std::string& topic, SerializedMessage::ConstPtr msg_s )
@@ -93,6 +95,7 @@ public:
 
 };
 
+}
 }
 
 #endif

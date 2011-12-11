@@ -7,12 +7,9 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <darc/local_dispatcher.h>
-#include <darc/subscriber_impl.h>
-#include <darc/publisher_impl.h>
-#include <darc/remote_dispatch_handler.h>
-#include <darc/local_dispatch_handler.h>
 #include <darc/node_link_manager.h>
+#include <darc/publish/remote_dispatcher_manager.h>
+#include <darc/publish/local_dispatcher_manager.h>
 #include <darc/procedure/local_dispatcher_manager.h>
 
 namespace darc
@@ -32,13 +29,10 @@ public: // tmp
   boost::asio::posix::stream_descriptor key_input_;
   char key_pressed_;
 
-  RemoteDispatchHandler remote_dispatch_handler_;
-  LocalDispatchHandler local_dispatch_handler_;
+  publish::RemoteDispatcherManager remote_dispatch_handler_;
+  publish::LocalDispatcherManager local_dispatch_handler_;
 
-  typedef std::map<const std::string, boost::shared_ptr<LocalDispatcherAbstract> > LocalDispatcherListType;
-  LocalDispatcherListType local_dispatcher_list_;
-
-  procedure::LocalDispatcherManager::Ptr procedure_manager_;
+  procedure::LocalDispatcherManager procedure_manager_;
 
 public:
   Node() :
@@ -51,7 +45,7 @@ public:
     key_input_.assign( STDIN_FILENO );
     readKeyInput();
     // Link the dispatch handlers
-    remote_dispatch_handler_.setLocalDispatchFunction( boost::bind( &LocalDispatchHandler::receiveFromRemoteNode,
+    remote_dispatch_handler_.setLocalDispatchFunction( boost::bind( &publish::LocalDispatcherManager::receiveFromRemoteNode,
 								    &local_dispatch_handler_, _1, _2 ) );
   }
 
@@ -93,23 +87,12 @@ public:
     io_service_.run();
   }
 
-  // called by the Subscriber
-  // todo: not thread safe
-  template<typename T>
-  void registerSubscriber( const std::string& topic, boost::shared_ptr<SubscriberImpl<T> > sub )
+  publish::LocalDispatcherManager& getPublisherManager()
   {
-    local_dispatch_handler_.registerSubscriber<T>(topic, sub);
+    return local_dispatch_handler_;
   }
 
-  // Called by Publisher
-  // todo: not thread safe
-  template<typename T>
-  void registerPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
-  {
-    local_dispatch_handler_.registerPublisher<T>(topic, pub);
-  }
-
-  procedure::LocalDispatcherManager::Ptr getProcedureManager()
+  procedure::LocalDispatcherManager& getProcedureManager()
   {
     return procedure_manager_;
   }

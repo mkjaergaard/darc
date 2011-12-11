@@ -1,6 +1,6 @@
 #include <darc/node.h>
 #include <darc/component.h>
-#include <darc/publisher.h>
+#include <darc/publish/publisher.h>
 #include <darc/timer.h>
 #include <darc/procedure/server.h>
 #include <darc/procedure/client.h>
@@ -10,7 +10,7 @@
 class Component1 : public darc::Component
 {
 public:
-  darc::Publisher<std_msgs::String> pub_;
+  darc::publish::Publisher<std_msgs::String> pub_;
   darc::Timer timer_;
 
   void timerHandler( )

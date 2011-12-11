@@ -19,7 +19,7 @@ public:
   Client(darc::Component * owner, const std::string& name, typename ClientImpl<T_Arg, T_Ret, T_Sta>::ReturnHandlerType return_handler) :
     impl_( new ClientImpl<T_Arg, T_Ret, T_Sta>(owner->getIOService(), name, return_handler) )
   {
-    owner->getNode()->getProcedureManager()->registerClient(name, impl_);
+    owner->getNode()->getProcedureManager().registerClient(name, impl_);
   }
 
   ~Client()

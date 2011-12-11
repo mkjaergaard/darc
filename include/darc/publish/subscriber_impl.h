@@ -1,5 +1,5 @@
-#ifndef __DARC_SUBSCRIBER_IMPL_H_INCLUDED__
-#define __DARC_SUBSCRIBER_IMPL_H_INCLUDED__
+#ifndef __DARC_PUBLISHER_SUBSCRIBER_IMPL_H_INCLUDED__
+#define __DARC_PUBLISHER_SUBSCRIBER_IMPL_H_INCLUDED__
 
 #include <iostream>
 #include <boost/shared_ptr.hpp>
@@ -9,6 +9,8 @@
 #include <boost/bind.hpp>
 
 namespace darc
+{
+namespace publish
 {
 
 template<typename T>
@@ -45,6 +47,7 @@ private:
 
 };
 
+}
 }
 
 #endif

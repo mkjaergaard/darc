@@ -1,20 +1,22 @@
-#ifndef __DARC_LOCAL_DISPATCH_HANDLER_H_INCLUDED__
-#define __DARC_LOCAL_DISPATCH_HANDLER_H_INCLUDED__
+#ifndef __DARC_PUBLISH_LOCAL_DISPATCHER_MANAGER_H_INCLUDED__
+#define __DARC_PUBLISH_LOCAL_DISPATCHER_MANAGER_H_INCLUDED__
 
 #include <vector>
 #include <iostream>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
-#include <darc/local_dispatcher.h>
-#include <darc/subscriber_impl.h>
-#include <darc/publisher_impl.h>
-#include <darc/remote_dispatch_handler.h>
+#include <darc/publish/local_dispatcher.h>
+#include <darc/publish/subscriber_impl.h>
+#include <darc/publish/publisher_impl.h>
+#include <darc/publish/remote_dispatcher_manager.h>
 
 namespace darc
 {
+namespace publish
+{
 
-class LocalDispatchHandler
+class LocalDispatcherManager
 {
   typedef std::map<const std::string, boost::shared_ptr<LocalDispatcherAbstract> > LocalDispatcherListType;
   LocalDispatcherListType local_dispatcher_list_;
@@ -22,10 +24,10 @@ class LocalDispatchHandler
 public:
   // link stuff
   boost::asio::io_service * io_service_;
-  RemoteDispatchHandler * remote_dispatch_handler_;  // todo: use bind instead
+  RemoteDispatcherManager * remote_dispatch_handler_;  // todo: use bind instead
 
 public:
-  LocalDispatchHandler( boost::asio::io_service * io_service, RemoteDispatchHandler * remote_dispatch_handler ) :
+  LocalDispatcherManager( boost::asio::io_service * io_service, RemoteDispatcherManager * remote_dispatch_handler ) :
     io_service_(io_service),
     remote_dispatch_handler_(remote_dispatch_handler)
   {
@@ -81,6 +83,7 @@ private:
 
 };
 
+}
 }
 
 #endif

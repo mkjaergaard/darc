@@ -1,10 +1,12 @@
-#ifndef __DARC_PUBLISHER_IMPL_H_INCLUDED__
-#define __DARC_PUBLISHER_IMPL_H_INCLUDED__
+#ifndef __DARC_PUBLISH_PUBLISHER_IMPL_H_INCLUDED__
+#define __DARC_PUBLISH_PUBLISHER_IMPL_H_INCLUDED__
 
 #include <boost/shared_ptr.hpp>
-#include <darc/local_dispatcher.h>
+#include <darc/publish/local_dispatcher.h>
 
 namespace darc
+{
+namespace publish
 {
 
 template<typename T>
@@ -33,6 +35,7 @@ public:
 
 };
 
+}
 }
 
 #endif

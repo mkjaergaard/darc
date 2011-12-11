@@ -1,15 +1,17 @@
-#ifndef __DARC_LOCAL_DISPATCHER_H_INCLUDED___
-#define __DARC_LOCAL_DISPATCHER_H_INCLUDED___
+#ifndef __DARC_PUBLISH_LOCAL_DISPATCHER_H_INCLUDED___
+#define __DARC_PUBLISH_LOCAL_DISPATCHER_H_INCLUDED___
 
 #include <vector>
 #include <boost/smart_ptr.hpp>
 #include <boost/weak_ptr.hpp>
-#include <darc/local_dispatcher_abstract.h>
-#include <darc/subscriber_impl.h>
 #include <darc/serialized_message.h>
-#include <darc/remote_dispatch_handler.h>
+#include <darc/publish/local_dispatcher_abstract.h>
+#include <darc/publish/subscriber_impl.h>
+#include <darc/publish/remote_dispatcher_manager.h>
 
 namespace darc
+{
+namespace publish
 {
 
 template<typename T>
@@ -17,13 +19,13 @@ class LocalDispatcher : public LocalDispatcherAbstract
 {
 private:
   std::string topic_;
-  RemoteDispatchHandler * remote_dispatch_handler_;
+  RemoteDispatcherManager * remote_dispatch_handler_;
 
   typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType; // <-- weak_ptr
   SubscriberListType subscriber_list_;
 
 public:
-  LocalDispatcher( const std::string& topic, RemoteDispatchHandler * remote_dispatch_handler ) :
+  LocalDispatcher( const std::string& topic, RemoteDispatcherManager * remote_dispatch_handler ) :
     topic_(topic),
     remote_dispatch_handler_( remote_dispatch_handler ) {}
 
@@ -57,6 +59,7 @@ public:
 
 };
 
+}
 }
 
 #endif
