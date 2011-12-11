@@ -19,7 +19,7 @@ private:
   std::string topic_;
   RemoteDispatchHandler * remote_dispatch_handler_;
 
-  typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType;
+  typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType; // <-- weak_ptr
   SubscriberListType subscriber_list_;
 
 public:

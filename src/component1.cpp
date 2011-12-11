@@ -2,6 +2,8 @@
 #include <darc/component.h>
 #include <darc/publisher.h>
 #include <darc/timer.h>
+#include <darc/procedure/server.h>
+#include <darc/procedure/client.h>
 
 #include <std_msgs/String.h>
 

@@ -1,7 +1,7 @@
 #ifndef __DARC_SUBSCRIBER_H_INCLUDED__
 #define __DARC_SUBSCRIBER_H_INCLUDED__
 
-#include <boost/smart_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <darc/subscriber_impl.h>
 
 // Wraps a SubscriberImpl in a smart pointer so the lifetime of SubscriberImpl is dependent by the lifetime of Subscriber

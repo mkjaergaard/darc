@@ -13,6 +13,7 @@
 #include <darc/remote_dispatch_handler.h>
 #include <darc/local_dispatch_handler.h>
 #include <darc/node_link_manager.h>
+#include <darc/procedure/local_dispatcher_manager.h>
 
 namespace darc
 {
@@ -36,6 +37,8 @@ public: // tmp
 
   typedef std::map<const std::string, boost::shared_ptr<LocalDispatcherAbstract> > LocalDispatcherListType;
   LocalDispatcherListType local_dispatcher_list_;
+
+  procedure::LocalDispatcherManager::Ptr procedure_manager_;
 
 public:
   Node() :
@@ -104,6 +107,11 @@ public:
   void registerPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
   {
     local_dispatch_handler_.registerPublisher<T>(topic, pub);
+  }
+
+  procedure::LocalDispatcherManager::Ptr getProcedureManager()
+  {
+    return procedure_manager_;
   }
 
 };
