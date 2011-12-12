@@ -22,13 +22,15 @@ public:
 protected:
   boost::asio::io_service * io_service_;
   ReturnHandlerType return_handler_;
+  StatusHandlerType status_handler_;
 
   DispatchCallFunctionType dispatch_call_function_;
 
 public:
-  ClientImpl( boost::asio::io_service * io_service, const std::string& name, ReturnHandlerType return_handler ) :
+  ClientImpl( boost::asio::io_service * io_service, const std::string& name, ReturnHandlerType return_handler, StatusHandlerType status_handler ) :
     io_service_(io_service),
-    return_handler_(return_handler)
+    return_handler_(return_handler),
+    status_handler_(status_handler)
   {
   }
 
@@ -38,9 +40,38 @@ public:
     dispatch_call_function_ = dispatch_call_function;
   }
 
-  void call(boost::shared_ptr<T_Arg> argument)
+  // Called by darc::procedure::LocalDispatcher
+  void postStatus( boost::shared_ptr<T_Sta> msg )
+  {
+    io_service_->post( boost::bind( &ClientImpl::statusReceived, this, msg ) );
+  }
+
+  // Called by darc::procedure::LocalDispatcher
+  void postReturn( boost::shared_ptr<T_Sta> msg )
+  {
+    io_service_->post( boost::bind( &ClientImpl::returnReceived, this, msg ) );
+  }
+
+  void call( boost::shared_ptr<T_Arg> argument )
   {
     dispatch_call_function_(argument);
+  }
+
+private:
+  void statusReceived( boost::shared_ptr<T_Sta> msg )
+  {
+    if( status_handler_ )
+    {
+      status_handler_(msg);
+    }
+  }
+
+  void returnReceived( boost::shared_ptr<T_Ret> msg )
+  {
+    if( return_handler_ )
+    {
+      return_handler_(msg);
+    }
   }
 
 };

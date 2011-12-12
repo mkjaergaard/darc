@@ -39,6 +39,25 @@ public:
     dispatch_status_function_ = dispatch_status_function;
   }
 
+  // Called by darc::procedure::Dispatcher
+  void postCall( boost::shared_ptr<T_Arg>& argument )
+  {
+    io_service_->post( boost::bind( &ServerImpl::call, this, argument) );
+  }
+
+  // Called by components
+  void dispatchStatusMessage( boost::shared_ptr<T_Sta>& msg )
+  {
+    dispatchStatusMessageLocally(msg);
+  }
+
+private:
+  void call( boost::shared_ptr<T_Arg>& argument )
+  {
+    assert(method_);
+    method_( argument );
+  }
+
 };
 
 }

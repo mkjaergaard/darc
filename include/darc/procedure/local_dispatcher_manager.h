@@ -23,15 +23,17 @@ private:
 
 public:
   template<typename T_Arg, typename T_Ret, typename T_Sta>
-  void registerClient( typename ClientImpl<T_Arg, T_Ret, T_Sta>::Ptr )
+  void registerClient( const std::string& name, typename ClientImpl<T_Arg, T_Ret, T_Sta>::Ptr client)
   {
-    
+    typename LocalDispatcher<T_Arg, T_Ret, T_Sta>::Ptr dispatcher = getLocalDispatcher<T_Arg, T_Ret, T_Sta>( name );
+    dispatcher->registerClient( client );
   }
 
   template<typename T_Arg, typename T_Ret, typename T_Sta>
-  void registerServer( typename ServerImpl<T_Arg, T_Ret, T_Sta>::Ptr )
+  void registerServer( const std::string name, typename ServerImpl<T_Arg, T_Ret, T_Sta>::Ptr server )
   {
-    
+    typename LocalDispatcher<T_Arg, T_Ret, T_Sta>::Ptr dispatcher = getLocalDispatcher<T_Arg, T_Ret, T_Sta>( name );
+    dispatcher->registerServer( server );
   }
 
 private:

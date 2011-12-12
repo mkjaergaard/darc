@@ -35,7 +35,6 @@ public:
 
   void dispatch( MsgPtrType &msg)
   {
-    //typename MsgWrapped<T>::Ptr msg_wt = boost::dynamic_pointer_cast<MsgWrapped<T> >( msg_w );
     io_service_->post( boost::bind( &SubscriberImpl::receive, this, msg ) );
   }
 

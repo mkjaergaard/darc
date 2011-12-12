@@ -17,6 +17,7 @@ include_directories(${ROS_INCLUDE_DIRS})
 
 #
 set(CMAKE_CXX_FLAGS "-Wall -g")
+#set(CMAKE_CXX_FLAGS "-Os")
 
 add_executable( node1 src/component1.cpp src/component2 src/node1.cpp src/component_register.cpp)
 target_link_libraries(node1 ${Boost_LIBRARIES} ${ROS_LIBRARIES})

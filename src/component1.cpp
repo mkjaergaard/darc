@@ -3,7 +3,6 @@
 #include <darc/publish/publisher.h>
 #include <darc/timer.h>
 #include <darc/procedure/server.h>
-#include <darc/procedure/client.h>
 
 #include <std_msgs/String.h>
 
@@ -11,6 +10,7 @@ class Component1 : public darc::Component
 {
 public:
   darc::publish::Publisher<std_msgs::String> pub_;
+  darc::procedure::Server<std_msgs::String, std_msgs::String, std_msgs::String> procedure_server_;
   darc::Timer timer_;
 
   void timerHandler( )
@@ -21,9 +21,16 @@ public:
     pub_.publish(msg);
   }
   
-  Component1( const std::string& instance_name, darc::Node::Ptr node ) : darc::Component(instance_name, node),
-		    pub_(this, "test"),
-		    timer_(this, boost::bind(&Component1::timerHandler, this), boost::posix_time::seconds(2))
+  void procedureCall( boost::shared_ptr<std_msgs::String> msg )
+  {
+    std::cout << "Procedure Call" << std::endl;
+  }
+
+  Component1( const std::string& instance_name, darc::Node::Ptr node ) : 
+    darc::Component(instance_name, node),
+    pub_(this, "test"),
+    procedure_server_( this, "some_proc", boost::bind(&Component1::procedureCall, this, _1) ),
+    timer_(this, boost::bind(&Component1::timerHandler, this), boost::posix_time::seconds(2))
   {
   }
 
