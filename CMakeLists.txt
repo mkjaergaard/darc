@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(darc)
 
-set(CMAKE_PREFIX_PATH /tmp/wgbuild)
+set(CMAKE_PREFIX_PATH /opt/ros/fuerte)
 
 if(FILT)
   set(CMAKE_CXX_COMPILER "/u/mkjargaard/usr/bin/g++")
@@ -9,7 +9,7 @@ endif()
 
 find_package(catkin)
 find_package(Boost COMPONENTS system thread)
-find_package(ROS 12.04 COMPONENTS cpp_common rostime roscpp_traits roscpp_serialization sensor_msgs std_msgs)
+find_package(ROS REQUIRED COMPONENTS cpp_common rostime roscpp_traits roscpp_serialization sensor_msgs std_msgs)
 
 
 include_directories(include)
