@@ -6,7 +6,6 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <darc/node_link_manager.h>
 #include <darc/publish/remote_dispatcher_manager.h>
 #include <darc/publish/local_dispatcher_manager.h>
@@ -15,13 +14,12 @@
 namespace darc
 {
 
-class Node : public boost::enable_shared_from_this<Node>
+class Node
 {
 public:
   typedef boost::shared_ptr<Node> Ptr;
   
 private:
-public: // tmp
   boost::asio::io_service io_service_;
 
   //  boost::asio::signal_set signals_; not in boost 1.40

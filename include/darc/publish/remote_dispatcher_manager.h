@@ -17,7 +17,6 @@ class RemoteDispatcherManager
 {
 private:
   boost::asio::io_service * io_service_;
-  uint32_t node_id_;
   NodeLinkManager link_manager_;
 
   // Function to dispatch locally
@@ -34,30 +33,23 @@ private:
 public:
   RemoteDispatcherManager( boost::asio::io_service * io_service ) :
     io_service_( io_service ),
-    node_id_(0xFFFF),
     link_manager_( io_service )
   {
   }
 
-  void accept( const std::string& url )
+  void packetReceiveHandler( SharedBuffer buffer, std::size_t data_len )
   {
-    NodeLink::Ptr link = link_manager_.accept(url);
-    acceptor_list_.push_back( link );
-    link->setReceiveCallback( boost::bind(&RemoteDispatcherManager::receiveFromRemoteNode, this, _1, _2, _3) );
-  }
+    // Parse Msg Packet
+    packet::Message msg_packet;
+    size_t msg_header_size = msg_packet.read( buffer.data(), data_len );
+    buffer.addOffset( msg_header_size );
 
-  void connect( uint32_t remote_node_id, const std::string& url )
-  {
-    NodeLink::Ptr link = link_manager_.connect(remote_node_id, url);
-    connection_list_[remote_node_id] = link;
-    link->setNodeID( node_id_ );
-  }
+    // Extract Serialized Message
+    SerializedMessage::Ptr msg_s( new SerializedMessage( buffer, data_len - msg_header_size ) );
 
-  // todo: right now it is set manually
-  void setNodeID( uint32_t node_id )
-  {
-    node_id_ = node_id;
-    // todo: update alle existing links
+    // Dispatch to local subscribers
+    std::cout << "Received a message for topic " << msg_packet.topic << std::endl;
+    local_dispatch_function_( msg_packet.topic, msg_s );
   }
 
   void setLocalDispatchFunction( LocalDispatchFunctionType local_dispatch_function )
@@ -84,13 +76,6 @@ public:
   {
     // if( remote subscribers )
     io_service_->post( boost::bind(&RemoteDispatcherManager::serializeAndDispatch<T>, this, topic, msg) );
-  }
-
-  void receiveFromRemoteNode( uint32_t remote_node_id, const std::string& topic, SerializedMessage::ConstPtr msg_s )
-  {
-    std::cout << "Received a message from node " << remote_node_id << " with topic " << topic << std::endl;
-    // todo: check if we should route to other nodes
-    local_dispatch_function_(topic, msg_s);    
   }
 
 };

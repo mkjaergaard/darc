@@ -92,24 +92,7 @@ public:
     else
     {
       std::cout << "Received: " << size << " on port " << local_port_ << std::endl;
-
-      packet::Header header;
-      header.read( recv_buffer.data(), size );
-      
-      // switch on packet type
-      if (header.payload_type == packet::Header::MSG_PACKET)
-      {
-	recv_buffer.addOffset( packet::Header::size() );
-	packet::Message msg_packet;
-	size_t msg_header_size = msg_packet.read( recv_buffer.data(), size - packet::Header::size() );
-	recv_buffer.addOffset( msg_header_size );
-	SerializedMessage::Ptr msg_s( new SerializedMessage( recv_buffer , size - packet::Header::size() - msg_header_size ) );
-	receive_callback_( header.sender_node_id, msg_packet.topic, msg_s );
-      }
-      else
-      {
-	std::cout << "Unknown packet type received??" << std::endl;
-      }
+      receive_callback_( recv_buffer, size );
     }
     startReceive();
   }

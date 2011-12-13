@@ -3,9 +3,7 @@ project(darc)
 
 set(CMAKE_PREFIX_PATH /opt/ros/fuerte)
 
-if(FILT)
-  set(CMAKE_CXX_COMPILER "/u/mkjargaard/usr/bin/g++")
-endif()
+#set(CMAKE_CXX_COMPILER clang)
 
 find_package(catkin)
 find_package(Boost COMPONENTS system thread)

@@ -11,11 +11,12 @@ namespace darc
 class NodeLink
 {
 protected:
-  typedef boost::function<void (uint32_t, const std::string&, SerializedMessage::ConstPtr)> ReceiveCallbackType;
+  //  typedef boost::function<void (uint32_t, const std::string&, SerializedMessage::ConstPtr)> ReceiveCallbackType;
+  typedef boost::function<void (SharedBuffer, std::size_t)> ReceiveCallbackType;
   ReceiveCallbackType receive_callback_;
   uint32_t node_id_;
 
-  NodeLink() : node_id_(0xFFFFFFFF)
+  NodeLink() : node_id_( 0xFFFFFF )
   {
   }
 
