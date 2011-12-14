@@ -27,7 +27,8 @@ private:
   
   unsigned int local_port_;
 
-  std::map<uint32_t, boost::asio::ip::udp::endpoint> endpoints_;
+  typedef std::map<uint32_t, boost::asio::ip::udp::endpoint> EndpointsType;
+  EndpointsType endpoints_;
 
 public:
   Link(boost::asio::io_service * io_service, unsigned int local_port):
@@ -56,12 +57,33 @@ public:
     endpoints_[remote_node_id] = *resolver.resolve(query);
   }
 
+  void sendPacket( packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
+  {
+    // Create Header
+    packet::Header header(node_id_, type);
+
+    boost::array<uint8_t, 512> header_buffer;
+
+    std::size_t header_length = header.write( header_buffer.data(), header_buffer.size() );
+
+    boost::array<boost::asio::const_buffer, 2> combined_buffers = {{
+	boost::asio::buffer(header_buffer.data(), header_length),
+	boost::asio::buffer(buffer->getBuffer().data(), buffer->getBuffer().size())
+      }};
+    
+    // todo: to do an async send_to, msg must be kept alive until the send is finished. How to do this?
+    //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....
+    // todo: right now we send to everyone, since routing is not added
+    for( EndpointsType::iterator it = endpoints_.begin(); it != endpoints_.end(); it++ )
+    {
+      socket_.send_to(combined_buffers, (*it));
+    }
+  }
+  /*
   // impl of virtual
   void dispatchToRemoteNode( uint32_t remote_node_id, const std::string& topic, SerializedMessage::ConstPtr msg)
   {
-    // todo: to do an async send_to, msg must be kept alive until the send is finished. How to do this?
-    //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....
-    //       Dude.... This is all messy right now....
+
 
     // Send Header
     packet::Header header(node_id_, packet::Header::MSG_PACKET);
@@ -81,7 +103,7 @@ public:
 
     socket_.send_to(tmp_bufs, endpoints_[remote_node_id]);
   }
-
+  */
  public:
   void handleReceive(SharedBuffer recv_buffer, const boost::system::error_code& error, std::size_t size)
   {
