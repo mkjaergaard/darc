@@ -46,6 +46,15 @@ public:
     manager_map_["udp"] = &udp_manager_;
   }
 
+  void sendPacket( packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
+  {
+    // todo: right now we send to all nodes.... should add routing functionality instead
+    for( ConnectionListType::iterator it = connection_list_.begin(); it != connection_list_.end(); it++ )
+    {
+      it->second->sendPacket( it->first, type, buffer, data_len );
+    }  
+  }
+
   void registerPacketReceivedHandler( packet::Header::PayloadType type, PacketReceivedHandlerType handler )
   {
     packet_received_handlers_[type] = handler;

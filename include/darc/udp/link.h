@@ -57,7 +57,7 @@ public:
     endpoints_[remote_node_id] = *resolver.resolve(query);
   }
 
-  void sendPacket( packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
+  void sendPacket( uint32_t remote_node_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
   {
     // Create Header
     packet::Header header(node_id_, type);
@@ -68,16 +68,12 @@ public:
 
     boost::array<boost::asio::const_buffer, 2> combined_buffers = {{
 	boost::asio::buffer(header_buffer.data(), header_length),
-	boost::asio::buffer(buffer->getBuffer().data(), buffer->getBuffer().size())
+	boost::asio::buffer(buffer.data(), data_len)
       }};
     
     // todo: to do an async send_to, msg must be kept alive until the send is finished. How to do this?
     //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....
-    // todo: right now we send to everyone, since routing is not added
-    for( EndpointsType::iterator it = endpoints_.begin(); it != endpoints_.end(); it++ )
-    {
-      socket_.send_to(combined_buffers, (*it));
-    }
+    socket_.send_to(combined_buffers, endpoints_[remote_node_id]);
   }
   /*
   // impl of virtual

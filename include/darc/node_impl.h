@@ -26,7 +26,7 @@ private:
   boost::asio::posix::stream_descriptor key_input_;
   char key_pressed_;
 
-  publish::RemoteDispatcherManager remote_dispatch_handler_;
+  publish::RemoteDispatcherManager remote_dispatch_manager_;
   publish::LocalDispatcherManager publish_manager_;
 
   procedure::LocalDispatcherManager procedure_manager_;
@@ -37,20 +37,22 @@ public:
   NodeImpl() :
     //    signals_(io_service, SIGTERM, SIGINT), not in boost 1.40
     key_input_(io_service_),
-    remote_dispatch_handler_(&io_service_),
-    publish_manager_(&io_service_, &remote_dispatch_handler_),
+    remote_dispatch_manager_(&io_service_),
+    publish_manager_(&io_service_, &remote_dispatch_manager_),
     node_link_manager_(&io_service_)
   {
     // signals_.async_wait(boost::bind(&Node::quitHandler, this)); not in boost 1.40
     key_input_.assign( STDIN_FILENO );
     readKeyInput();
     // Link the dispatch handlers
-    remote_dispatch_handler_.setLocalDispatchFunction( boost::bind( &publish::LocalDispatcherManager::receiveFromRemoteNode,
+    remote_dispatch_manager_.setLocalDispatchFunction( boost::bind( &publish::LocalDispatcherManager::receiveFromRemoteNode,
 								    &publish_manager_, _1, _2 ) );
-    // Register
+    // Register Publish Stuff
     node_link_manager_.registerPacketReceivedHandler( packet::Header::MSG_PACKET,
 						      boost::bind( &publish::RemoteDispatcherManager::packetReceiveHandler,
-								   &remote_dispatch_handler_, _1, _2 ) );
+								   &remote_dispatch_manager_, _1, _2 ) );
+    remote_dispatch_manager_.setSendToNodeFunction( boost::bind( &NodeLinkManager::sendPacket,
+								 &node_link_manager_, _1, _2, _3 ) );
   }
 
 private:

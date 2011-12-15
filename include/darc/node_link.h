@@ -4,6 +4,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <darc/serialized_message.h>
+#include <darc/packet/header.h>
 
 namespace darc
 {
@@ -11,7 +12,6 @@ namespace darc
 class NodeLink
 {
 protected:
-  //  typedef boost::function<void (uint32_t, const std::string&, SerializedMessage::ConstPtr)> ReceiveCallbackType;
   typedef boost::function<void (SharedBuffer, std::size_t)> ReceiveCallbackType;
   ReceiveCallbackType receive_callback_;
   uint32_t node_id_;
@@ -32,7 +32,7 @@ public:
     node_id_ = node_id;
   }
 
-  virtual void dispatchToRemoteNode( uint32_t remote_node_id, const std::string& topic, SerializedMessage::ConstPtr msg ) = 0;
+  virtual void sendPacket( uint32_t remote_node_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len ) = 0;
 
   void setReceiveCallback( ReceiveCallbackType receive_callback )
   {
