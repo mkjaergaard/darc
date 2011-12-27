@@ -1,0 +1,13 @@
+Catkin-ProjectName: darc
+Description: 
+Author: Morten Kjaergaard <mkjargaard@willowgarage.com>
+Maintainer: Morten Kjaergaard <mkjargaard@willowgarage.com>
+Homepage: 
+Vcs-Git: git://github.com/mkjargaard/darc.git
+
+Version: 0.0.1
+
+Depends: catkin
+
+Catkin-CopyrightType: willowgarage
+Catkin-DebRulesType: python_distutils
