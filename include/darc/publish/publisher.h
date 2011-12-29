@@ -3,7 +3,7 @@
 
 #include <boost/smart_ptr.hpp>
 #include <darc/node.h>
-#include <darc/component.h>
+#include <darc/owner.h>
 #include <darc/publish/publisher_impl.h>
 
 namespace darc
@@ -18,7 +18,7 @@ protected:
   boost::shared_ptr<PublisherImpl<T> > impl_;
 
 public:
-  Publisher(darc::Component* owner, const std::string& topic) :
+  Publisher(darc::Owner* owner, const std::string& topic) :
   impl_( new PublisherImpl<T> )
   {
     owner->getNode()->getPublisherManager().registerPublisher<T>(topic, impl_);

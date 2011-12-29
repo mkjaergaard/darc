@@ -3,6 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <darc/procedure/client_impl.h>
+#include <darc/owner.h>
 
 namespace darc
 {
@@ -16,7 +17,7 @@ private:
   typename ClientImpl<T_Arg, T_Ret, T_Sta>::Ptr impl_;
 
 public:
-  Client(darc::Component * owner,
+  Client(darc::Owner * owner,
 	 const std::string& name,
 	 typename ClientImpl<T_Arg, T_Ret, T_Sta>::ReturnHandlerType return_handler,
 	 typename ClientImpl<T_Arg, T_Ret, T_Sta>::StatusHandlerType status_handler) :

@@ -3,6 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <darc/publish/subscriber_impl.h>
+#include <darc/owner.h>
 
 // Wraps a SubscriberImpl in a smart pointer so the lifetime of SubscriberImpl is dependent by the lifetime of Subscriber
 
@@ -20,8 +21,8 @@ private:
   typedef boost::function<void( boost::shared_ptr<T> )> CallbackType;
 
 public:
-  Subscriber(darc::Component * owner, const std::string& topic, CallbackType callback) :
-  impl_( new SubscriberImpl<T>( owner->getIOService(), topic, callback ) )
+  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback) :
+    impl_( new SubscriberImpl<T>( owner->getIOService(), topic, callback ) )
   {
     owner->getNode()->getPublisherManager().registerSubscriber(topic, impl_);
   }

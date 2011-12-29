@@ -3,6 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <darc/procedure/server_impl.h>
+#include <darc/owner.h>
 
 namespace darc
 {
@@ -16,7 +17,7 @@ private:
   typename ServerImpl<T_Arg, T_Ret, T_Sta>::Ptr impl_;
 
 public:
-  Server(darc::Component * owner, const std::string name, typename ServerImpl<T_Arg, T_Ret, T_Sta>::MethodType method) :
+  Server(darc::Owner * owner, const std::string name, typename ServerImpl<T_Arg, T_Ret, T_Sta>::MethodType method) :
     impl_( new ServerImpl<T_Arg, T_Ret, T_Sta>(owner->getIOService(), name, method) )
   {
     owner->getNode()->getProcedureManager().registerServer<T_Arg, T_Ret, T_Sta>(name, impl_);
