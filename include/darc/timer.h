@@ -14,6 +14,7 @@ class Timer : public boost::asio::deadline_timer
   CallbackType callback_;
 
   boost::posix_time::time_duration period_;
+  boost::posix_time::ptime expected_deadline_;
 
 public:
   Timer(darc::Component * owner, CallbackType callback, boost::posix_time::time_duration period) :
@@ -21,12 +22,17 @@ public:
     callback_(callback),
     period_(period)
   {
+    expected_deadline_ = boost::posix_time::microsec_clock::universal_time() + period;
     async_wait( boost::bind( &Timer::handler, this ) );
   }
 
   void handler()// const boost::system::error_code& error )
   {
-    expires_from_now( period_ );
+    boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - expected_deadline_;
+    expected_deadline_ += period_;
+    //    std::cout << diff.total_milliseconds() << std::endl;
+    expires_from_now( period_ - diff );
+
     async_wait( boost::bind( &Timer::handler, this ) );
     callback_();
   }
