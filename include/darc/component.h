@@ -4,11 +4,12 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <darc/node.h>
+#include <darc/owner.h>
 
 namespace darc
 {
 
-class Component
+class Component : public Owner
 {
 public:
   typedef boost::shared_ptr<Component> Ptr;
@@ -26,11 +27,13 @@ protected:
   }
 
 public:
+  // impl of darc::Owner
   boost::asio::io_service * getIOService()
   {
     return &io_service_;
   }
 
+  // impl of darc::Owner
   boost::shared_ptr<Node> getNode()
   {
     return node_;
