@@ -46,7 +46,6 @@ public:
     SerializedMessage::Ptr msg_s( new SerializedMessage( buffer, data_len - msg_header_size ) );
 
     // Dispatch to local subscribers
-    std::cout << "Received a message for topic " << msg_packet.topic << std::endl;
     local_dispatch_function_( msg_packet.topic, msg_s );
   }
 

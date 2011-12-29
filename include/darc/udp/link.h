@@ -83,12 +83,12 @@ public:
 
     // Send Header
     packet::Header header(node_id_, packet::Header::MSG_PACKET);
-    packet::Message msg_header(topic);
+
 
     boost::array<uint8_t, 512> tmp_buf;
 
     size_t pos = header.write( tmp_buf.data(), tmp_buf.size() );
-    pos += msg_header.write( tmp_buf.data() + pos, tmp_buf.size() - pos );
+
 
     boost::array<boost::asio::const_buffer, 2> tmp_bufs = {{
 	boost::asio::buffer(tmp_buf.data(), pos),
@@ -109,7 +109,7 @@ public:
     }
     else
     {
-      std::cout << "Received: " << size << " on port " << local_port_ << std::endl;
+      //      std::cout << "Received: " << size << " on port " << local_port_ << std::endl;
       receive_callback_( recv_buffer, size );
     }
     startReceive();
