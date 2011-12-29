@@ -7,7 +7,7 @@ Vcs-Git: git://github.com/mkjargaard/darc.git
 
 Version: 0.0.1
 
-Depends: catkin
+Depends: catkin, roscpp_core
 
 Catkin-CopyrightType: willowgarage
 Catkin-DebRulesType: python_distutils
