@@ -38,7 +38,7 @@ public:
   void dispatchMessage( boost::shared_ptr<T> msg )
   {
     dispatchMessageLocally(msg);
-    //    remote_dispatch_handler_->postRemoteDispatch<T>(topic_, msg);
+    remote_dispatch_handler_->postRemoteDispatch<T>(topic_, msg);
   }
 
   void dispatchMessageLocally( boost::shared_ptr<T> msg )
