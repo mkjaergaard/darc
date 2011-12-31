@@ -49,14 +49,16 @@ public:
     }
     else
     {
+      std::cout << "Component " << instance_name << " not registered" << std::endl;
       assert(0);
-      darc::Component::Ptr n;
-      return n;
+      return darc::Component::Ptr();
     }
   }
 
 };
 
 }
+
+#define DARC_REGISTER_COMPONENT(classname) namespace classname##_reg { static int dummy = darc::ComponentRegister::registerComponent( #classname, boost::bind(&darc::Component::instantiate<classname>, _1, _2) ); }
 
 #endif
