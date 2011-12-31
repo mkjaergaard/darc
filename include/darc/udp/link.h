@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2011, Prevas A/S
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
  *     * Neither the name of Prevas A/S nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -56,10 +56,10 @@ public:
 
 private:
   boost::asio::io_service * io_service_;
-  
+
   boost::asio::ip::udp::socket socket_;
   boost::asio::ip::udp::endpoint remote_endpoint_;
-  
+
   unsigned int local_port_;
 
   typedef std::map<uint32_t, boost::asio::ip::udp::endpoint> EndpointsType;
@@ -73,7 +73,7 @@ public:
   {
     startReceive();
   }
-  
+
   void startReceive()
   {
     SharedBuffer recv_buffer = SharedBuffer::create(4098);
@@ -105,7 +105,7 @@ public:
 	boost::asio::buffer(header_buffer.data(), header_length),
 	boost::asio::buffer(buffer.data(), data_len)
       }};
-    
+
     // todo: to do an async send_to, msg must be kept alive until the send is finished. How to do this?
     //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....
     socket_.send_to(combined_buffers, endpoints_[remote_node_id]);
@@ -129,7 +129,7 @@ public:
 	boost::asio::buffer(tmp_buf.data(), pos),
 	boost::asio::buffer(msg->getBuffer().data(), msg->getBuffer().size())
       }};
-    
+
     // Send Msg packet
 
     socket_.send_to(tmp_bufs, endpoints_[remote_node_id]);

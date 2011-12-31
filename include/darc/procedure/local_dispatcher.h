@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2011, Prevas A/S
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  *       notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above copyright
@@ -13,7 +13,7 @@
  *     * Neither the name of Prevas A/S nor the names of its
  *       contributors may be used to endorse or promote products derived from
  *       this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -54,7 +54,7 @@ public:
 
 private:
   std::string name_;
-  
+
   typedef std::vector< typename ClientImpl<T_Arg, T_Ret, T_Sta>::Ptr > ClientListType; // <-- weak_ptr
 
   typename ServerImpl<T_Arg, T_Ret, T_Sta>::Ptr server_;
@@ -118,7 +118,7 @@ private:
 	 it++)
     {
       (*it)->postReturn(msg);
-    }    
+    }
   }
 
 };
