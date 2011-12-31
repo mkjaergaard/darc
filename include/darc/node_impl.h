@@ -125,7 +125,7 @@ private:
 
   void run()
   {
-    std::cout << "Running Node" << std::endl;
+    std::cout << "Running Node with ID " << node_link_manager_.getNodeID() << std::endl;
     io_service_.run();
   }
 

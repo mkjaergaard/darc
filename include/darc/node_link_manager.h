@@ -117,6 +117,11 @@ public:
     // todo: update alle existing links
   }
 
+  uint32_t getNodeID()
+  {
+    return node_id_;
+  }
+
 private:
   void receiveHandler( SharedBuffer buffer, std::size_t data_len )
   {
