@@ -15,7 +15,7 @@ include_directories(${ROS_INCLUDE_DIRS})
 set(CMAKE_CXX_FLAGS "-Os")
 
 add_library(darc SHARED src/node.cpp src/component_register.cpp)
-target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES})
+target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES} -ldl)
 
 install_cmake_infrastructure(darc
   VERSION 0.0.1
