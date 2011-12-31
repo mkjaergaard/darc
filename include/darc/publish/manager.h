@@ -33,25 +33,26 @@
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISH_LOCAL_DISPATCHER_MANAGER_H_INCLUDED__
-#define __DARC_PUBLISH_LOCAL_DISPATCHER_MANAGER_H_INCLUDED__
+#ifndef __DARC_PUBLISH_MANAGER_H_INCLUDED__
+#define __DARC_PUBLISH_MANAGER_H_INCLUDED__
 
 #include <vector>
 #include <iostream>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
+#include <darc/node_link_manager.h>
 #include <darc/publish/local_dispatcher.h>
+#include <darc/publish/remote_dispatcher.h>
 #include <darc/publish/subscriber_impl.h>
 #include <darc/publish/publisher_impl.h>
-#include <darc/publish/remote_dispatcher_manager.h>
 
 namespace darc
 {
 namespace publish
 {
 
-class LocalDispatcherManager
+class Manager
 {
   typedef std::map<const std::string, boost::shared_ptr<LocalDispatcherAbstract> > LocalDispatcherListType;
   LocalDispatcherListType local_dispatcher_list_;
@@ -59,13 +60,21 @@ class LocalDispatcherManager
 public:
   // link stuff
   boost::asio::io_service * io_service_;
-  RemoteDispatcherManager * remote_dispatch_handler_;  // todo: use bind instead
+  RemoteDispatcher remote_dispatcher_;
 
 public:
-  LocalDispatcherManager( boost::asio::io_service * io_service, RemoteDispatcherManager * remote_dispatch_handler ) :
+  Manager( boost::asio::io_service * io_service, NodeLinkManager * node_link_manager ) :
     io_service_(io_service),
-    remote_dispatch_handler_(remote_dispatch_handler)
+    remote_dispatcher_(io_service)
   {
+    remote_dispatcher_.setLocalDispatchFunction( boost::bind( &publish::Manager::receiveFromRemoteNode,
+							      this, _1, _2 ) );
+    node_link_manager->registerPacketReceivedHandler( packet::Header::MSG_PACKET,
+						      boost::bind( &publish::RemoteDispatcher::packetReceiveHandler,
+								   &remote_dispatcher_, _1, _2 ) );
+    remote_dispatcher_.setSendToNodeFunction( boost::bind( &NodeLinkManager::sendPacket,
+							   node_link_manager, _1, _2, _3 ) );
+
   }
 
   // called by the Subscriber
@@ -103,7 +112,7 @@ private:
     LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
     if( elem == local_dispatcher_list_.end() )
     {
-      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( topic, remote_dispatch_handler_ ) );
+      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( topic, &remote_dispatcher_ ) );
       local_dispatcher_list_[ topic ] = disp;
       return disp;
     }

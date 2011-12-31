@@ -42,7 +42,7 @@
 #include <darc/serialized_message.h>
 #include <darc/publish/local_dispatcher_abstract.h>
 #include <darc/publish/subscriber_impl.h>
-#include <darc/publish/remote_dispatcher_manager.h>
+#include <darc/publish/remote_dispatcher.h>
 
 namespace darc
 {
@@ -54,15 +54,17 @@ class LocalDispatcher : public LocalDispatcherAbstract
 {
 private:
   std::string topic_;
-  RemoteDispatcherManager * remote_dispatch_handler_;
+  RemoteDispatcher * remote_dispatcher_;
 
   typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType; // <-- weak_ptr
   SubscriberListType subscriber_list_;
 
 public:
-  LocalDispatcher( const std::string& topic, RemoteDispatcherManager * remote_dispatch_handler ) :
+  LocalDispatcher( const std::string& topic, RemoteDispatcher * remote_dispatcher ) :
     topic_(topic),
-    remote_dispatch_handler_( remote_dispatch_handler ) {}
+    remote_dispatcher_( remote_dispatcher )
+  {
+  }
 
   void registerSubscriber( boost::shared_ptr<SubscriberImpl<T> > sub )
   {
@@ -73,7 +75,7 @@ public:
   void dispatchMessage( boost::shared_ptr<T> msg )
   {
     dispatchMessageLocally(msg);
-    remote_dispatch_handler_->postRemoteDispatch<T>(topic_, msg);
+    remote_dispatcher_->postRemoteDispatch<T>(topic_, msg);
   }
 
   void dispatchMessageLocally( boost::shared_ptr<T> msg )

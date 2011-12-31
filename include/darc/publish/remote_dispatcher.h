@@ -49,7 +49,7 @@ namespace darc
 namespace publish
 {
 
-class RemoteDispatcherManager
+class RemoteDispatcher
 {
 private:
   boost::asio::io_service * io_service_;
@@ -64,7 +64,7 @@ private:
   SendToNodeFunctionType send_to_node_function_;
 
 public:
-  RemoteDispatcherManager( boost::asio::io_service * io_service ) :
+  RemoteDispatcher( boost::asio::io_service * io_service ) :
     io_service_( io_service ),
     link_manager_( io_service )
   {
@@ -126,7 +126,7 @@ public:
   void postRemoteDispatch( const std::string& topic, const boost::shared_ptr<const T> msg )
   {
     // if( remote subscribers )
-    io_service_->post( boost::bind(&RemoteDispatcherManager::serializeAndDispatch<T>, this, topic, msg) );
+    io_service_->post( boost::bind(&RemoteDispatcher::serializeAndDispatch<T>, this, topic, msg) );
   }
 
 };

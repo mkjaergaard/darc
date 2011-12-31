@@ -28,13 +28,13 @@
  */
 
 /**
- * DARC LocalDispatcherManager class
+ * DARC Manager class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PROCEDURE_LOCAL_DISPATCHER_MANAGER_INCLUDED__
-#define __DARC_PROCEDURE_LOCAL_DISPATCHER_MANAGER_INCLUDED__
+#ifndef __DARC_PROCEDURE_MANAGER_INCLUDED__
+#define __DARC_PROCEDURE_MANAGER_INCLUDED__
 
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -47,10 +47,10 @@ namespace darc
 namespace procedure
 {
 
-class LocalDispatcherManager
+class Manager
 {
 public:
-  typedef boost::shared_ptr<LocalDispatcherManager> Ptr;
+  typedef boost::shared_ptr<Manager> Ptr;
 
 private:
   typedef std::map< const std::string, LocalDispatcherAbstract::Ptr > DispatcherListType;
