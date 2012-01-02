@@ -22,3 +22,5 @@ install_cmake_infrastructure(darc
   INCLUDE_DIRS include
   LIBRARIES darc
   )
+
+add_subdirectory(pybindings)
