@@ -97,6 +97,8 @@ public:
 
 };
 
+typedef boost::shared_ptr<Component> ComponentPtr;
+
 }
 
 // Include here so its available for the components
