@@ -28,57 +28,71 @@
  */
 
 /**
- * DARC Timer class
+ * DARC CPUUsage class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_TIMER_H_INCLUDED__
-#define __DARC_TIMER_H_INCLUDED__
+#pragma once
 
-#include <boost/asio.hpp>
-#include <boost/function.hpp>
-#include <darc/owner.h>
-#include <darc/statistics/cpu_usage.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
 
 namespace darc
 {
-
-class Timer : public boost::asio::deadline_timer
+namespace statistics
 {
-  typedef boost::function<void()> CallbackType;
-  CallbackType callback_;
 
-  boost::posix_time::time_duration period_;
-  boost::posix_time::ptime expected_deadline_;
+class CPUUsage
+{
+protected:
+  int32_t usage_sec_;
+  int32_t usage_usec_;
 
-  statistics::CPUUsage cpu_usage_;
+  int32_t start_sec_;
+  int32_t start_usec_;
+  bool measuring_;
 
 public:
-  Timer(darc::Owner * owner, CallbackType callback, boost::posix_time::time_duration period) :
-    boost::asio::deadline_timer( *(owner->getIOService()), period ),
-    callback_(callback),
-    period_(period)
+  CPUUsage() :
+    usage_sec_(0),
+    usage_usec_(0),
+    start_sec_(0),
+    start_usec_(0),
+    measuring_(false)
   {
-    expected_deadline_ = boost::posix_time::microsec_clock::universal_time() + period;
-    async_wait( boost::bind( &Timer::handler, this ) );
   }
 
-  void handler()// const boost::system::error_code& error )
+  void start()
   {
-    boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - expected_deadline_;
-    expected_deadline_ += period_;
-    //    std::cout << diff.total_milliseconds() << std::endl;
-    expires_from_now( period_ - diff );
+    assert(measuring_ == false);
+    measuring_ = true;
 
-    async_wait( boost::bind( &Timer::handler, this ) );
-    cpu_usage_.start();
-    callback_();
-    cpu_usage_.stop();
+    rusage usage;
+    getrusage(RUSAGE_THREAD, &usage);
+    start_sec_ = usage.ru_utime.tv_sec;
+    start_usec_ = usage.ru_utime.tv_usec;
+  }
+
+  void stop()
+  {
+    assert(measuring_ == true);
+    measuring_ = false;
+
+    rusage usage;
+    getrusage(RUSAGE_THREAD, &usage);
+    usage_sec_ += usage.ru_utime.tv_sec - start_sec_;
+    int32_t usec = usage.ru_utime.tv_usec - start_usec_;
+    if( usec > 1000000 )
+    {
+      usage_sec_++;
+      usec -= 1000000;
+    }
+    usage_usec_ += usec;
   }
 
 };
 
 }
-
-#endif
+}
