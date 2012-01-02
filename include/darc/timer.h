@@ -40,19 +40,19 @@
 #include <boost/function.hpp>
 #include <darc/owner.h>
 #include <darc/statistics/cpu_usage.h>
+#include <darc/statistics/consumer.h>
 
 namespace darc
 {
 
-class Timer : public boost::asio::deadline_timer
+class Timer : public boost::asio::deadline_timer, public statistics::Consumer
 {
+protected:
   typedef boost::function<void()> CallbackType;
   CallbackType callback_;
 
   boost::posix_time::time_duration period_;
   boost::posix_time::ptime expected_deadline_;
-
-  statistics::CPUUsage cpu_usage_;
 
 public:
   Timer(darc::Owner * owner, CallbackType callback, boost::posix_time::time_duration period) :
@@ -72,9 +72,9 @@ public:
     expires_from_now( period_ - diff );
 
     async_wait( boost::bind( &Timer::handler, this ) );
-    cpu_usage_.start();
+    Consumer::cpu_usage_.start();
     callback_();
-    cpu_usage_.stop();
+    Consumer::cpu_usage_.stop();
   }
 
 };

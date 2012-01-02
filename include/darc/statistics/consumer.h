@@ -28,30 +28,53 @@
  */
 
 /**
- * DARC Owner class
+ * DARC Consumer class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_OWNER_H_INCLUDED__
-#define __DARC_OWNER_H_INCLUDED__
+#pragma once
 
-#include <boost/asio.hpp>
-#include <darc/node.h>
-#include <darc/statistics/consumer.h>
+#include <map>
+#include <string>
+#include <boost/shared_ptr.hpp>
+#include <darc/statistics/cpu_usage.h>
 
 namespace darc
 {
+namespace statistics
+{
 
-class Owner : public statistics::Consumer
+class Consumer
 {
 protected:
+  typedef boost::shared_ptr<Consumer> Ptr;
+
+  typedef std::map<const std::string, Consumer::Ptr> ConsumerListType;
+  ConsumerListType child_consumers_;
+
+  CPUUsage cpu_usage_;
 
 public:
-  virtual boost::asio::io_service * getIOService() = 0;
-  virtual boost::shared_ptr<Node> getNode() = 0;
+  Consumer()
+  {
+  }
+
+  void addChild(const std::string name, Consumer::Ptr child_consumer)
+  {
+    // todo: check for name clash
+    child_consumers_[name] = child_consumer;
+  }
+
+  Consumer::Ptr getChild(const std::string name)
+  {
+    // todo: check for existance
+    return child_consumers_[name];
+  }
+
 };
 
-}
+typedef boost::shared_ptr<Consumer> ConsumerPtr;
 
-#endif
+}
+}
