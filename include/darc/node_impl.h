@@ -57,9 +57,6 @@ private:
 
   //  boost::asio::signal_set signals_; not in boost 1.40
 
-  boost::asio::posix::stream_descriptor key_input_;
-  char key_pressed_;
-
   NodeLinkManager node_link_manager_;
 
   publish::Manager publish_manager_;
@@ -68,48 +65,13 @@ private:
 public:
   NodeImpl() :
     //    signals_(io_service, SIGTERM, SIGINT), not in boost 1.40
-    key_input_(io_service_),
     node_link_manager_(&io_service_),
     publish_manager_(&io_service_, &node_link_manager_)
   {
     // signals_.async_wait(boost::bind(&Node::quitHandler, this)); not in boost 1.40
-    key_input_.assign( STDIN_FILENO );
-    readKeyInput();
   }
 
 private:
-  void quitHandler()
-  {
-    exit(0);
-  }
-
-  void keyPressedHandler( const boost::system::error_code& error, size_t bytes_transferred )
-  {
-    /*if ( error ) {
-      std::cerr << "read error: " << boost::system::system_error(error).what() << std::endl;
-      return;
-      }*/
-
-    if ( key_pressed_ == 'q' )
-    {
-      exit(0);
-    }
-
-    readKeyInput();
-  }
-
-  void readKeyInput()
-  {
-    async_read( key_input_,
-		boost::asio::buffer( &key_pressed_, sizeof(key_pressed_) ),
-		boost::bind( &NodeImpl::keyPressedHandler,
-			     this,
-			     boost::asio::placeholders::error,
-			     boost::asio::placeholders::bytes_transferred
-			     )
-		);
-  }
-
   void run()
   {
     std::cout << "Running Node with ID " << node_link_manager_.getNodeID() << std::endl;
