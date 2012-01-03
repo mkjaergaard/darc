@@ -28,31 +28,30 @@
  */
 
 /**
- * DARC PublisherItem class
+ * DARC LocalDispatcherAbstract class
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
+#ifndef __DARC_PUBLISH_LOCAL_DISPATCHER_ABSTRACT_H_INCLUDED__
+#define __DARC_PUBLISH_LOCAL_DISPATCHER_ABSTRACT_H_INCLUDED__
 
-#include <boost/shared_ptr.hpp>
+#include <darc/serialized_message.h>
 
 namespace darc
 {
-namespace publish
+namespace pubsub
 {
 
-class PublisherItem
+class LocalDispatcherAbstract
 {
-
 public:
-  PublisherItem()
-  {
-  }
+  virtual ~LocalDispatcherAbstract() {}
 
+  virtual void dispatchMessageLocally( SerializedMessage::ConstPtr msg_s ) = 0;
 };
 
-typedef boost::shared_ptr<PublisherItem> PublisherItemPtr;
+}
+}
 
-}
-}
+#endif

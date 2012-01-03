@@ -42,14 +42,14 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <darc/node_link_manager.h>
-#include <darc/publish/local_dispatcher.h>
-#include <darc/publish/remote_dispatcher.h>
-#include <darc/publish/subscriber_impl.h>
-#include <darc/publish/publisher_impl.h>
+#include <darc/pubsub/local_dispatcher.h>
+#include <darc/pubsub/remote_dispatcher.h>
+#include <darc/pubsub/subscriber_impl.h>
+#include <darc/pubsub/publisher_impl.h>
 
 namespace darc
 {
-namespace publish
+namespace pubsub
 {
 
 class Manager
@@ -67,10 +67,10 @@ public:
     io_service_(io_service),
     remote_dispatcher_(io_service)
   {
-    remote_dispatcher_.setLocalDispatchFunction( boost::bind( &publish::Manager::receiveFromRemoteNode,
+    remote_dispatcher_.setLocalDispatchFunction( boost::bind( &Manager::receiveFromRemoteNode,
 							      this, _1, _2 ) );
     node_link_manager->registerPacketReceivedHandler( packet::Header::MSG_PACKET,
-						      boost::bind( &publish::RemoteDispatcher::packetReceiveHandler,
+						      boost::bind( &RemoteDispatcher::packetReceiveHandler,
 								   &remote_dispatcher_, _1, _2 ) );
     remote_dispatcher_.setSendToNodeFunction( boost::bind( &NodeLinkManager::sendPacket,
 							   node_link_manager, _1, _2, _3 ) );

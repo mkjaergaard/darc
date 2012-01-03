@@ -28,45 +28,43 @@
  */
 
 /**
- * DARC Publisher class
+ * DARC ItemList class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISH_PUBLISHER_H_INCLUDED__
-#define __DARC_PUBLISH_PUBLISHER_H_INCLUDED__
+#pragma once
 
-#include <boost/smart_ptr.hpp>
-#include <darc/node.h>
-#include <darc/owner.h>
-#include <darc/publish/publisher_impl.h>
+#include <vector>
+#include <darc/pubsub/subscriber_item.h>
+#include <darc/pubsub/publisher_item.h>
 
 namespace darc
 {
-namespace publish
+namespace pubsub
 {
 
-template<typename T>
-class Publisher
+class List
 {
 protected:
-  boost::shared_ptr<PublisherImpl<T> > impl_;
+  typedef std::vector<SubscriberItemPtr> SubscriberListType; // todo: weak ptr?
+  typedef std::vector<PublisherItemPtr> PublisherListType; // todo: weak ptr?
+
+  SubscriberListType subscriber_list_;
+  PublisherListType publisher_list_;
 
 public:
-  Publisher(darc::Owner* owner, const std::string& topic) :
-  impl_( new PublisherImpl<T> )
+  void addSubscriber( SubscriberItemPtr subscriber )
   {
-    owner->getNode()->getPublisherManager().registerPublisher<T>(topic, impl_);
+    subscriber_list_.push_back(subscriber);
   }
 
-  void publish(boost::shared_ptr<T> msg)
+  void addPublisher( PublisherItemPtr publisher )
   {
-    impl_->publish(msg);
+    publisher_list_.push_back(publisher);
   }
 
 };
 
 }
 }
-
-#endif

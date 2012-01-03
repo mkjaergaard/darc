@@ -43,7 +43,7 @@
 #include <boost/shared_ptr.hpp>
 #include <darc/node.h>
 #include <darc/node_link_manager.h>
-#include <darc/publish/manager.h>
+#include <darc/pubsub/manager.h>
 #include <darc/procedure/manager.h>
 
 namespace darc
@@ -59,7 +59,7 @@ private:
 
   NodeLinkManager node_link_manager_;
 
-  publish::Manager publish_manager_;
+  pubsub::Manager publish_manager_;
   procedure::Manager procedure_manager_;
 
 public:
@@ -78,7 +78,7 @@ private:
     io_service_.run();
   }
 
-  publish::Manager& getPublisherManager()
+  pubsub::Manager& getPublisherManager()
   {
     return publish_manager_;
   }

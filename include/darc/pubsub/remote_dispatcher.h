@@ -46,7 +46,7 @@
 
 namespace darc
 {
-namespace publish
+namespace pubsub
 {
 
 class RemoteDispatcher

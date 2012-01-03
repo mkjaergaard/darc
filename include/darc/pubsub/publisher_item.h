@@ -28,61 +28,31 @@
  */
 
 /**
- * DARC SubscriberImpl class
+ * DARC PublisherItem class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISHER_SUBSCRIBER_IMPL_H_INCLUDED__
-#define __DARC_PUBLISHER_SUBSCRIBER_IMPL_H_INCLUDED__
+#pragma once
 
-#include <iostream>
 #include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/function.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <darc/publish/subscriber_item.h>
 
 namespace darc
 {
-namespace publish
+namespace pubsub
 {
 
-template<typename T>
-class SubscriberImpl : public SubscriberItem
+class PublisherItem
 {
-public:
-
-private:
-  typedef boost::shared_ptr<T> MsgPtrType;
-
-  typedef boost::function<void(MsgPtrType)> CallbackType;
-  CallbackType callback_;
-
-  boost::asio::io_service * io_service_;
 
 public:
-  SubscriberImpl(boost::asio::io_service * io_service, const std::string& topic, CallbackType callback) :
-    callback_(callback),
-    io_service_(io_service)
+  PublisherItem()
   {
-  }
-
-  void dispatch( MsgPtrType &msg)
-  {
-    io_service_->post( boost::bind( &SubscriberImpl::receive, this, msg ) );
-  }
-
-private:
-  void receive(MsgPtrType& msg)
-  {
-    callback_( msg );
   }
 
 };
 
-}
-}
+typedef boost::shared_ptr<PublisherItem> PublisherItemPtr;
 
-#endif
+}
+}

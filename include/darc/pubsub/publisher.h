@@ -28,43 +28,40 @@
  */
 
 /**
- * DARC Subscriber class
+ * DARC Publisher class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISH_SUBSCRIBER_H_INCLUDED__
-#define __DARC_PUBLISH_SUBSCRIBER_H_INCLUDED__
+#ifndef __DARC_PUBLISH_PUBLISHER_H_INCLUDED__
+#define __DARC_PUBLISH_PUBLISHER_H_INCLUDED__
 
-#include <boost/shared_ptr.hpp>
-#include <darc/publish/subscriber_impl.h>
+#include <boost/smart_ptr.hpp>
+#include <darc/node.h>
 #include <darc/owner.h>
-
-// Wraps a SubscriberImpl in a smart pointer so the lifetime of SubscriberImpl is dependent by the lifetime of Subscriber
+#include <darc/pubsub/publisher_impl.h>
 
 namespace darc
 {
-namespace publish
+namespace pubsub
 {
 
 template<typename T>
-class Subscriber
+class Publisher
 {
-private:
-  boost::shared_ptr<SubscriberImpl<T> > impl_;
-
-  typedef boost::function<void( boost::shared_ptr<T> )> CallbackType;
+protected:
+  boost::shared_ptr<PublisherImpl<T> > impl_;
 
 public:
-  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback) :
-    impl_( new SubscriberImpl<T>( owner->getIOService(), topic, callback ) )
+  Publisher(darc::Owner* owner, const std::string& topic) :
+  impl_( new PublisherImpl<T> )
   {
-    owner->getNode()->getPublisherManager().registerSubscriber(topic, impl_);
+    owner->getNode()->getPublisherManager().registerPublisher<T>(topic, impl_);
   }
 
-  ~Subscriber()
+  void publish(boost::shared_ptr<T> msg)
   {
-    // unregister subscriber
+    impl_->publish(msg);
   }
 
 };

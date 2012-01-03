@@ -28,43 +28,48 @@
  */
 
 /**
- * DARC ItemList class
+ * DARC Subscriber class
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
+#ifndef __DARC_PUBLISH_SUBSCRIBER_H_INCLUDED__
+#define __DARC_PUBLISH_SUBSCRIBER_H_INCLUDED__
 
-#include <vector>
-#include <darc/publish/subscriber_item.h>
-#include <darc/publish/publisher_item.h>
+#include <boost/shared_ptr.hpp>
+#include <darc/pubsub/subscriber_impl.h>
+#include <darc/owner.h>
+
+// Wraps a SubscriberImpl in a smart pointer so the lifetime of SubscriberImpl is dependent by the lifetime of Subscriber
 
 namespace darc
 {
-namespace publish
+namespace pubsub
 {
 
-class List
+template<typename T>
+class Subscriber
 {
-protected:
-  typedef std::vector<SubscriberItemPtr> SubscriberListType; // todo: weak ptr?
-  typedef std::vector<PublisherItemPtr> PublisherListType; // todo: weak ptr?
+private:
+  boost::shared_ptr<SubscriberImpl<T> > impl_;
 
-  SubscriberListType subscriber_list_;
-  PublisherListType publisher_list_;
+  typedef boost::function<void( boost::shared_ptr<T> )> CallbackType;
 
 public:
-  void addSubscriber( SubscriberItemPtr subscriber )
+  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback) :
+    impl_( new SubscriberImpl<T>( owner->getIOService(), topic, callback ) )
   {
-    subscriber_list_.push_back(subscriber);
+    owner->getNode()->getPublisherManager().registerSubscriber(topic, impl_);
   }
 
-  void addPublisher( PublisherItemPtr publisher )
+  ~Subscriber()
   {
-    publisher_list_.push_back(publisher);
+    // unregister subscriber
   }
 
 };
 
 }
 }
+
+#endif

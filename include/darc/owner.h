@@ -38,7 +38,7 @@
 
 #include <boost/asio.hpp>
 #include <darc/node.h>
-#include <darc/publish/list.h>
+#include <darc/pubsub/list.h>
 
 namespace darc
 {
@@ -46,13 +46,13 @@ namespace darc
 class Owner
 {
 protected:
-  publish::List publish_list_;
+  pubsub::List publish_list_;
 
 public:
   virtual boost::asio::io_service * getIOService() = 0;
   virtual boost::shared_ptr<Node> getNode() = 0;
 
-  publish::List& getPublishList()
+  pubsub::List& getPublishList()
   {
     return publish_list_;
   }

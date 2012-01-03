@@ -28,45 +28,70 @@
  */
 
 /**
- * DARC PublisherImpl class
+ * DARC LocalDispatcher class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISH_PUBLISHER_IMPL_H_INCLUDED__
-#define __DARC_PUBLISH_PUBLISHER_IMPL_H_INCLUDED__
+#ifndef __DARC_PUBLISH_LOCAL_DISPATCHER_H_INCLUDED___
+#define __DARC_PUBLISH_LOCAL_DISPATCHER_H_INCLUDED___
 
-#include <boost/shared_ptr.hpp>
-#include <darc/publish/local_dispatcher.h>
-#include <darc/publish/publisher_item.h>
+#include <vector>
+#include <boost/smart_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <darc/serialized_message.h>
+#include <darc/pubsub/local_dispatcher_abstract.h>
+#include <darc/pubsub/subscriber_impl.h>
+#include <darc/pubsub/remote_dispatcher.h>
 
 namespace darc
 {
-namespace publish
+namespace pubsub
 {
 
 template<typename T>
-class PublisherImpl : public PublisherItem
+class LocalDispatcher : public LocalDispatcherAbstract
 {
-protected:
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
+private:
+  std::string topic_;
+  RemoteDispatcher * remote_dispatcher_;
+
+  typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType; // <-- weak_ptr
+  SubscriberListType subscriber_list_;
 
 public:
-  PublisherImpl()
+  LocalDispatcher( const std::string& topic, RemoteDispatcher * remote_dispatcher ) :
+    topic_(topic),
+    remote_dispatcher_( remote_dispatcher )
   {
   }
 
-  void registerDispatcher( boost::weak_ptr<LocalDispatcher<T> > dispatcher )
+  void registerSubscriber( boost::shared_ptr<SubscriberImpl<T> > sub )
   {
-    dispatcher_ = dispatcher;
+    subscriber_list_.push_back( sub );
   }
 
-  void publish(boost::shared_ptr<T> msg)
+  // Called by the local publishers
+  void dispatchMessage( boost::shared_ptr<T> msg )
   {
-    if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
+    dispatchMessageLocally(msg);
+    remote_dispatcher_->postRemoteDispatch<T>(topic_, msg);
+  }
+
+  void dispatchMessageLocally( boost::shared_ptr<T> msg )
+  {
+    for( typename SubscriberListType::iterator it = subscriber_list_.begin();
+         it != subscriber_list_.end();
+         it++)
     {
-      dispatcher_sp->dispatchMessage(msg);
+      (*it)->dispatch( msg );
     }
+  }
+
+  // impl of virtual
+  void dispatchMessageLocally( SerializedMessage::ConstPtr msg_s )
+  {
+    dispatchMessageLocally( msg_s->deserialize<T>() );
   }
 
 };

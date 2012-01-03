@@ -28,75 +28,31 @@
  */
 
 /**
- * DARC LocalDispatcher class
+ * DARC SubscriberItem class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISH_LOCAL_DISPATCHER_H_INCLUDED___
-#define __DARC_PUBLISH_LOCAL_DISPATCHER_H_INCLUDED___
+#pragma once
 
-#include <vector>
-#include <boost/smart_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <darc/serialized_message.h>
-#include <darc/publish/local_dispatcher_abstract.h>
-#include <darc/publish/subscriber_impl.h>
-#include <darc/publish/remote_dispatcher.h>
+#include <boost/shared_ptr.hpp>
 
 namespace darc
 {
-namespace publish
+namespace pubsub
 {
 
-template<typename T>
-class LocalDispatcher : public LocalDispatcherAbstract
+class SubscriberItem
 {
-private:
-  std::string topic_;
-  RemoteDispatcher * remote_dispatcher_;
-
-  typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType; // <-- weak_ptr
-  SubscriberListType subscriber_list_;
 
 public:
-  LocalDispatcher( const std::string& topic, RemoteDispatcher * remote_dispatcher ) :
-    topic_(topic),
-    remote_dispatcher_( remote_dispatcher )
+  SubscriberItem()
   {
-  }
-
-  void registerSubscriber( boost::shared_ptr<SubscriberImpl<T> > sub )
-  {
-    subscriber_list_.push_back( sub );
-  }
-
-  // Called by the local publishers
-  void dispatchMessage( boost::shared_ptr<T> msg )
-  {
-    dispatchMessageLocally(msg);
-    remote_dispatcher_->postRemoteDispatch<T>(topic_, msg);
-  }
-
-  void dispatchMessageLocally( boost::shared_ptr<T> msg )
-  {
-    for( typename SubscriberListType::iterator it = subscriber_list_.begin();
-         it != subscriber_list_.end();
-         it++)
-    {
-      (*it)->dispatch( msg );
-    }
-  }
-
-  // impl of virtual
-  void dispatchMessageLocally( SerializedMessage::ConstPtr msg_s )
-  {
-    dispatchMessageLocally( msg_s->deserialize<T>() );
   }
 
 };
 
-}
-}
+typedef boost::shared_ptr<SubscriberItem> SubscriberItemPtr;
 
-#endif
+}
+}

@@ -28,27 +28,58 @@
  */
 
 /**
- * DARC LocalDispatcherAbstract class
+ * DARC SubscriberImpl class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISH_LOCAL_DISPATCHER_ABSTRACT_H_INCLUDED__
-#define __DARC_PUBLISH_LOCAL_DISPATCHER_ABSTRACT_H_INCLUDED__
+#ifndef __DARC_PUBLISHER_SUBSCRIBER_IMPL_H_INCLUDED__
+#define __DARC_PUBLISHER_SUBSCRIBER_IMPL_H_INCLUDED__
 
-#include <darc/serialized_message.h>
+#include <iostream>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/function.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <darc/pubsub/subscriber_item.h>
 
 namespace darc
 {
-namespace publish
+namespace pubsub
 {
 
-class LocalDispatcherAbstract
+template<typename T>
+class SubscriberImpl : public SubscriberItem
 {
 public:
-  virtual ~LocalDispatcherAbstract() {}
 
-  virtual void dispatchMessageLocally( SerializedMessage::ConstPtr msg_s ) = 0;
+private:
+  typedef boost::shared_ptr<T> MsgPtrType;
+
+  typedef boost::function<void(MsgPtrType)> CallbackType;
+  CallbackType callback_;
+
+  boost::asio::io_service * io_service_;
+
+public:
+  SubscriberImpl(boost::asio::io_service * io_service, const std::string& topic, CallbackType callback) :
+    callback_(callback),
+    io_service_(io_service)
+  {
+  }
+
+  void dispatch( MsgPtrType &msg)
+  {
+    io_service_->post( boost::bind( &SubscriberImpl::receive, this, msg ) );
+  }
+
+private:
+  void receive(MsgPtrType& msg)
+  {
+    callback_( msg );
+  }
+
 };
 
 }
