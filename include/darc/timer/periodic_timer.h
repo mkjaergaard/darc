@@ -38,44 +38,22 @@
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
-#include <darc/owner.h>
+#include <darc/timer/periodic_timer_impl.h>
 
 namespace darc
 {
 namespace timer
 {
 
-class PeriodicTimer : public boost::asio::deadline_timer
+class PeriodicTimer
 {
 protected:
-  typedef boost::function<void()> CallbackType;
-  CallbackType callback_;
-
-  boost::posix_time::time_duration period_;
-  boost::posix_time::ptime expected_deadline_;
+  PeriodicTimerImplPtr impl_;
 
 public:
-  PeriodicTimer(darc::Owner * owner, CallbackType callback, boost::posix_time::time_duration period) :
-    boost::asio::deadline_timer( *(owner->getIOService()), period ),
-    callback_(callback),
-    period_(period)
+  PeriodicTimer(darc::Owner * owner, PeriodicTimerImpl::CallbackType callback, boost::posix_time::time_duration period) :
+    impl_( PeriodicTimerImpl::create(owner->getIOService(), callback, period) )
   {
-    expected_deadline_ = boost::posix_time::microsec_clock::universal_time() + period;
-    async_wait( boost::bind( &PeriodicTimer::handler, this ) );
-  }
-
-  void handler()// const boost::system::error_code& error )
-  {
-    boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - expected_deadline_;
-    expected_deadline_ += period_;
-    //    std::cout << diff.total_milliseconds() << std::endl;
-    expires_from_now( period_ - diff );
-
-    async_wait( boost::bind( &PeriodicTimer::handler, this ) );
-
-    //    Consumer::cpu_usage_.start();
-    callback_();
-    //    Consumer::cpu_usage_.stop();
   }
 
 };

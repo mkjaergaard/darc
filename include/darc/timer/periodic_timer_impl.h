@@ -28,30 +28,69 @@
  */
 
 /**
- * DARC Owner class
+ * DARC Timer class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_OWNER_H_INCLUDED__
-#define __DARC_OWNER_H_INCLUDED__
+#pragma once
 
 #include <boost/asio.hpp>
-#include <darc/node.h>
+#include <boost/function.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <darc/owner.h>
 
 namespace darc
 {
-
-class Owner
+namespace timer
 {
+
+class PeriodicTimerImpl : public boost::asio::deadline_timer, public boost::enable_shared_from_this<PeriodicTimerImpl>
+{
+public:
+  typedef boost::function<void()> CallbackType;
+
 protected:
+  typedef boost::shared_ptr<PeriodicTimerImpl> Ptr;
+
+  CallbackType callback_;
+
+  boost::posix_time::time_duration period_;
+  boost::posix_time::ptime expected_deadline_;
+
+protected:
+  PeriodicTimerImpl(boost::asio::io_service * io_service, CallbackType callback, boost::posix_time::time_duration period) :
+    boost::asio::deadline_timer(*io_service, period),
+    callback_(callback),
+    period_(period)
+  {
+    expected_deadline_ = boost::posix_time::microsec_clock::universal_time() + period;
+    async_wait( boost::bind( &PeriodicTimerImpl::handler, this ) );
+  }
+
+  void handler()// const boost::system::error_code& error )
+  {
+    boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - expected_deadline_;
+    expected_deadline_ += period_;
+    //    std::cout << diff.total_milliseconds() << std::endl;
+    expires_from_now( period_ - diff );
+
+    async_wait( boost::bind( &PeriodicTimerImpl::handler, this ) );
+
+    //    Consumer::cpu_usage_.start();
+    callback_();
+    //    Consumer::cpu_usage_.stop();
+  }
 
 public:
-  virtual boost::asio::io_service * getIOService() = 0;
-  virtual boost::shared_ptr<Node> getNode() = 0;
+  static PeriodicTimerImpl::Ptr create(boost::asio::io_service * io_service, CallbackType callback, boost::posix_time::time_duration period)
+  {
+    return PeriodicTimerImpl::Ptr( new PeriodicTimerImpl(io_service, callback, period) );
+  }
 
 };
 
-}
+typedef boost::shared_ptr<PeriodicTimerImpl> PeriodicTimerImplPtr;
 
-#endif
+}
+}
