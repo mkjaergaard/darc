@@ -28,7 +28,7 @@
  */
 
 /**
- * DARC Timer class
+ * DARC TimerImpl class
  *
  * \author Morten Kjaergaard
  */
@@ -39,6 +39,7 @@
 #include <boost/function.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <darc/owner.h>
+#include <darc/timer/periodic_timer_ctrl_handle.h>
 
 namespace darc
 {
@@ -86,6 +87,11 @@ public:
   static PeriodicTimerImpl::Ptr create(boost::asio::io_service * io_service, CallbackType callback, boost::posix_time::time_duration period)
   {
     return PeriodicTimerImpl::Ptr( new PeriodicTimerImpl(io_service, callback, period) );
+  }
+
+  PeriodicTimerCtrlHandle createCtrlHandle()
+  {
+    return PeriodicTimerCtrlHandle(shared_from_this());
   }
 
 };

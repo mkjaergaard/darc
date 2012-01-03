@@ -28,88 +28,30 @@
  */
 
 /**
- * DARC Component class
+ * DARC CtrlHandleBase class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_COMPONENT_H_INCLUDED__
-#define __DARC_COMPONENT_H_INCLUDED__
+#pragma once
 
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <darc/component_ctrl_handle.h>
-#include <darc/node.h>
-#include <darc/owner.h>
+#include <boost/weak_ptr.hpp>
 
 namespace darc
 {
 
-class Component : public Owner, public boost::enable_shared_from_this<Component>
+template<typename T>
+class CtrlHandleBase
 {
-public:
-  typedef boost::shared_ptr<Component> Ptr;
-
 protected:
-  std::string name_;
-  boost::shared_ptr<Node> node_;
-  boost::asio::io_service io_service_;
-
-protected:
-  Component(const std::string& name, boost::shared_ptr<Node> node):
-    name_(name),
-    node_( node )
-  {
-  }
+  boost::weak_ptr<T> instance_;
 
 public:
-  // impl of darc::Owner
-  boost::asio::io_service * getIOService()
+  CtrlHandleBase(boost::shared_ptr<T> instance) :
+    instance_(instance)
   {
-    return &io_service_;
-  }
-
-  // impl of darc::Owner
-  boost::shared_ptr<Node> getNode()
-  {
-    return node_;
-  }
-
-  template<typename T>
-  static boost::shared_ptr<T> instantiate( const std::string& instance_name, Node::Ptr node )
-  {
-    boost::shared_ptr<T> instance( new T(instance_name, node) );
-    return instance;
-  }
-
-public:
-  ComponentCtrlHandle createCtrlHandle()
-  {
-    return ComponentCtrlHandle(shared_from_this());
-  }
-
-  const std::string& getName() const
-  {
-    return name_;
-  }
-
-  void run()
-  {
-    std::cout << "Running Component: " << name_ << std::endl;
-    boost::asio::io_service::work keep_alive(io_service_);
-    io_service_.run();
-    std::cout << "Component " << name_ << " Stopped!" << std::endl;
   }
 
 };
 
-typedef boost::shared_ptr<Component> ComponentPtr;
-typedef boost::weak_ptr<Component> ComponentWkPtr;
-
 }
-
-// Include here so its available for the components
-#include <darc/component_register.h>
-
-#endif
