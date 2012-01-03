@@ -53,6 +53,8 @@ public:
   {
   }
 
+  std::string getInstanceName();
+
 };
 
 }

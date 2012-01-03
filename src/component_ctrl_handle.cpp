@@ -39,5 +39,10 @@
 namespace darc
 {
 
+std::string ComponentCtrlHandle::getInstanceName()
+{
+  return instance_.lock()->getName();
+}
+
 
 };
