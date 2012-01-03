@@ -61,7 +61,7 @@ public:
     period_(period)
   {
     expected_deadline_ = boost::posix_time::microsec_clock::universal_time() + period;
-    async_wait( boost::bind( &Timer::handler, this ) );
+    async_wait( boost::bind( &PeriodicTimer::handler, this ) );
   }
 
   void handler()// const boost::system::error_code& error )
@@ -71,7 +71,7 @@ public:
     //    std::cout << diff.total_milliseconds() << std::endl;
     expires_from_now( period_ - diff );
 
-    async_wait( boost::bind( &Timer::handler, this ) );
+    async_wait( boost::bind( &PeriodicTimer::handler, this ) );
 
     //    Consumer::cpu_usage_.start();
     callback_();
