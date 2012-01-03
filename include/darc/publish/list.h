@@ -28,36 +28,43 @@
  */
 
 /**
- * DARC Owner class
+ * DARC ItemList class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_OWNER_H_INCLUDED__
-#define __DARC_OWNER_H_INCLUDED__
+#pragma once
 
-#include <boost/asio.hpp>
-#include <darc/node.h>
-#include <darc/publish/list.h>
+#include <vector>
+#include <darc/publish/subscriber_item.h>
+#include <darc/publish/publisher_item.h>
 
 namespace darc
 {
+namespace publish
+{
 
-class Owner
+class List
 {
 protected:
-  publish::List publish_list_;
+  typedef std::vector<SubscriberItemPtr> SubscriberListType; // todo: weak ptr?
+  typedef std::vector<PublisherItemPtr> PublisherListType; // todo: weak ptr?
+
+  SubscriberListType subscriber_list_;
+  PublisherListType publisher_list_;
 
 public:
-  virtual boost::asio::io_service * getIOService() = 0;
-  virtual boost::shared_ptr<Node> getNode() = 0;
-
-  publish::List& getPublishList()
+  void addSubscriber( SubscriberItemPtr subscriber )
   {
-    return publish_list_;
+    subscriber_list_.push_back(subscriber);
   }
+
+  void addPublisher( PublisherItemPtr publisher )
+  {
+    publisher_list_.push_back(publisher);
+  }
+
 };
 
 }
-
-#endif
+}

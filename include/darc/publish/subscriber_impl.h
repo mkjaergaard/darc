@@ -42,6 +42,7 @@
 #include <boost/function.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <darc/publish/subscriber_item.h>
 
 namespace darc
 {
@@ -49,7 +50,7 @@ namespace publish
 {
 
 template<typename T>
-class SubscriberImpl
+class SubscriberImpl : public SubscriberItem
 {
 public:
 

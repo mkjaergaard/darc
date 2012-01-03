@@ -28,36 +28,31 @@
  */
 
 /**
- * DARC Owner class
+ * DARC PublisherItem class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_OWNER_H_INCLUDED__
-#define __DARC_OWNER_H_INCLUDED__
+#pragma once
 
-#include <boost/asio.hpp>
-#include <darc/node.h>
-#include <darc/publish/list.h>
+#include <boost/shared_ptr.hpp>
 
 namespace darc
 {
-
-class Owner
+namespace publish
 {
-protected:
-  publish::List publish_list_;
+
+class PublisherItem
+{
 
 public:
-  virtual boost::asio::io_service * getIOService() = 0;
-  virtual boost::shared_ptr<Node> getNode() = 0;
-
-  publish::List& getPublishList()
+  PublisherItem()
   {
-    return publish_list_;
   }
+
 };
 
-}
+typedef boost::shared_ptr<PublisherItem> PublisherItemPtr;
 
-#endif
+}
+}
