@@ -38,6 +38,7 @@
 
 #include <boost/asio.hpp>
 #include <darc/node.h>
+#include <darc/timer/list.h>
 
 namespace darc
 {
@@ -45,10 +46,13 @@ namespace darc
 class Owner
 {
 protected:
+  timer::List timer_list_;
 
 public:
   virtual boost::asio::io_service * getIOService() = 0;
   virtual boost::shared_ptr<Node> getNode() = 0;
+
+
 
 };
 

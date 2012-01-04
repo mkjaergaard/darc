@@ -28,25 +28,40 @@
  */
 
 /**
- * DARC ComponentCtrlHandle class impl
+ * DARC List class
  *
  * \author Morten Kjaergaard
  */
 
-#include <darc/component_ctrl_handle.h>
-#include <darc/component.h>
+#pragma once
+
+#include <vector>
+#include <darc/enable_safe_weak_ptr.h>
+#include <darc/timer/periodic_timer_impl.h>
 
 namespace darc
 {
-
-std::string ComponentCtrlHandle::instanceName()
+namespace timer
 {
-  return instance_.lock()->getName();
-}
 
-timer::TimerListCtrlHandle ComponentCtrlHandle::timers()
+class List : public EnableSafeWeakPtr<List>
 {
-  return timer::TimerListCtrlHandle(instance_.lock()->timer_list_.getSafePtr());
-}
+  friend class TimerListCtrlHandle;
+
+protected:
+  typedef std::vector<PeriodicTimerImplPtr> PeriodicTimerListType;
+
+  PeriodicTimerListType periodic_timer_list_;
+
+public:
+  void addPeriodicTimer( PeriodicTimerImplPtr timer )
+  {
+    periodic_timer_list_.push_back(timer);
+  }
 
 };
+
+typedef boost::shared_ptr<List> ListPtr;
+
+}
+}

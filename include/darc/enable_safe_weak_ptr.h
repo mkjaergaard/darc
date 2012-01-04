@@ -28,25 +28,42 @@
  */
 
 /**
- * DARC ComponentCtrlHandle class impl
+ * DARC EnableSafeWeakPtr class
  *
  * \author Morten Kjaergaard
  */
 
-#include <darc/component_ctrl_handle.h>
-#include <darc/component.h>
+#pragma once
+
+#include <boost/shared_ptr.hpp>
 
 namespace darc
 {
 
-std::string ComponentCtrlHandle::instanceName()
+template<typename T>
+class EnableSafeWeakPtr
 {
-  return instance_.lock()->getName();
-}
+protected:
+  struct null_deleter
+  {
+    void operator()(void const *) const
+    {
+    }
+  };
 
-timer::TimerListCtrlHandle ComponentCtrlHandle::timers()
-{
-  return timer::TimerListCtrlHandle(instance_.lock()->timer_list_.getSafePtr());
-}
+  boost::shared_ptr<T> this_ptr_;
+
+  EnableSafeWeakPtr() :
+    this_ptr_(static_cast<T*>(this), null_deleter())
+  {
+  }
+
+public:
+  boost::weak_ptr<T> getSafePtr()
+  {
+    return boost::weak_ptr<T>(this_ptr_);
+  }
 
 };
+
+}

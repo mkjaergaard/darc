@@ -47,7 +47,7 @@ protected:
   boost::weak_ptr<T> instance_;
 
 public:
-  CtrlHandleBase(boost::shared_ptr<T> instance) :
+  CtrlHandleBase(boost::weak_ptr<T> instance) :
     instance_(instance)
   {
   }

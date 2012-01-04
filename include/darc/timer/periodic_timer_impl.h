@@ -38,7 +38,7 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <darc/owner.h>
+#include <boost/bind.hpp>
 #include <darc/timer/periodic_timer_ctrl_handle.h>
 
 namespace darc

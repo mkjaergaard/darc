@@ -28,25 +28,33 @@
  */
 
 /**
- * DARC ComponentCtrlHandle class impl
+ * DARC OwnerCtrlHandle class
  *
  * \author Morten Kjaergaard
  */
 
-#include <darc/component_ctrl_handle.h>
-#include <darc/component.h>
+#pragma once
+
+#include <darc/owner_ctrl_handle.h>
+
 
 namespace darc
 {
 
-std::string ComponentCtrlHandle::instanceName()
+class ComponentCtrlHandle : public CtrlHandleBase<Component>
 {
-  return instance_.lock()->getName();
-}
+protected:
 
-timer::TimerListCtrlHandle ComponentCtrlHandle::timers()
-{
-  return timer::TimerListCtrlHandle(instance_.lock()->timer_list_.getSafePtr());
-}
+public:
+  ComponentCtrlHandle(boost::shared_ptr<Component> instance) :
+    CtrlHandleBase(instance)
+  {
+  }
+
+  std::string getInstanceName();
+
+  
 
 };
+
+}

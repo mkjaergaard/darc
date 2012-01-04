@@ -39,8 +39,10 @@
 
 namespace darc
 {
+namespace timer
+{
 
-namespace timer { class PeriodicTimerImpl; }
+class PeriodicTimerImpl;
 
 class PeriodicTimerCtrlHandle : public CtrlHandleBase<timer::PeriodicTimerImpl>
 {
@@ -54,4 +56,5 @@ public:
 
 };
 
+}
 }

@@ -28,25 +28,16 @@
  */
 
 /**
- * DARC ComponentCtrlHandle class impl
+ * DARC NodeCtrlHandle class impl
  *
  * \author Morten Kjaergaard
  */
 
-#include <darc/component_ctrl_handle.h>
-#include <darc/component.h>
+#include <darc/node_ctrl_handle.h>
+#include <darc/node.h>
 
 namespace darc
 {
 
-std::string ComponentCtrlHandle::instanceName()
-{
-  return instance_.lock()->getName();
-}
-
-timer::TimerListCtrlHandle ComponentCtrlHandle::timers()
-{
-  return timer::TimerListCtrlHandle(instance_.lock()->timer_list_.getSafePtr());
-}
 
 };

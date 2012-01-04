@@ -28,25 +28,31 @@
  */
 
 /**
- * DARC ComponentCtrlHandle class impl
+ * DARC TimerListCtrlHandle class impl
  *
  * \author Morten Kjaergaard
  */
 
-#include <darc/component_ctrl_handle.h>
-#include <darc/component.h>
+#include <darc/timer/timer_list_ctrl_handle.h>
+#include <darc/timer/list.h>
 
 namespace darc
 {
-
-std::string ComponentCtrlHandle::instanceName()
+namespace timer
 {
-  return instance_.lock()->getName();
+
+std::vector<PeriodicTimerCtrlHandle> TimerListCtrlHandle::periodic()
+{
+  std::vector<PeriodicTimerCtrlHandle> ctrl_handle_list;
+  timer::ListPtr sp(instance_);
+  for(List::PeriodicTimerListType::iterator it = sp->periodic_timer_list_.begin();
+      it != sp->periodic_timer_list_.end();
+      it++)
+  {
+    ctrl_handle_list.push_back(PeriodicTimerCtrlHandle(*it));
+  }
+  return ctrl_handle_list;
 }
 
-timer::TimerListCtrlHandle ComponentCtrlHandle::timers()
-{
-  return timer::TimerListCtrlHandle(instance_.lock()->timer_list_.getSafePtr());
 }
-
-};
+}

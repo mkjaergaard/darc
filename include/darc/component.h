@@ -48,6 +48,8 @@ namespace darc
 
 class Component : public Owner, public boost::enable_shared_from_this<Component>
 {
+  friend class ComponentCtrlHandle;;
+
 public:
   typedef boost::shared_ptr<Component> Ptr;
 

@@ -36,7 +36,7 @@
 #pragma once
 
 #include <darc/ctrl_handle_base.h>
-
+#include <darc/timer/timer_list_ctrl_handle.h>
 
 namespace darc
 {
@@ -53,7 +53,10 @@ public:
   {
   }
 
-  std::string getInstanceName();
+  std::string instanceName();
+
+  timer::TimerListCtrlHandle timers();
+  //SubcomponentListCtrlHandle subcomponents();
 
 };
 
