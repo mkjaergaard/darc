@@ -48,6 +48,8 @@ namespace timer
 
 class PeriodicTimerImpl : public boost::asio::deadline_timer, public boost::enable_shared_from_this<PeriodicTimerImpl>
 {
+  friend class PeriodicTimerCtrlHandle;
+
 public:
   typedef boost::function<void()> CallbackType;
 
@@ -81,6 +83,11 @@ protected:
     //    Consumer::cpu_usage_.start();
     callback_();
     //    Consumer::cpu_usage_.stop();
+  }
+
+  void setPeriod( boost::posix_time::time_duration new_period )
+  {
+    period_ = new_period;
   }
 
 public:

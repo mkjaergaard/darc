@@ -54,6 +54,14 @@ public:
   {
   }
 
+  inline bool operator == (const PeriodicTimerCtrlHandle &h) const
+  {
+    return ( instance_.lock() == h.instance_.lock() );
+  }
+
+  double getPeriod();
+  void setPeriod(double);
+
 };
 
 }

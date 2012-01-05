@@ -52,7 +52,10 @@ public:
   virtual boost::asio::io_service * getIOService() = 0;
   virtual boost::shared_ptr<Node> getNode() = 0;
 
-
+  timer::List& getTimerList()
+  {
+    return timer_list_;
+  }
 
 };
 

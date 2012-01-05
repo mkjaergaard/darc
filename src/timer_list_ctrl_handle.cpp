@@ -41,8 +41,10 @@ namespace darc
 namespace timer
 {
 
-std::vector<PeriodicTimerCtrlHandle> TimerListCtrlHandle::periodic()
+std::vector<PeriodicTimerCtrlHandle> TimerListCtrlHandle::getPeriodicTimers()
 {
+  //  return PeriodicTimerCtrlHandle( instance_.lock()->periodic_timer_list_.at(idx) );
+
   std::vector<PeriodicTimerCtrlHandle> ctrl_handle_list;
   timer::ListPtr sp(instance_);
   for(List::PeriodicTimerListType::iterator it = sp->periodic_timer_list_.begin();

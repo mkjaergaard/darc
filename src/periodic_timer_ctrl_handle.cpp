@@ -38,6 +38,19 @@
 
 namespace darc
 {
+namespace timer
+{
+
+  double PeriodicTimerCtrlHandle::getPeriod()
+  {
+    return instance_.lock()->period_.total_milliseconds() / 1000.0;
+  }
+
+  void PeriodicTimerCtrlHandle::setPeriod(double new_period)
+  {
+    instance_.lock()->period_ = boost::posix_time::milliseconds( new_period * 1000 );
+  }
 
 
-};
+}
+}

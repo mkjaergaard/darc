@@ -56,7 +56,10 @@ public:
   {
   }
 
-  std::vector<PeriodicTimerCtrlHandle> periodic();
+  std::vector<PeriodicTimerCtrlHandle> getPeriodicTimers();
+
+  double getPeriod();
+  void setPeriod(double);
 
 };
 

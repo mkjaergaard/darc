@@ -68,9 +68,16 @@ private:
 public:
   Link(boost::asio::io_service * io_service, unsigned int local_port):
     io_service_(io_service),
-    socket_(*io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), local_port)),
+    socket_(*io_service),
     local_port_(local_port)
   {
+    socket_.open(boost::asio::ip::udp::v4());
+
+    boost::asio::socket_base::reuse_address option(true);
+    socket_.set_option(option);
+
+    socket_.set_option(option);
+    socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), local_port));
     startReceive();
   }
 

@@ -1,6 +1,7 @@
 #include <boost/python.hpp>
 #include <boost/thread.hpp>
 #include <iostream>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include <darc/node.h>
 #include <darc/node_impl.h>
@@ -28,19 +29,24 @@ BOOST_PYTHON_MODULE(darc)
 
   bp::class_<darc::Node, darc::NodePtr, boost::noncopyable>("Node", bp::no_init)
     .def("create", &darc::Node::create)
-    .staticmethod("create");
+    .staticmethod("create")
+    .def("setNodeID", &darc::Node::setNodeID)
+    .def("connect", &darc::Node::connect)
+    .def("accept", &darc::Node::accept);
 
-  bp::class_<darc::NodeImpl, boost::noncopyable>("NodeImpl", bp::no_init);
-
+  bp::class_<darc::NodeImpl, bp::bases<darc::Node>, boost::noncopyable>("NodeImpl", bp::no_init);
   // Ctrl Handles
   bp::class_<darc::ComponentCtrlHandle>("ComponentCtrlHandle", bp::no_init)
     .def("instanceName", &darc::ComponentCtrlHandle::instanceName)
-    .def("timers", &darc::ComponentCtrlHandle::timers);
+    .add_property("timers", &darc::ComponentCtrlHandle::timers);
 
   bp::class_<darc::timer::TimerListCtrlHandle>("TimerListCtrlHandle", bp::no_init)
-    .def("periodic", &darc::timer::TimerListCtrlHandle::periodic);
+    .add_property("periodic", &darc::timer::TimerListCtrlHandle::getPeriodicTimers);
 
-  bp::class_<darc::timer::PeriodicTimerCtrlHandle>("PeriodicTimerCtrlHandle", bp::no_init);
+  bp::class_<darc::timer::PeriodicTimerCtrlHandle>("PeriodicTimerCtrlHandle", bp::no_init)
+    .add_property("period", &darc::timer::PeriodicTimerCtrlHandle::getPeriod, &darc::timer::PeriodicTimerCtrlHandle::setPeriod);
 
+  bp::class_<std::vector<darc::timer::PeriodicTimerCtrlHandle> >("PeriodicTimerCtrlHandleList")
+    .def(bp::vector_indexing_suite<std::vector<darc::timer::PeriodicTimerCtrlHandle> >());
 
 }

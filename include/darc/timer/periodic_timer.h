@@ -54,6 +54,7 @@ public:
   PeriodicTimer(darc::Owner * owner, PeriodicTimerImpl::CallbackType callback, boost::posix_time::time_duration period) :
     impl_( PeriodicTimerImpl::create(owner->getIOService(), callback, period) )
   {
+    owner->getTimerList().addPeriodicTimer(impl_);
   }
 
 };
