@@ -4,7 +4,7 @@ find_package(Boost COMPONENTS python thread)
 
 include_directories(${PYTHON_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
-add_library(darc-pybindings SHARED darc_module.cpp)
+add_library(darc-pybindings SHARED darc.cpp)
 target_link_libraries(darc-pybindings ${Boost_LIBRARIES} darc)
 set_target_properties(darc-pybindings
   PROPERTIES
