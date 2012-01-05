@@ -20,8 +20,8 @@ BOOST_PYTHON_MODULE(darc)
 
   // DARC
   bp::class_<darc::Component, darc::ComponentPtr, boost::noncopyable>("Component", bp::no_init)
-    .def("run", &darc::Component::run)
-    .def("createCtrlHandle", &darc::Component::createCtrlHandle);
+    .def("run", &darc::Component::run);
+  //    .def("createCtrlHandle", &darc::Component::createCtrlHandle);
 
   bp::class_<darc::ComponentRegister>("ComponentRegister", bp::no_init)
     .def("instantiateComponent", &darc::ComponentRegister::instantiateComponent)
@@ -36,7 +36,7 @@ BOOST_PYTHON_MODULE(darc)
 
   bp::class_<darc::NodeImpl, bp::bases<darc::Node>, boost::noncopyable>("NodeImpl", bp::no_init);
   // Ctrl Handles
-  bp::class_<darc::ComponentCtrlHandle>("ComponentCtrlHandle", bp::no_init)
+  /*  bp::class_<darc::ComponentCtrlHandle>("ComponentCtrlHandle", bp::no_init)
     .def("instanceName", &darc::ComponentCtrlHandle::instanceName)
     .add_property("timers", &darc::ComponentCtrlHandle::timers);
 
@@ -48,5 +48,5 @@ BOOST_PYTHON_MODULE(darc)
 
   bp::class_<std::vector<darc::timer::PeriodicTimerCtrlHandle> >("PeriodicTimerCtrlHandleList")
     .def(bp::vector_indexing_suite<std::vector<darc::timer::PeriodicTimerCtrlHandle> >());
-
+  */
 }

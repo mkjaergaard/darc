@@ -39,7 +39,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <darc/component_ctrl_handle.h>
+//#include <darc/component_ctrl_handle.h>
 #include <darc/node.h>
 #include <darc/owner.h>
 
@@ -86,11 +86,11 @@ public:
   }
 
 public:
-  ComponentCtrlHandle createCtrlHandle()
+  /*  ComponentCtrlHandle createCtrlHandle()
   {
     return ComponentCtrlHandle(shared_from_this());
   }
-
+  */
   const std::string& getName() const
   {
     return name_;

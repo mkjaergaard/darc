@@ -15,11 +15,12 @@ include_directories(${ROS_INCLUDE_DIRS})
 set(CMAKE_CXX_FLAGS "-Os")
 
 add_library(darc SHARED
-  src/node.cpp
-  src/component_register.cpp
-  src/component_ctrl_handle.cpp
-  src/timer_list_ctrl_handle.cpp
-  src/periodic_timer_ctrl_handle.cpp)
+  src/lib/node.cpp
+  src/lib/component_register.cpp)
+#  src/component_ctrl_handle.cpp
+#  src/timer_list_ctrl_handle.cpp
+#  src/periodic_timer_ctrl_handle.cpp)
+
 target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES} -ldl)
 
 install_cmake_infrastructure(darc
@@ -28,4 +29,4 @@ install_cmake_infrastructure(darc
   LIBRARIES darc
   )
 
-add_subdirectory(pybindings)
+add_subdirectory(src/pybindings)
