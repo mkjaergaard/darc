@@ -37,7 +37,6 @@
 #define __DARC_PACKET_MESSAGE_H_INCLUDED__
 
 #include <darc/packet/parser.h>
-#include <darc/serialized_message.h>
 
 namespace darc
 {

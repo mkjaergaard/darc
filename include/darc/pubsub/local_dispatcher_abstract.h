@@ -36,7 +36,7 @@
 #ifndef __DARC_PUBLISH_LOCAL_DISPATCHER_ABSTRACT_H_INCLUDED__
 #define __DARC_PUBLISH_LOCAL_DISPATCHER_ABSTRACT_H_INCLUDED__
 
-#include <darc/serialized_message.h>
+#include <darc/shared_buffer.h>
 
 namespace darc
 {
@@ -48,7 +48,7 @@ class LocalDispatcherAbstract
 public:
   virtual ~LocalDispatcherAbstract() {}
 
-  virtual void dispatchMessageLocally( SerializedMessage::ConstPtr msg_s ) = 0;
+  virtual void dispatchMessageLocally( SharedBuffer msg_s ) = 0;
 };
 
 }

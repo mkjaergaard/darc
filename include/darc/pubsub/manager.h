@@ -95,7 +95,7 @@ public:
     pub->registerDispatcher(disp);
   }
 
-  void receiveFromRemoteNode( const std::string& topic, SerializedMessage::ConstPtr msg_s )
+  void receiveFromRemoteNode( const std::string& topic, SharedBuffer msg_s )
   {
     LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
     if( elem != local_dispatcher_list_.end() )

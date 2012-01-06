@@ -39,7 +39,6 @@
 #include <vector>
 #include <boost/smart_ptr.hpp>
 #include <boost/weak_ptr.hpp>
-#include <darc/serialized_message.h>
 #include <darc/pubsub/local_dispatcher_abstract.h>
 #include <darc/pubsub/subscriber_impl.h>
 #include <darc/pubsub/remote_dispatcher.h>
@@ -89,9 +88,9 @@ public:
   }
 
   // impl of virtual
-  void dispatchMessageLocally( SerializedMessage::ConstPtr msg_s )
+  void dispatchMessageLocally( SharedBuffer msg_s )
   {
-    dispatchMessageLocally( msg_s->deserialize<T>() );
+    dispatchMessageLocally( Serialization::deserialize<T>(msg_s) );
   }
 
 };

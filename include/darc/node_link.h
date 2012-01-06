@@ -38,8 +38,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
-#include <darc/serialized_message.h>
 #include <darc/packet/header.h>
+#include <darc/shared_buffer.h>
 
 namespace darc
 {

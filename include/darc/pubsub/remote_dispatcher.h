@@ -39,7 +39,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
-#include <darc/serialized_message.h>
+#include <darc/serialization.h>
 #include <darc/node_link.h>
 #include <darc/node_link_manager.h>
 #include <darc/packet/header.h>
@@ -56,7 +56,7 @@ private:
   NodeLinkManager link_manager_;
 
   // Function to dispatch locally
-  typedef boost::function<void (const std::string& topic, SerializedMessage::ConstPtr)> LocalDispatchFunctionType;
+  typedef boost::function<void (const std::string& topic, SharedBuffer)> LocalDispatchFunctionType;
   LocalDispatchFunctionType local_dispatch_function_;
 
   // Function to send to remote node
@@ -77,11 +77,8 @@ public:
     size_t msg_header_size = msg_packet.read( buffer.data(), data_len );
     buffer.addOffset( msg_header_size );
 
-    // Extract Serialized Message
-    SerializedMessage::Ptr msg_s( new SerializedMessage( buffer, data_len - msg_header_size ) );
-
     // Dispatch to local subscribers
-    local_dispatch_function_( msg_packet.topic, msg_s );
+    local_dispatch_function_( msg_packet.topic, buffer );
   }
 
   void setLocalDispatchFunction( LocalDispatchFunctionType local_dispatch_function )

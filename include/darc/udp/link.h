@@ -38,7 +38,6 @@
 
 #include <boost/asio.hpp>
 #include <darc/link_manager_abstract.h>
-#include <darc/serialized_message.h>
 #include <darc/node_link.h>
 #include <darc/shared_buffer.h>
 #include <darc/packet/header.h>
@@ -117,31 +116,7 @@ public:
     //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....
     socket_.send_to(combined_buffers, endpoints_[remote_node_id]);
   }
-  /*
-  // impl of virtual
-  void dispatchToRemoteNode( uint32_t remote_node_id, const std::string& topic, SerializedMessage::ConstPtr msg)
-  {
 
-
-    // Send Header
-    packet::Header header(node_id_, packet::Header::MSG_PACKET);
-
-
-    boost::array<uint8_t, 512> tmp_buf;
-
-    size_t pos = header.write( tmp_buf.data(), tmp_buf.size() );
-
-
-    boost::array<boost::asio::const_buffer, 2> tmp_bufs = {{
-	boost::asio::buffer(tmp_buf.data(), pos),
-	boost::asio::buffer(msg->getBuffer().data(), msg->getBuffer().size())
-      }};
-
-    // Send Msg packet
-
-    socket_.send_to(tmp_bufs, endpoints_[remote_node_id]);
-  }
-  */
  public:
   void handleReceive(SharedBuffer recv_buffer, const boost::system::error_code& error, std::size_t size)
   {
