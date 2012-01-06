@@ -37,6 +37,9 @@
 #define __DARC_PROCEDURE_CLIENT_IMPL_H_INCLUDED__
 
 #include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
 
 namespace darc
 {

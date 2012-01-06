@@ -40,6 +40,7 @@
 #include <darc/node.h>
 #include <darc/owner.h>
 #include <darc/pubsub/publisher_impl.h>
+#include <darc/pubsub/manager.h>
 
 namespace darc
 {

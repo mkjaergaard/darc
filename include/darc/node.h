@@ -33,37 +33,33 @@
  * \author Morten Kjaergaard
  */
 
-// the old-style include guards are old.  #pragma once is supported on
-// all major compilers
 #pragma once
 
 #include <vector>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
-#include <darc/pubsub/manager.h>
+#include <darc/pubsub/fwd.h>
 #include <darc/procedure/manager.h>
 
 namespace darc
 {
 
-  class Node
-  {
-  public:
-    typedef boost::shared_ptr<Node> Ptr;
+class Node
+{
+public:
+  typedef boost::shared_ptr<Node> Ptr;
 
-    virtual void run() = 0;
-    virtual pubsub::Manager& getPublisherManager() = 0;
-    virtual procedure::Manager& getProcedureManager() = 0;
-    virtual void accept( const std::string& url ) = 0;
-    virtual void connect( uint32_t remote_node_id, const std::string& url ) = 0;
-    virtual void setNodeID( uint32_t node_id ) = 0;
+public:
+  virtual void run() = 0;
+  virtual pubsub::Manager& getPublisherManager() = 0;
+  virtual procedure::Manager& getProcedureManager() = 0;
+  virtual void accept( const std::string& url ) = 0;
+  virtual void connect( uint32_t remote_node_id, const std::string& url ) = 0;
+  virtual void setNodeID( uint32_t node_id ) = 0;
 
-    static Node::Ptr create();
-  };
+  static Node::Ptr create();
+};
 
-  // These should go *outside* the class, so that they are
-  // forward-declarable (helps reduce compile time and coupling).
-  // where possible, use the forward-declared versions in header
-  // files, the full definitions of the classes in .cpp files.
-  typedef boost::shared_ptr<Node> NodePtr;
+typedef boost::shared_ptr<Node> NodePtr;
+
 }

@@ -51,6 +51,8 @@ public:
   virtual void dispatchMessageLocally( SharedBuffer msg_s ) = 0;
 };
 
+typedef boost::shared_ptr<LocalDispatcherAbstract> LocalDispatcherAbstractPtr;
+
 }
 }
 

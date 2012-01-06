@@ -38,7 +38,6 @@
 
 #include <boost/shared_ptr.hpp>
 #include <darc/pubsub/local_dispatcher.h>
-#include <darc/pubsub/publisher_item.h>
 
 namespace darc
 {
@@ -46,7 +45,7 @@ namespace pubsub
 {
 
 template<typename T>
-class PublisherImpl : public PublisherItem
+class PublisherImpl
 {
 protected:
   boost::weak_ptr<LocalDispatcher<T> > dispatcher_;

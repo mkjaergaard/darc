@@ -28,43 +28,28 @@
  */
 
 /**
- * DARC ItemList class
+ * DARC Forward Declarations for pubsub namespace
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <vector>
-#include <darc/pubsub/subscriber_item.h>
-#include <darc/pubsub/publisher_item.h>
+#include <boost/shared_ptr.hpp>
 
 namespace darc
 {
 namespace pubsub
 {
 
-class List
-{
-protected:
-  typedef std::vector<SubscriberItemPtr> SubscriberListType; // todo: weak ptr?
-  typedef std::vector<PublisherItemPtr> PublisherListType; // todo: weak ptr?
+class Manager;
+class RemoteDispatcher;
+template<typename T> class PublisherImpl;
+template<typename T> class SubscriberImpl;
+template<typename T> class LocalDispatcher;
 
-  SubscriberListType subscriber_list_;
-  PublisherListType publisher_list_;
-
-public:
-  void addSubscriber( SubscriberItemPtr subscriber )
-  {
-    subscriber_list_.push_back(subscriber);
-  }
-
-  void addPublisher( PublisherItemPtr publisher )
-  {
-    publisher_list_.push_back(publisher);
-  }
-
-};
+typedef boost::shared_ptr<Manager> ManagerPtr;
+typedef boost::shared_ptr<RemoteDispatcher> RemoteDispatcherPtr;
 
 }
 }

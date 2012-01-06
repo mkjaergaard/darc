@@ -39,14 +39,13 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
-//#include <darc/component_ctrl_handle.h>
 #include <darc/node.h>
 #include <darc/owner.h>
 
 namespace darc
 {
 
-  namespace python { class ComponentProxy; }
+namespace python { class ComponentProxy; }
 
 class Component : public Owner, public boost::enable_shared_from_this<Component>
 {

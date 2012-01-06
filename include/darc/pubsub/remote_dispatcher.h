@@ -40,9 +40,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
 #include <darc/serialization.h>
-#include <darc/node_link.h>
-#include <darc/node_link_manager.h>
 #include <darc/packet/header.h>
+#include <darc/packet/message.h>
 
 namespace darc
 {
@@ -53,7 +52,6 @@ class RemoteDispatcher
 {
 private:
   boost::asio::io_service * io_service_;
-  NodeLinkManager link_manager_;
 
   // Function to dispatch locally
   typedef boost::function<void (const std::string& topic, SharedBuffer)> LocalDispatchFunctionType;
@@ -65,8 +63,7 @@ private:
 
 public:
   RemoteDispatcher( boost::asio::io_service * io_service ) :
-    io_service_( io_service ),
-    link_manager_( io_service )
+    io_service_( io_service )
   {
   }
 
@@ -127,6 +124,8 @@ public:
   }
 
 };
+
+typedef boost::shared_ptr<RemoteDispatcher> RemoteDispatcherPtr;
 
 }
 }

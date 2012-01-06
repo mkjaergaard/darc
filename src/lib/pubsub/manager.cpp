@@ -28,31 +28,48 @@
  */
 
 /**
- * DARC SubscriberItem class
+ * DARC pubsub::Manager implementation
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
-
+#include <iostream>
+#include <boost/thread.hpp>
+#include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
+#include <darc/node_link_manager.h>
+#include <darc/pubsub/local_dispatcher.h>
+#include <darc/pubsub/remote_dispatcher.h>
+#include <darc/pubsub/subscriber_impl.h>
+#include <darc/pubsub/publisher_impl.h>
 
 namespace darc
 {
 namespace pubsub
 {
 
-class SubscriberItem
+Manager::Manager( boost::asio::io_service * io_service, NodeLinkManager * node_link_manager ) :
+  io_service_(io_service),
+  remote_dispatcher_(io_service)
 {
+  remote_dispatcher_.setLocalDispatchFunction( boost::bind( &Manager::receiveFromRemoteNode,
+							     this, _1, _2 ) );
+  node_link_manager->registerPacketReceivedHandler( packet::Header::MSG_PACKET,
+						    boost::bind( &RemoteDispatcher::packetReceiveHandler,
+								 remote_dispatcher_, _1, _2 ) );
+  remote_dispatcher_.setSendToNodeFunction( boost::bind( &NodeLinkManager::sendPacket,
+							 node_link_manager, _1, _2, _3 ) );
 
-public:
-  SubscriberItem()
+}
+
+void Manager::receiveFromRemoteNode( const std::string& topic, SharedBuffer msg_s )
+{
+  LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
+  if( elem != local_dispatcher_list_.end() )
   {
+    elem->second->dispatchMessageLocally( msg_s );
   }
-
-};
-
-typedef boost::shared_ptr<SubscriberItem> SubscriberItemPtr;
+}
 
 }
 }

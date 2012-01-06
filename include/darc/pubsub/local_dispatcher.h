@@ -55,7 +55,7 @@ private:
   std::string topic_;
   RemoteDispatcher * remote_dispatcher_;
 
-  typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType; // <-- weak_ptr
+  typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType; // <-- weak_ptr! dont keep alive
   SubscriberListType subscriber_list_;
 
 public:
@@ -74,6 +74,7 @@ public:
   void dispatchMessage( boost::shared_ptr<T> msg )
   {
     dispatchMessageLocally(msg);
+    // if remote subscribers
     remote_dispatcher_->postRemoteDispatch<T>(topic_, msg);
   }
 
