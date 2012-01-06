@@ -39,16 +39,21 @@
 #include <boost/function.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/bind.hpp>
-#include <darc/timer/periodic_timer_ctrl_handle.h>
+//#include <darc/timer/periodic_timer_ctrl_handle.h>
+
+#include <boost/units/detail/utility.hpp>
 
 namespace darc
 {
+
+namespace python{ class PeriodicTimerProxy; }
+
 namespace timer
 {
 
 class PeriodicTimerImpl : public boost::asio::deadline_timer, public boost::enable_shared_from_this<PeriodicTimerImpl>
 {
-  friend class PeriodicTimerCtrlHandle;
+  friend class python::PeriodicTimerProxy;
 
 public:
   typedef boost::function<void()> CallbackType;
@@ -95,12 +100,12 @@ public:
   {
     return PeriodicTimerImpl::Ptr( new PeriodicTimerImpl(io_service, callback, period) );
   }
-
+  /*
   PeriodicTimerCtrlHandle createCtrlHandle()
   {
     return PeriodicTimerCtrlHandle(shared_from_this());
   }
-
+  */
 };
 
 typedef boost::shared_ptr<PeriodicTimerImpl> PeriodicTimerImplPtr;

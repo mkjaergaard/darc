@@ -46,9 +46,11 @@
 namespace darc
 {
 
+  namespace python { class ComponentProxy; }
+
 class Component : public Owner, public boost::enable_shared_from_this<Component>
 {
-  friend class ComponentCtrlHandle;;
+  friend class python::ComponentProxy;
 
 public:
   typedef boost::shared_ptr<Component> Ptr;

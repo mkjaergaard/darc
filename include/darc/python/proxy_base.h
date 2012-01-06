@@ -28,48 +28,41 @@
  */
 
 /**
- * DARC Owner class
+ * DARC ProxyBase class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_OWNER_H_INCLUDED__
-#define __DARC_OWNER_H_INCLUDED__
+#pragma once
 
-#include <boost/asio.hpp>
-#include <darc/node.h>
-#include <darc/item_list.h>
+#include <boost/weak_ptr.hpp>
 
 namespace darc
 {
-
-namespace timer
+namespace python
 {
-  class PeriodicTimerImpl;
-  typedef boost::shared_ptr<PeriodicTimerImpl> PeriodicTimerImplPtr;
-}
 
-class Owner
+class ProxyBaseAbstract
+{
+public:
+  virtual ~ProxyBaseAbstract()
+  {
+  }
+};
+
+template<typename T>
+class ProxyBase : public ProxyBaseAbstract
 {
 protected:
-  ItemList<timer::PeriodicTimerImpl> timer_list_;
+  boost::weak_ptr<T> instance_;
 
 public:
-  virtual boost::asio::io_service * getIOService() = 0;
-  virtual boost::shared_ptr<Node> getNode() = 0;
-
-  void addTimer(timer::PeriodicTimerImplPtr timer)
+  ProxyBase(boost::weak_ptr<T> instance) :
+    instance_(instance)
   {
-    timer_list_.add(timer);
-  }
-
-  ItemList<timer::PeriodicTimerImpl>::WkPtrListType getTimerList()
-  {
-    return timer_list_.getWeakPointers();
   }
 
 };
 
 }
-
-#endif
+}

@@ -24,32 +24,48 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * POSSIBILITY OF bvSUCH DAMAGE.
  */
 
 /**
- * DARC CtrlHandleBase class
+ * DARC ItemList class
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <boost/weak_ptr.hpp>
+#include <vector>
+#include <darc/enable_safe_weak_ptr.h>
 
 namespace darc
 {
 
 template<typename T>
-class CtrlHandleBase
+class ItemList : public EnableSafeWeakPtr<ItemList<T> >
 {
+public:
+  typedef std::vector<boost::weak_ptr<T> > WkPtrListType;
+
 protected:
-  boost::weak_ptr<T> instance_;
+public:// tmp
+  typedef std::vector<boost::shared_ptr<T> > ItemListType;
+  ItemListType list_;
 
 public:
-  CtrlHandleBase(boost::weak_ptr<T> instance) :
-    instance_(instance)
+  std::vector<boost::weak_ptr<T> > getWeakPointers()
   {
+    WkPtrListType return_list;
+    for( typename ItemListType::iterator it = list_.begin(); it != list_.end(); it++ )
+    {
+      return_list.push_back((*it));
+    }
+    return return_list;
+  }
+
+  void add(boost::shared_ptr<T> item)
+  {
+    list_.push_back(item);
   }
 
 };
