@@ -7,7 +7,7 @@
 
 #include <darc/node.h>
 #include <darc/node_impl.h>
-#include <darc/component_register.h>
+#include <darc/registry.h>
 #include <darc/component.h>
 #include <darc/timer/periodic_timer_impl.h>
 #include <darc/python/proxy_base.h>
@@ -116,8 +116,8 @@ BOOST_PYTHON_MODULE(darc)
   bp::class_<darc::Component, darc::ComponentPtr, boost::noncopyable>("Component", bp::no_init)
     .def("run", &darc::Component::run);
 
-  bp::class_<darc::ComponentRegister>("ComponentRegister", bp::no_init)
-    .def("instantiateComponent", &darc::ComponentRegister::instantiateComponent, bp::return_value_policy<bp::return_by_value>() )
+  bp::class_<darc::Registry>("Registry", bp::no_init)
+    .def("instantiateComponent", &darc::Registry::instantiateComponent, bp::return_value_policy<bp::return_by_value>() )
     .staticmethod("instantiateComponent");
 
   bp::class_<darc::Node, darc::NodePtr, boost::noncopyable>("Node", bp::no_init)

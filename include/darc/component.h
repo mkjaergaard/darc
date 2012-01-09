@@ -113,6 +113,6 @@ typedef boost::weak_ptr<Component> ComponentWkPtr;
 }
 
 // Include here so its available for the components
-#include <darc/component_register.h>
+#include <darc/registry.h>
 
 #endif

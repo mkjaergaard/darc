@@ -28,16 +28,16 @@
  */
 
 /**
- * DARC ComponentRegister class
+ * DARC Registry class
  *
  * \author Morten Kjaergaard
  */
 
-#include <darc/component_register.h>
+#include <darc/registry.h>
 
 namespace darc
 {
 
-  ComponentRegister * ComponentRegister::instance_ = 0;
+  Registry * Registry::instance_ = 0;
 
 }

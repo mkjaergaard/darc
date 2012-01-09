@@ -28,13 +28,12 @@
  */
 
 /**
- * DARC ComponentRegister class
+ * DARC Registry class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_COMPONENT_REGISTER_H_INCLUDED_
-#define __DARC_COMPONENT_REGISTER_H_INCLUDED_
+#pragma once
 
 #include <map>
 #include <iostream>
@@ -44,7 +43,7 @@
 namespace darc
 {
 
-class ComponentRegister
+class Registry
 {
 private:
   typedef boost::function<Component::Ptr(const std::string&, Node::Ptr)> InstantiateComponentMethod;
@@ -52,16 +51,16 @@ private:
 
   ComponentListType component_list_;
 
-  static ComponentRegister * instance_;
+  static Registry * instance_;
 
 private:
-  ComponentRegister() {}
+  Registry() {}
 
-  static ComponentRegister * instance()
+  static Registry * instance()
   {
     if( instance_ == 0 )
     {
-      instance_ = new ComponentRegister();
+      instance_ = new Registry();
     }
     return instance_;
   }
@@ -69,7 +68,7 @@ private:
 public:
   static int registerComponent( const std::string& component_name, InstantiateComponentMethod method )
   {
-    ComponentRegister * inst = instance();
+    Registry * inst = instance();
     inst->component_list_[component_name] = method;
     std::cout << "Registered Component: " << component_name << std::endl;
     return 1;
@@ -77,7 +76,7 @@ public:
 
   static darc::Component::Ptr instantiateComponent( const std::string& instance_name, Node::Ptr node )
   {
-    ComponentRegister * inst = instance();
+    Registry * inst = instance();
     if( inst->component_list_.count(instance_name) )
     {
       return inst->component_list_[instance_name](instance_name, node);
@@ -94,6 +93,5 @@ public:
 
 }
 
-#define DARC_REGISTER_COMPONENT(classname) namespace classname##_reg { static int dummy = darc::ComponentRegister::registerComponent( #classname, boost::bind(&darc::Component::instantiate<classname>, _1, _2) ); }
+#define DARC_REGISTER_COMPONENT(classname) namespace classname##_reg { static int dummy = darc::Registry::registerComponent( #classname, boost::bind(&darc::Component::instantiate<classname>, _1, _2) ); }
 
-#endif

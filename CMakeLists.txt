@@ -11,12 +11,12 @@ include_directories(include)
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${ROS_INCLUDE_DIRS})
 
-set(CMAKE_CXX_FLAGS "-Wall -g")
-#set(CMAKE_CXX_FLAGS "-Os")
+#set(CMAKE_CXX_FLAGS "-Wall -g")
+set(CMAKE_CXX_FLAGS "-Os")
 
 add_library(darc SHARED
   src/lib/node.cpp
-  src/lib/component_register.cpp
+  src/lib/registry.cpp
   src/lib/pubsub/manager.cpp
 )
 
