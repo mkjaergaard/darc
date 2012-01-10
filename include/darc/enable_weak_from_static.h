@@ -28,49 +28,42 @@
  */
 
 /**
- * DARC PublisherImpl class
+ * DARC EnableWeakFromStatic class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISH_PUBLISHER_IMPL_H_INCLUDED__
-#define __DARC_PUBLISH_PUBLISHER_IMPL_H_INCLUDED__
+#pragma once
 
 #include <boost/shared_ptr.hpp>
-#include <darc/pubsub/local_dispatcher.h>
 
 namespace darc
 {
-namespace pubsub
-{
 
 template<typename T>
-class PublisherImpl
+class EnableWeakFromStatic
 {
 protected:
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
+  struct null_deleter
+  {
+    void operator()(void const *) const
+    {
+    }
+  };
+
+  boost::shared_ptr<T> this_ptr_;
+
+  EnableWeakFromStatic() :
+    this_ptr_(static_cast<T*>(this), null_deleter())
+  {
+  }
 
 public:
-  PublisherImpl()
+  boost::weak_ptr<T> getWeakPtr()
   {
-  }
-
-  void registerDispatcher( boost::weak_ptr<LocalDispatcher<T> > dispatcher )
-  {
-    dispatcher_ = dispatcher;
-  }
-
-  void publish(boost::shared_ptr<T> msg)
-  {
-    if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
-    {
-      dispatcher_sp->dispatchMessage(msg);
-    }
+    return boost::weak_ptr<T>(this_ptr_);
   }
 
 };
 
 }
-}
-
-#endif

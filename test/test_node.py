@@ -3,7 +3,7 @@
 import darc, time, publisher_component
 
 n = darc.Node.create()
-c = darc.ComponentRegister.instantiateComponent("MyPublisherComponent", n)
+c = darc.Registry.instantiateComponent("MyPublisherComponent", n)
 
 n.setNodeID(120)
 #n.accept("udp://127.0.0.1:5120")

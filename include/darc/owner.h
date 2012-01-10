@@ -45,27 +45,22 @@ namespace darc
 
 namespace timer
 {
-  class PeriodicTimerImpl;
-  typedef boost::shared_ptr<PeriodicTimerImpl> PeriodicTimerImplPtr;
+  class PeriodicTimer;
+  typedef boost::weak_ptr<PeriodicTimer> PeriodicTimerWkPtr;
 }
 
 class Owner
 {
 protected:
-  ItemList<timer::PeriodicTimerImpl> timer_list_;
+  ItemList<timer::PeriodicTimer> timer_list_;
 
 public:
   virtual boost::asio::io_service * getIOService() = 0;
   virtual boost::shared_ptr<Node> getNode() = 0;
 
-  void addTimer(timer::PeriodicTimerImplPtr timer)
+  void addTimer(timer::PeriodicTimerWkPtr timer)
   {
     timer_list_.add(timer);
-  }
-
-  ItemList<timer::PeriodicTimerImpl>::WkPtrListType getTimerList()
-  {
-    return timer_list_.getWeakPointers();
   }
 
 };

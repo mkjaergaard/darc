@@ -28,38 +28,74 @@
  */
 
 /**
- * DARC Timer class
+ * DARC TimerImpl class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_TIMER_H_INCLUDED__
-#define __DARC_TIMER_H_INCLUDED__
+#pragma once
 
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
-#include <darc/timer/periodic_timer_impl.h>
+#include <boost/bind.hpp>
+#include <boost/units/detail/utility.hpp>
+#include <darc/enable_weak_from_static.h>
 
 namespace darc
 {
+
+namespace python{ class PeriodicTimerProxy; }
+
 namespace timer
 {
 
-class PeriodicTimer
+class PeriodicTimer : public boost::asio::deadline_timer, public darc::EnableWeakFromStatic<PeriodicTimer>
 {
-protected:
-  PeriodicTimerImplPtr impl_;
+  friend class python::PeriodicTimerProxy;
 
 public:
-  PeriodicTimer(darc::Owner * owner, PeriodicTimerImpl::CallbackType callback, boost::posix_time::time_duration period) :
-    impl_( PeriodicTimerImpl::create(owner->getIOService(), callback, period) )
+  typedef boost::function<void()> CallbackType;
+
+protected:
+  typedef boost::shared_ptr<PeriodicTimer> Ptr;
+
+  CallbackType callback_;
+
+  boost::posix_time::time_duration period_;
+  boost::posix_time::ptime expected_deadline_;
+
+public:
+  PeriodicTimer(darc::Owner * owner, CallbackType callback, boost::posix_time::time_duration period) :
+    boost::asio::deadline_timer(*(owner->getIOService()), period),
+    callback_(callback),
+    period_(period)
   {
-    owner->addTimer(impl_);
+    owner->addTimer(this->getWeakPtr());
+    expected_deadline_ = boost::posix_time::microsec_clock::universal_time() + period;
+    async_wait( boost::bind( &PeriodicTimer::handler, this ) );
+  }
+
+protected:
+  void handler()// const boost::system::error_code& error )
+  {
+    boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - expected_deadline_;
+    expected_deadline_ += period_;
+    //    std::cout << diff.total_milliseconds() << std::endl;
+    expires_from_now( period_ - diff );
+
+    async_wait( boost::bind( &PeriodicTimer::handler, this ) );
+
+    //    Consumer::cpu_usage_.start();
+    callback_();
+    //    Consumer::cpu_usage_.stop();
+  }
+
+  void setPeriod( boost::posix_time::time_duration new_period )
+  {
+    period_ = new_period;
   }
 
 };
 
 }
 }
-
-#endif

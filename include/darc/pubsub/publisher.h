@@ -33,14 +33,13 @@
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISH_PUBLISHER_H_INCLUDED__
-#define __DARC_PUBLISH_PUBLISHER_H_INCLUDED__
+#pragma once
 
 #include <boost/smart_ptr.hpp>
 #include <darc/node.h>
 #include <darc/owner.h>
-#include <darc/pubsub/publisher_impl.h>
 #include <darc/pubsub/manager.h>
+#include <darc/enable_weak_from_static.h>
 
 namespace darc
 {
@@ -48,26 +47,25 @@ namespace pubsub
 {
 
 template<typename T>
-class Publisher
+class Publisher : public darc::EnableWeakFromStatic<Publisher<T> >
 {
 protected:
-  boost::shared_ptr<PublisherImpl<T> > impl_;
+  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
 
 public:
-  Publisher(darc::Owner* owner, const std::string& topic) :
-  impl_( new PublisherImpl<T> )
+  Publisher(darc::Owner* owner, const std::string& topic)
   {
-    owner->getNode()->getPublisherManager().registerPublisher<T>(topic, impl_);
+    dispatcher_ = owner->getNode()->getPublisherManager().registerPublisher<T>(topic);
   }
 
   void publish(boost::shared_ptr<T> msg)
   {
-    impl_->publish(msg);
+    if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
+    {
+      dispatcher_sp->dispatchMessage(msg);
+    }
   }
-
 };
 
 }
 }
-
-#endif

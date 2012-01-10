@@ -33,14 +33,11 @@
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISH_SUBSCRIBER_H_INCLUDED__
-#define __DARC_PUBLISH_SUBSCRIBER_H_INCLUDED__
+#pragma once
 
 #include <boost/shared_ptr.hpp>
 #include <darc/pubsub/subscriber_impl.h>
 #include <darc/owner.h>
-
-// Wraps a SubscriberImpl in a smart pointer so the lifetime of SubscriberImpl is dependent by the lifetime of Subscriber
 
 namespace darc
 {
@@ -55,11 +52,14 @@ private:
 
   typedef boost::function<void( boost::shared_ptr<T> )> CallbackType;
 
+  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
+
 public:
   Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback) :
     impl_( new SubscriberImpl<T>( owner->getIOService(), topic, callback ) )
   {
-    owner->getNode()->getPublisherManager().registerSubscriber(topic, impl_);
+    boost::shared_ptr<LocalDispatcher<T> > dispatcher = owner->getNode()->getPublisherManager().registerSubscriber<T>(topic);
+    dispatcher->registerSubscriber(impl_);
   }
 
   ~Subscriber()
@@ -71,5 +71,3 @@ public:
 
 }
 }
-
-#endif

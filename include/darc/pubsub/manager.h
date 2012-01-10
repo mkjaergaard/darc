@@ -70,19 +70,17 @@ public:
   // called by the Subscriber
   // todo: not thread safe
   template<typename T>
-  void registerSubscriber( const std::string& topic, boost::shared_ptr<SubscriberImpl<T> > sub )
+  boost::shared_ptr<LocalDispatcher<T> > registerSubscriber(const std::string& topic)
   {
-    boost::shared_ptr<LocalDispatcher<T> > disp = getLocalDispatcher<T>(topic);
-    disp->registerSubscriber( sub );
+    return getLocalDispatcher<T>(topic);
   }
 
   // Called by Publisher
   // todo: not thread safe
   template<typename T>
-  void registerPublisher( const std::string& topic, boost::shared_ptr<PublisherImpl<T> > pub )
+  boost::shared_ptr<LocalDispatcher<T> > registerPublisher(const std::string& topic)
   {
-    boost::shared_ptr<LocalDispatcher<T> > disp = getLocalDispatcher<T>(topic);
-    pub->registerDispatcher(disp);
+    return getLocalDispatcher<T>(topic);
   }
 
 private:

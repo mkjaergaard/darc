@@ -9,7 +9,7 @@
 #include <darc/node_impl.h>
 #include <darc/registry.h>
 #include <darc/component.h>
-#include <darc/timer/periodic_timer_impl.h>
+#include <darc/timer/periodic_timer.h>
 #include <darc/python/proxy_base.h>
 
 namespace bp = boost::python;
@@ -64,11 +64,11 @@ public:
 
 };
 
-class PeriodicTimerProxy : public ProxyBase<timer::PeriodicTimerImpl>
+class PeriodicTimerProxy : public ProxyBase<timer::PeriodicTimer>
 {
 public:
-  PeriodicTimerProxy(boost::shared_ptr<timer::PeriodicTimerImpl> instance) :
-    ProxyBase(instance->shared_from_this())
+  PeriodicTimerProxy(boost::weak_ptr<timer::PeriodicTimer> instance) :
+    ProxyBase(instance)
   {
   }
 
@@ -84,7 +84,7 @@ public:
 
 };
 
-typedef ItemListProxy<timer::PeriodicTimerImpl, PeriodicTimerProxy> TimerListProxy;
+typedef ItemListProxy<timer::PeriodicTimer, PeriodicTimerProxy> TimerListProxy;
 
 class ComponentProxy : public ProxyBase<Component>
 {
@@ -101,7 +101,7 @@ public:
 
   TimerListProxy timers()
   {
-    return TimerListProxy( instance_.lock()->timer_list_.getSafePtr() );
+    return TimerListProxy( instance_.lock()->timer_list_.getWeakPtr() );
   }
 
 };

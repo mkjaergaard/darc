@@ -41,7 +41,6 @@
 #include <darc/pubsub/local_dispatcher.h>
 #include <darc/pubsub/remote_dispatcher.h>
 #include <darc/pubsub/subscriber_impl.h>
-#include <darc/pubsub/publisher_impl.h>
 
 namespace darc
 {

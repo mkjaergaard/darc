@@ -36,34 +36,21 @@
 #pragma once
 
 #include <vector>
-#include <darc/enable_safe_weak_ptr.h>
+#include <darc/enable_weak_from_static.h>
 
 namespace darc
 {
 
 template<typename T>
-class ItemList : public EnableSafeWeakPtr<ItemList<T> >
+class ItemList : public EnableWeakFromStatic<ItemList<T> >
 {
-public:
-  typedef std::vector<boost::weak_ptr<T> > WkPtrListType;
-
 protected:
 public:// tmp
-  typedef std::vector<boost::shared_ptr<T> > ItemListType;
+  typedef std::vector<boost::weak_ptr<T> > ItemListType;
   ItemListType list_;
 
 public:
-  std::vector<boost::weak_ptr<T> > getWeakPointers()
-  {
-    WkPtrListType return_list;
-    for( typename ItemListType::iterator it = list_.begin(); it != list_.end(); it++ )
-    {
-      return_list.push_back((*it));
-    }
-    return return_list;
-  }
-
-  void add(boost::shared_ptr<T> item)
+  void add(boost::weak_ptr<T> item)
   {
     list_.push_back(item);
   }
