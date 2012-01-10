@@ -39,6 +39,7 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <boost/units/detail/utility.hpp>
+#include <darc/item.h>
 #include <darc/enable_weak_from_static.h>
 
 namespace darc
@@ -49,7 +50,7 @@ namespace python{ class PeriodicTimerProxy; }
 namespace timer
 {
 
-class PeriodicTimer : public boost::asio::deadline_timer, public darc::EnableWeakFromStatic<PeriodicTimer>
+class PeriodicTimer : public darc::Item, public boost::asio::deadline_timer, public darc::EnableWeakFromStatic<PeriodicTimer>
 {
   friend class python::PeriodicTimerProxy;
 
@@ -71,23 +72,41 @@ public:
     period_(period)
   {
     owner->addTimer(this->getWeakPtr());
-    expected_deadline_ = boost::posix_time::microsec_clock::universal_time() + period;
-    async_wait( boost::bind( &PeriodicTimer::handler, this ) );
   }
 
 protected:
-  void handler()// const boost::system::error_code& error )
+  void onStart()
   {
-    boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - expected_deadline_;
-    expected_deadline_ += period_;
-    //    std::cout << diff.total_milliseconds() << std::endl;
-    expires_from_now( period_ - diff );
+    expected_deadline_ = boost::posix_time::microsec_clock::universal_time() + period_;
+    async_wait( boost::bind( &PeriodicTimer::handler, this, boost::asio::placeholders::error ) );
+  }
 
-    async_wait( boost::bind( &PeriodicTimer::handler, this ) );
+  void onStop()
+  {
+    cancel();
+  }
 
-    //    Consumer::cpu_usage_.start();
-    callback_();
-    //    Consumer::cpu_usage_.stop();
+  void handler( const boost::system::error_code& error )
+  {
+    if( error == boost::asio::error::operation_aborted )
+    {
+      std::cout << "Aborted" << std::endl;
+    }
+    else if( state_ != RUNNING )
+    {
+      std::cout << "Ignored" << std::endl;
+    }
+    else
+    {
+      boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - expected_deadline_;
+      expected_deadline_ += period_;
+      //    std::cout << diff.total_milliseconds() << std::endl;
+      expires_from_now( period_ - diff );
+      async_wait( boost::bind( &PeriodicTimer::handler, this, boost::asio::placeholders::error ) );
+      //    Consumer::cpu_usage_.start();
+      callback_();
+      //    Consumer::cpu_usage_.stop();
+    }
   }
 
   void setPeriod( boost::posix_time::time_duration new_period )

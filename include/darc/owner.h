@@ -39,6 +39,7 @@
 #include <boost/asio.hpp>
 #include <darc/node.h>
 #include <darc/item_list.h>
+#include <darc/item.h>
 
 namespace darc
 {
@@ -53,15 +54,19 @@ class Owner
 {
 protected:
   ItemList<timer::PeriodicTimer> timer_list_;
+  ItemList<Item> all_list_;
 
 public:
   virtual boost::asio::io_service * getIOService() = 0;
   virtual boost::shared_ptr<Node> getNode() = 0;
 
-  void addTimer(timer::PeriodicTimerWkPtr timer)
+  void Start()
   {
-    timer_list_.add(timer);
+    std::cout << "Start2" << std::endl;
+    all_list_.StartAll();
   }
+
+  void addTimer(timer::PeriodicTimerWkPtr timer);
 
 };
 

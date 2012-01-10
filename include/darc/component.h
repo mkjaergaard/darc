@@ -101,6 +101,7 @@ public:
   {
     std::cout << "Running Component: " << name_ << std::endl;
     boost::asio::io_service::work keep_alive(io_service_);
+    Start();
     io_service_.run();
     std::cout << "Component " << name_ << " Stopped!" << std::endl;
   }

@@ -24,47 +24,25 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF bvSUCH DAMAGE.
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
- * DARC ItemList class
+ * DARC Owner class implementation
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
-
-#include <vector>
-#include <darc/enable_weak_from_static.h>
+#include <darc/owner.h>
+#include <darc/timer/periodic_timer.h>
 
 namespace darc
 {
 
-template<typename T>
-class ItemList : public EnableWeakFromStatic<ItemList<T> >
+void Owner::addTimer(timer::PeriodicTimerWkPtr timer)
 {
-protected:
-public:// tmp
-  typedef std::vector<boost::weak_ptr<T> > ItemListType;
-  ItemListType list_;
-
-public:
-  void StartAll()
-  {
-    std::cout << "Start3" << std::endl;
-    for( typename ItemListType::iterator it = list_.begin(); it != list_.end(); it++)
-    {
-    std::cout << "Start4" << std::endl;
-      it->lock()->Start();
-    }
-  }
-
-  void add(boost::weak_ptr<T> item)
-  {
-    list_.push_back(item);
-  }
-
-};
+  timer_list_.add(timer);
+  all_list_.add(timer);
+}
 
 }
