@@ -79,6 +79,7 @@ public:
     Registry * inst = instance();
     if( inst->component_list_.count(instance_name) )
     {
+      std::cout << "Instantiate " << instance_name << std::endl;
       return inst->component_list_[instance_name](instance_name, node);
     }
     else

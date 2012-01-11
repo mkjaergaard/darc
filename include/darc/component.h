@@ -38,16 +38,16 @@
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <darc/node.h>
 #include <darc/owner.h>
+#include <darc/enable_weak_from_static.h>
 
 namespace darc
 {
 
 namespace python { class ComponentProxy; }
 
-class Component : public Owner, public boost::enable_shared_from_this<Component>
+class Component : public Owner, public EnableWeakFromStatic<Component>
 {
   friend class python::ComponentProxy;
 
@@ -64,6 +64,7 @@ protected:
     name_(name),
     node_( node )
   {
+    std::cout << "construct component" << std::endl;
   }
 
 public:
@@ -92,7 +93,7 @@ public:
     return ComponentCtrlHandle(shared_from_this());
   }
   */
-  const std::string& getName() const
+  const std::string getName() const
   {
     return name_;
   }

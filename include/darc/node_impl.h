@@ -41,7 +41,9 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <darc/node.h>
+#include <darc/component.h>
 #include <darc/node_link_manager.h>
 #include <darc/pubsub/manager.h>
 #include <darc/procedure/manager.h>
@@ -49,33 +51,43 @@
 namespace darc
 {
 
-class NodeImpl : public Node
+namespace python{ class NodeProxy; }
+
+class NodeImpl : public Node, public boost::enable_shared_from_this<NodeImpl>
 {
+  friend class python::NodeProxy;
 
 private:
   boost::asio::io_service io_service_;
-
-  //  boost::asio::signal_set signals_; not in boost 1.40
 
   NodeLinkManager node_link_manager_;
 
   pubsub::Manager publish_manager_;
   procedure::Manager procedure_manager_;
 
+  typedef std::map<std::string, ComponentPtr> ComponentInstancesList;
+  ComponentInstancesList component_instances_;
+
 public:
   NodeImpl() :
-    //    signals_(io_service, SIGTERM, SIGINT), not in boost 1.40
     node_link_manager_(&io_service_),
     publish_manager_(&io_service_, &node_link_manager_)
   {
-    // signals_.async_wait(boost::bind(&Node::quitHandler, this)); not in boost 1.40
   }
 
 private:
   void run()
   {
     std::cout << "Running Node with ID " << node_link_manager_.getNodeID() << std::endl;
+    boost::asio::io_service::work keep_alive(io_service_);
     io_service_.run();
+  }
+
+  boost::shared_ptr<Component> instantiateComponent(const std::string& instance_name)
+  {
+    ComponentPtr c = Registry::instantiateComponent(instance_name, this->shared_from_this());
+    component_instances_[instance_name] = c;
+    return c;
   }
 
   pubsub::Manager& getPublisherManager()
