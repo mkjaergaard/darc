@@ -28,50 +28,57 @@
  */
 
 /**
- * DARC SubscriberImpl class
+ * DARC Subscriber class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISHER_SUBSCRIBER_IMPL_H_INCLUDED__
-#define __DARC_PUBLISHER_SUBSCRIBER_IMPL_H_INCLUDED__
+#pragma once
 
-#include <iostream>
 #include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/function.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <darc/pubsub/manager.h>
+#include <darc/owner.h>
+#include <darc/enable_weak_from_static.h>
 
 namespace darc
 {
+
+class Owner;
+
 namespace pubsub
 {
 
 template<typename T>
-class SubscriberImpl
+class Subscriber : public darc::EnableWeakFromStatic<Subscriber<T> >
 {
-public:
-
 private:
-  typedef boost::shared_ptr<T> MsgPtrType;
+  boost::shared_ptr<SubscriberImpl<T> > impl_;
 
-  typedef boost::function<void(MsgPtrType)> CallbackType;
+  typedef boost::function<void( boost::shared_ptr<T> )> CallbackType;
   CallbackType callback_;
+
+  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
+
+  typedef boost::shared_ptr<T> MsgPtrType;
 
   boost::asio::io_service * io_service_;
 
 public:
-  SubscriberImpl(boost::asio::io_service * io_service, const std::string& topic, CallbackType callback) :
-    callback_(callback),
-    io_service_(io_service)
+  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback);/* :
+    io_service(owner->getIOService()),
+    callback_(callback)
   {
+    boost::shared_ptr<LocalDispatcher<T> > dispatcher = owner->getNode()->getPublisherManager().registerSubscriber<T>(topic);
+    dispatcher->registerSubscriber(this);
+  }
+										   */
+  ~Subscriber()
+  {
+    // unregister subscriber
   }
 
   void dispatch( MsgPtrType &msg)
   {
-    io_service_->post( boost::bind( &SubscriberImpl::receive, this, msg ) );
+    io_service_->post( boost::bind( &Subscriber::receive, this, msg ) );
   }
 
 private:
@@ -80,9 +87,8 @@ private:
     callback_( msg );
   }
 
+
 };
 
 }
 }
-
-#endif

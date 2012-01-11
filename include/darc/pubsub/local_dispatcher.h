@@ -40,7 +40,7 @@
 #include <boost/smart_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <darc/pubsub/local_dispatcher_abstract.h>
-#include <darc/pubsub/subscriber_impl.h>
+#include <darc/pubsub/subscriber_decl.h>
 #include <darc/pubsub/remote_dispatcher.h>
 
 namespace darc
@@ -55,7 +55,7 @@ private:
   std::string topic_;
   RemoteDispatcher * remote_dispatcher_;
 
-  typedef std::vector< boost::shared_ptr<SubscriberImpl<T> > > SubscriberListType; // <-- weak_ptr! dont keep alive
+  typedef std::vector< boost::weak_ptr<Subscriber<T> > > SubscriberListType; // <-- weak_ptr! dont keep alive
   SubscriberListType subscriber_list_;
 
 public:
@@ -65,7 +65,7 @@ public:
   {
   }
 
-  void registerSubscriber( boost::shared_ptr<SubscriberImpl<T> > sub )
+  void registerSubscriber( boost::weak_ptr<Subscriber<T> > sub )
   {
     subscriber_list_.push_back( sub );
   }
@@ -84,7 +84,7 @@ public:
          it != subscriber_list_.end();
          it++)
     {
-      (*it)->dispatch( msg );
+      it->lock()->dispatch( msg );
     }
   }
 

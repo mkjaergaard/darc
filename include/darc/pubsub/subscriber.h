@@ -36,8 +36,8 @@
 #pragma once
 
 #include <boost/shared_ptr.hpp>
-#include <darc/pubsub/subscriber_impl.h>
-#include <darc/owner.h>
+#include <darc/pubsub/subscriber_decl.h>
+#include <darc/pubsub/manager.h>
 
 namespace darc
 {
@@ -45,29 +45,13 @@ namespace pubsub
 {
 
 template<typename T>
-class Subscriber
+Subscriber<T>::Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback) :
+  io_service_(owner->getIOService()),
+  callback_(callback)
 {
-private:
-  boost::shared_ptr<SubscriberImpl<T> > impl_;
-
-  typedef boost::function<void( boost::shared_ptr<T> )> CallbackType;
-
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
-
-public:
-  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback) :
-    impl_( new SubscriberImpl<T>( owner->getIOService(), topic, callback ) )
-  {
-    boost::shared_ptr<LocalDispatcher<T> > dispatcher = owner->getNode()->getPublisherManager().registerSubscriber<T>(topic);
-    dispatcher->registerSubscriber(impl_);
-  }
-
-  ~Subscriber()
-  {
-    // unregister subscriber
-  }
-
-};
+  boost::shared_ptr<LocalDispatcher<T> > dispatcher = owner->getNode()->getPublisherManager().registerSubscriber<T>(topic);
+  dispatcher->registerSubscriber(this->getWeakPtr());
+}
 
 }
 }

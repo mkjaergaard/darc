@@ -37,10 +37,10 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
+#include <darc/pubsub/manager.h>
 #include <darc/node_link_manager.h>
 #include <darc/pubsub/local_dispatcher.h>
 #include <darc/pubsub/remote_dispatcher.h>
-#include <darc/pubsub/subscriber_impl.h>
 
 namespace darc
 {
