@@ -50,7 +50,7 @@ namespace python{ class PeriodicTimerProxy; }
 namespace timer
 {
 
-class PeriodicTimer : public darc::Item, public boost::asio::deadline_timer, public darc::EnableWeakFromStatic<PeriodicTimer>
+class PeriodicTimer : public darc::Item, public boost::asio::deadline_timer, public EnableWeakFromStatic<PeriodicTimer>
 {
   friend class python::PeriodicTimerProxy;
 

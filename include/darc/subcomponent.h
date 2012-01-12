@@ -47,10 +47,10 @@ namespace darc
 class Subcomponent : public Owner
 {
 protected:
-  Component * parent_;
+  Owner * parent_;
 
 protected:
-  Subcomponent(Component * parent):
+  Subcomponent(Owner * parent):
     parent_(parent)
   {
   }

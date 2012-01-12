@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,64 +28,36 @@
  */
 
 /**
- * DARC Subscriber class
+ * DARC ParameterAbstract class
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-#include <darc/owner.h>
-#include <darc/enable_weak_from_static.h>
+#include <darc/item.h>
 
 namespace darc
 {
-
-class Owner;
-
-namespace pubsub
+namespace parameter
 {
 
-template<typename T>
-class Subscriber : public darc::EnableWeakFromStatic<Subscriber<T> >
+class ParameterAbstract : public Item, public EnableWeakFromStatic<ParameterAbstract>
 {
-private:
-  boost::asio::io_service * io_service_;
 
-  typedef boost::function<void( boost::shared_ptr<T> )> CallbackType;
-  CallbackType callback_;
-
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
-
-  typedef boost::shared_ptr<T> MsgPtrType;
-
+protected:
+  std::string name_;
 
 public:
-  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback);/* :
-    io_service(owner->getIOService()),
-    callback_(callback)
+  ParameterAbstract(const std::string& name) :
+    name_(name)
   {
-    boost::shared_ptr<LocalDispatcher<T> > dispatcher = owner->getNode()->getPublisherManager().registerSubscriber<T>(topic);
-    dispatcher->registerSubscriber(this);
-  }
-										   */
-  ~Subscriber()
-  {
-    // unregister subscriber
   }
 
-  void dispatch( MsgPtrType &msg)
+  const std::string& getName() const
   {
-    io_service_->post( boost::bind( &Subscriber::receive, this, msg ) );
+    return name_;
   }
-
-private:
-  void receive(MsgPtrType& msg)
-  {
-    callback_( msg );
-  }
-
 
 };
 

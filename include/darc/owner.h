@@ -44,16 +44,14 @@
 namespace darc
 {
 
-namespace timer
-{
-  class PeriodicTimer;
-  typedef boost::weak_ptr<PeriodicTimer> PeriodicTimerWkPtr;
-}
+namespace timer { class PeriodicTimer; }
+namespace parameter { class ParameterAbstract; }
 
 class Owner
 {
 protected:
   ItemList<timer::PeriodicTimer> timer_list_;
+  ItemList<parameter::ParameterAbstract> parameter_list_;
   ItemList<Item> all_list_;
 
 public:
@@ -66,7 +64,8 @@ public:
     all_list_.StartAll();
   }
 
-  void addTimer(timer::PeriodicTimerWkPtr timer);
+  void addTimer(boost::weak_ptr<timer::PeriodicTimer> timer);
+  void addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter );
 
 };
 

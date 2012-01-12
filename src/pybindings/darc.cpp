@@ -11,6 +11,7 @@
 #include <darc/component.h>
 #include <darc/timer/periodic_timer.h>
 #include <darc/python/proxy_base.h>
+#include <darc/parameter/parameter.h>
 
 namespace bp = boost::python;
 namespace xp = boost::xpressive;
@@ -20,7 +21,7 @@ namespace darc
 namespace python
 {
 
-template<typename T, typename PT>
+template<typename T, typename PT, char const* myname>
 class ItemListProxy : public ProxyBase< ItemList<T> >
 {
   typedef ProxyBase< ItemList<T> > MyProxyBase;
@@ -38,7 +39,7 @@ public:
 
   PT getitem(std::string text)
   {
-    xp::sregex rex( "timer_" >> (xp::s1= +xp::_d) );
+    xp::sregex rex( xp::sregex::compile(myname) >> (xp::s1= +xp::_d) );
     xp::smatch what;
     if( regex_match(text, what, rex) )
     {
@@ -57,7 +58,7 @@ public:
     boost::python::list l;
     for( unsigned int i = 0; i < MyProxyBase::instance_.lock()->list_.size(); i++ )
     {
-      l.insert(0, std::string("timer_") + boost::lexical_cast<std::string>(i) );
+      l.insert(0, std::string(myname) + boost::lexical_cast<std::string>(i) );
     }
     return l;
   }
@@ -84,7 +85,26 @@ public:
 
 };
 
-typedef ItemListProxy<timer::PeriodicTimer, PeriodicTimerProxy> TimerListProxy;
+class ParameterProxy : public ProxyBase<parameter::ParameterAbstract>
+{
+public:
+  ParameterProxy(boost::weak_ptr<parameter::ParameterAbstract> instance) :
+    ProxyBase(instance)
+  {
+  }
+
+  std::string getName()
+  {
+    return instance_.lock()->getName();
+  }
+
+};
+
+char timer_string[] = "timer_";
+char parameter_string[] = "parameter_";
+
+typedef ItemListProxy<timer::PeriodicTimer, PeriodicTimerProxy, timer_string> TimerListProxy;
+typedef ItemListProxy<parameter::ParameterAbstract, ParameterProxy, parameter_string> ParameterListProxy;
 
 class ComponentProxy : public ProxyBase<Component>
 {
@@ -102,6 +122,11 @@ public:
   TimerListProxy timers()
   {
     return TimerListProxy( instance_.lock()->timer_list_.getWeakPtr() );
+  }
+
+  ParameterListProxy parameters()
+  {
+    return ParameterListProxy( instance_.lock()->parameter_list_.getWeakPtr() );
   }
 
 };
@@ -172,11 +197,14 @@ BOOST_PYTHON_MODULE(darc)
 
   bp::class_<darc::NodeImpl, bp::bases<darc::Node>, boost::noncopyable>("NodeImpl", bp::no_init);
 
+
+  // Proxys
   bp::class_<darc::python::ProxyBaseAbstract, boost::noncopyable >("Abstract_", bp::no_init );
 
   bp::class_<darc::python::ComponentProxy>("Component_", bp::init<darc::ComponentPtr>())
     .def("instanceName", &darc::python::ComponentProxy::instanceName)
-    .add_property("timers", &darc::python::ComponentProxy::timers);
+    .add_property("timers", &darc::python::ComponentProxy::timers)
+    .add_property("parameters", &darc::python::ComponentProxy::parameters);
 
   bp::class_<darc::python::NodeProxy>("Node_", bp::init<boost::shared_ptr<darc::NodeImpl> >())
     .def("instantiateComponent", &darc::python::NodeProxy::instantiateComponent)
@@ -186,10 +214,18 @@ BOOST_PYTHON_MODULE(darc)
   bp::class_<darc::python::PeriodicTimerProxy>("PeriodicTimer_", bp::no_init)
     .add_property("period", &darc::python::PeriodicTimerProxy::getPeriod, &darc::python::PeriodicTimerProxy::setPeriod);
 
+  bp::class_<darc::python::ParameterProxy>("Parameter_", bp::no_init)
+    .add_property("name", &darc::python::ParameterProxy::getName);
+
   bp::class_<darc::python::TimerListProxy>("TimerList_", bp::no_init)
     .def("get", &darc::python::TimerListProxy::get)
     .def("__dir__", &darc::python::TimerListProxy::dir)
     .def("__getattribute__", &darc::python::TimerListProxy::getitem);
+
+  bp::class_<darc::python::ParameterListProxy>("ParameterList_", bp::no_init)
+    .def("get", &darc::python::ParameterListProxy::get)
+    .def("__dir__", &darc::python::ParameterListProxy::dir)
+    .def("__getattribute__", &darc::python::ParameterListProxy::getitem);
 
   bp::class_<std::vector<std::string> >("list")
     .def(bp::vector_indexing_suite<std::vector<std::string> >());

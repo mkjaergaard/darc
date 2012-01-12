@@ -35,14 +35,21 @@
 
 #include <darc/owner.h>
 #include <darc/timer/periodic_timer.h>
+#include <darc/parameter/parameter.h>
 
 namespace darc
 {
 
-void Owner::addTimer(timer::PeriodicTimerWkPtr timer)
+void Owner::addTimer(boost::weak_ptr<timer::PeriodicTimer> timer)
 {
   timer_list_.add(timer);
   all_list_.add(timer);
+}
+
+void Owner::addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter)
+{
+  parameter_list_.add(parameter);
+  all_list_.add(parameter);
 }
 
 }

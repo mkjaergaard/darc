@@ -35,6 +35,8 @@
 
 #pragma once
 
+#include <darc/enable_weak_from_static.h>
+
 namespace darc
 {
 

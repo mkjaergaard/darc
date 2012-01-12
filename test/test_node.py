@@ -6,6 +6,7 @@ n_ = darc.Node.create()
 n_.setNodeID(120)
 
 n = darc.Node_(n_)
+n.instantiateComponent("MyPublisherComponent")
 
 #c = darc.Registry.instantiateComponent("MyPublisherComponent", n)
 
