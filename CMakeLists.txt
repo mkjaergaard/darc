@@ -23,7 +23,7 @@ add_library(darc SHARED
 
 target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES} -ldl)
 
-install_cmake_infrastructure(darc
+catkin_project(darc
   VERSION 0.0.1
   INCLUDE_DIRS include
   LIBRARIES darc
