@@ -44,6 +44,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <darc/node.h>
 #include <darc/component.h>
+#include <darc/thread_manager.h>
 #include <darc/node_link_manager.h>
 #include <darc/pubsub/manager.h>
 #include <darc/procedure/manager.h>
@@ -59,13 +60,15 @@ class NodeImpl : public Node, public boost::enable_shared_from_this<NodeImpl>
 
 private:
   boost::asio::io_service io_service_;
+  boost::thread node_thread_;
 
   NodeLinkManager node_link_manager_;
+  ThreadManager thread_manager_;
 
   pubsub::Manager publish_manager_;
   procedure::Manager procedure_manager_;
 
-  typedef std::map<std::string, ComponentPtr> ComponentInstancesList;
+  typedef std::map<ID, ComponentPtr> ComponentInstancesList;
   ComponentInstancesList component_instances_;
 
 public:
@@ -86,7 +89,15 @@ private:
   boost::shared_ptr<Component> instantiateComponent(const std::string& instance_name)
   {
     ComponentPtr c = Registry::instantiateComponent(instance_name, this->shared_from_this());
-    component_instances_[instance_name] = c;
+    component_instances_[c->getID()] = c;
+    return c;
+  }
+
+  boost::shared_ptr<Component> runComponent(const std::string& instance_name)
+  {
+    ComponentPtr c = Registry::instantiateComponent(instance_name, this->shared_from_this());
+    component_instances_[c->getID()] = c;
+    thread_manager_.allocateThreadAndRun(c);
     return c;
   }
 

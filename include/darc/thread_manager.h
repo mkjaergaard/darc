@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,42 +28,32 @@
  */
 
 /**
- * DARC Node class
+ * DARC Thread Manager class
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <vector>
-#include <iostream>
-#include <boost/shared_ptr.hpp>
-#include <darc/pubsub/fwd.h>
-#include <darc/procedure/manager.h>
+#include <boost/thread.hpp>
+#include <darc/component.h>
+#include <darc/id.h>
 
 namespace darc
 {
 
-class Component;
-
-class Node
+class ThreadManager
 {
-public:
-  typedef boost::shared_ptr<Node> Ptr;
+protected:
+  typedef std::map<ID, boost::shared_ptr<boost::thread> > ThreadList;
+  ThreadList thread_list_;
 
 public:
-  virtual void run() = 0;
-  virtual pubsub::Manager& getPublisherManager() = 0;
-  virtual procedure::Manager& getProcedureManager() = 0;
-  virtual void accept( const std::string& url ) = 0;
-  virtual void connect( uint32_t remote_node_id, const std::string& url ) = 0;
-  virtual void setNodeID( uint32_t node_id ) = 0;
-  virtual boost::shared_ptr<Component> instantiateComponent(const std::string& instance_name) = 0;
-  virtual boost::shared_ptr<Component> runComponent(const std::string& instance_name) = 0;
+  void allocateThreadAndRun( ComponentPtr component )
+  {
+    thread_list_[component->getID()] = boost::shared_ptr<boost::thread>( new boost::thread(boost::bind(&Component::run, component)) );
+  }
 
-  static Node::Ptr create();
 };
-
-typedef boost::shared_ptr<Node> NodePtr;
 
 }

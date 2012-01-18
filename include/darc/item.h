@@ -24,7 +24,7 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF bvSUCH DAMAGE.
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
@@ -43,7 +43,7 @@ namespace darc
 class Item
 {
 protected:
-  typedef enum {STOPPED, PAUSED, RUNNING } StateType;
+  typedef enum {STOPPED, PAUSED, RUNNING} StateType;
 
   StateType state_;
 
@@ -76,7 +76,6 @@ public:
 
   void start()
   {
-    std::cout << "Starting" << std::endl;
     if( state_ == STOPPED )
     {
       state_ = RUNNING;

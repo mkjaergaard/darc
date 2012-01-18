@@ -145,18 +145,18 @@ public:
   }
 
   ComponentProxy getitem(std::string text)
-  {
+  {/*
     boost::regex rex( "component_(\\d+)" );
     boost::smatch what;
     if( regex_match(text, what, rex) )
     {
       return ComponentProxy( instance_.lock()->component_instances_[what[1]] );
     }
-    else
+    else*/
     {
       PyErr_SetString(PyExc_AttributeError, "object has no attribute with that name" );
       throw boost::python::error_already_set();
-    }
+      }
   }
 
   boost::python::list dir()
@@ -166,7 +166,7 @@ public:
 	 it != instance_.lock()->component_instances_.end();
 	 it++)
     {
-      l.insert(0, std::string("component_") + it->first );
+      //l.insert(0, std::string("component_") + it->first );
     }
     return l;
   }

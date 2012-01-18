@@ -41,6 +41,7 @@
 #include <darc/node.h>
 #include <darc/owner.h>
 #include <darc/enable_weak_from_static.h>
+#include <darc/id.h>
 
 namespace darc
 {
@@ -58,11 +59,13 @@ protected:
   std::string name_;
   boost::shared_ptr<Node> node_;
   boost::asio::io_service io_service_;
+  ID id_;
 
 protected:
   Component(const std::string& name, boost::shared_ptr<Node> node):
     name_(name),
-    node_( node )
+    node_(node),
+    id_(createID())
   {
     std::cout << "construct component" << std::endl;
   }
@@ -96,6 +99,11 @@ public:
   const std::string getName() const
   {
     return name_;
+  }
+
+  const ID getID() const
+  {
+    return id_;
   }
 
   void run()
