@@ -56,7 +56,7 @@ public:
   Item() : state_(STOPPED)
   {}
 
-  void Pause()
+  void pause()
   {
     if( state_ == RUNNING )
     {
@@ -65,7 +65,7 @@ public:
     }
   }
 
-  void Stop()
+  void stop()
   {
     if( state_ != STOPPED )
     {
@@ -74,7 +74,7 @@ public:
     }
   }
 
-  void Start()
+  void start()
   {
     std::cout << "Starting" << std::endl;
     if( state_ == STOPPED )

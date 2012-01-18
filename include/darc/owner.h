@@ -58,10 +58,10 @@ public:
   virtual boost::asio::io_service * getIOService() = 0;
   virtual boost::shared_ptr<Node> getNode() = 0;
 
-  void Start()
+  void start()
   {
-    std::cout << "Start2" << std::endl;
-    all_list_.StartAll();
+    std::cout << "start called in owner.h" << std::endl;
+    all_list_.startAll();
   }
 
   void addTimer(boost::weak_ptr<timer::PeriodicTimer> timer);

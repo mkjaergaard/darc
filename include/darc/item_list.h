@@ -45,18 +45,16 @@ template<typename T>
 class ItemList : public EnableWeakFromStatic<ItemList<T> >
 {
 protected:
-public:// tmp
+public:
   typedef std::vector<boost::weak_ptr<T> > ItemListType;
   ItemListType list_;
 
 public:
-  void StartAll()
+  void startAll()
   {
-    std::cout << "Start3" << std::endl;
     for( typename ItemListType::iterator it = list_.begin(); it != list_.end(); it++)
     {
-    std::cout << "Start4" << std::endl;
-      it->lock()->Start();
+      it->lock()->start();
     }
   }
 

@@ -38,7 +38,6 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
-#include <boost/units/detail/utility.hpp>
 #include <darc/item.h>
 #include <darc/enable_weak_from_static.h>
 

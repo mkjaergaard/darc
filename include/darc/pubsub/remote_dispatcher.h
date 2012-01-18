@@ -93,7 +93,7 @@ public:
   void serializeAndDispatch( const std::string topic, const boost::shared_ptr<const T> msg )
   {
     // Allocate buffer. todo: derive required size from msg
-    std::size_t data_len = 1024;
+    std::size_t data_len = 1024*32;
     SharedBuffer buffer = SharedBuffer::create(data_len);
 
     // Message Header
