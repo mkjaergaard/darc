@@ -36,11 +36,9 @@
 #ifndef __DARC_NODE_LINK_MANAGER_H_INCLUDED__
 #define __DARC_NODE_LINK_MANAGER_H_INCLUDED__
 
-#include <boost/xpressive/xpressive.hpp>
+#include <boost/regex.hpp>
 #include <darc/udp/link_manager.h>
 #include <darc/packet/header.h>
-
-namespace xp = boost::xpressive;
 
 namespace darc
 {
@@ -49,9 +47,6 @@ class NodeLinkManager
 {
 private:
   uint32_t node_id_;
-
-  // Regular Expression to parse urls
-  const xp::sregex url_rex_;
 
   // Protocol handlers
   typedef std::map<const std::string, LinkManagerAbstract*> ManagerMapType;
@@ -74,7 +69,6 @@ private:
 public:
   NodeLinkManager( boost::asio::io_service * io_service ) :
     node_id_(0xFFFF),
-    url_rex_( (xp::s1= +xp::_w) >> "://" >> (xp::s2= +~xp::_n) ),
     udp_manager_( io_service )
   {
     // Link protocol names and protocol handlers
@@ -143,8 +137,8 @@ private:
 
   NodeLink::Ptr createFromAccept( const std::string& url )
   {
-    xp::smatch what;
-    if( regex_match( url, what, url_rex_ ) )
+    boost::smatch what;
+    if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
     {
       LinkManagerAbstract * mngr = getManager(what[1]);
       if( mngr )
@@ -166,8 +160,8 @@ private:
 
   NodeLink::Ptr createFromConnect( uint32_t remote_node_id, const std::string& url )
   {
-    xp::smatch what;
-    if( regex_match( url, what, url_rex_ ) )
+    boost::smatch what;
+    if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
     {
       LinkManagerAbstract * mngr = getManager(what[1]);
       if( mngr )
@@ -186,7 +180,6 @@ private:
       std::cout << "Invalid URL: " << url << std::endl;
       return NodeLink::Ptr();
     }
-
   }
 
   // Get the correct protocol handler

@@ -2,7 +2,7 @@
 #include <boost/python.hpp>
 #include <boost/thread.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <boost/xpressive/xpressive.hpp>
+#include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <darc/node.h>
@@ -14,7 +14,6 @@
 #include <darc/parameter/parameter.h>
 
 namespace bp = boost::python;
-namespace xp = boost::xpressive;
 
 namespace darc
 {
@@ -39,8 +38,9 @@ public:
 
   PT getitem(std::string text)
   {
-    xp::sregex rex( xp::sregex::compile(myname) >> (xp::s1= +xp::_d) );
-    xp::smatch what;
+    std::string mynamestr(myname);
+    boost::regex rex( mynamestr.append("(\\d+)") );
+    boost::smatch what;
     if( regex_match(text, what, rex) )
     {
       int idx = boost::lexical_cast<int>(what[1]);
@@ -146,8 +146,8 @@ public:
 
   ComponentProxy getitem(std::string text)
   {
-    xp::sregex rex( "component_" >> (xp::s1= +xp::_w) );
-    xp::smatch what;
+    boost::regex rex( "component_(\\d+)" );
+    boost::smatch what;
     if( regex_match(text, what, rex) )
     {
       return ComponentProxy( instance_.lock()->component_instances_[what[1]] );

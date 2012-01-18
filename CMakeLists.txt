@@ -4,7 +4,7 @@ project(darc)
 set(CMAKE_PREFIX_PATH /opt/ros/fuerte)
 
 find_package(catkin)
-find_package(Boost COMPONENTS system thread)
+find_package(Boost COMPONENTS system thread regex)
 find_package(ROS REQUIRED COMPONENTS cpp_common rostime roscpp_traits roscpp_serialization)
 
 include_directories(include)

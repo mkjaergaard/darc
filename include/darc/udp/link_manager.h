@@ -36,12 +36,10 @@
 #ifndef __DARC_UDP_LINK_MANAGER_H__
 #define __DARC_UDP_LINK_MANAGER_H__
 
-#include <boost/xpressive/xpressive.hpp>
+#include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <darc/node_link.h>
 #include <darc/udp/link.h>
-
-namespace xp = boost::xpressive;
 
 namespace darc
 {
@@ -54,19 +52,17 @@ class LinkManager : public darc::LinkManagerAbstract
 private:
   boost::asio::io_service * io_service_;
   udp::Link::Ptr link_;
-  const xp::sregex url_rex_;
 
 public:
   LinkManager( boost::asio::io_service * io_service ) :
-    io_service_(io_service),
-    url_rex_( (xp::s1= +~xp::_n) >> ':' >> (xp::s2= +xp::_d) ) // hostname:port
+    io_service_(io_service)
   {
   }
 
   darc::NodeLink::Ptr accept( const std::string& url )
   {
-    xp::smatch what;
-    if( regex_match( url, what, url_rex_ ) )
+    boost::smatch what;
+    if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
     {
       if( link_.get() == 0 ) // only works for one acceptor
       {
@@ -86,8 +82,8 @@ public:
 
   darc::NodeLink::Ptr connect( uint32_t remote_node_id, const std::string& url )
   {
-    xp::smatch what;
-    if( regex_match( url, what, url_rex_ ) )
+    boost::smatch what;
+    if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) )
     {
       if( link_.get() != 0 )
       {
