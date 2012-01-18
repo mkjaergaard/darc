@@ -1,0 +1,11 @@
+#include <boost/python.hpp>
+
+#include "@DARC_SOURCE_FILE@"
+
+namespace bp = boost::python;
+
+BOOST_PYTHON_MODULE(@DARC_COMPONENT_NAME@)
+{
+  bp::class_<@DARC_COMPONENT_NAME@, boost::shared_ptr<@DARC_COMPONENT_NAME@>, boost::noncopyable, bp::bases<darc::Component> >
+    ("@DARC_COMPONENT_NAME@", bp::no_init);
+}

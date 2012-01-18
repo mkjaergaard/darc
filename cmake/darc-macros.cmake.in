@@ -1,0 +1,25 @@
+function(darc_pybindings ARG_COMPONENT_NAME ARG_SOURCE_FILE)
+  set(DARC_COMPONENT_NAME ${ARG_COMPONENT_NAME})
+  set(DARC_SOURCE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${ARG_SOURCE_FILE})
+
+  set(DARC_GEN_FILE ${CMAKE_CURRENT_BINARY_DIR}/${DARC_COMPONENT_NAME}.cpp)
+
+  if(${darc_SOURCE_DIR}/templates/component_pybindings.template IS_NEWER_THAN ${DARC_GEN_FILE})
+    message(STATUS "Generating Python-bindings for ${DARC_COMPONENT_NAME}")
+    configure_file(
+      ${darc_SOURCE_DIR}/templates/component_pybindings.template
+      ${DARC_GEN_FILE} @ONLY}
+      )
+  endif()
+
+  add_library(${DARC_COMPONENT_NAME}-pybindings SHARED ${DARC_GEN_FILE})
+  target_link_libraries(${DARC_COMPONENT_NAME}-pybindings ${Boost_LIBRARIES} darc)
+  set_target_properties(${DARC_COMPONENT_NAME}-pybindings
+    PROPERTIES
+    OUTPUT_NAME ${DARC_COMPONENT_NAME}
+    PREFIX ""
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+    )
+  set_source_files_properties(${DARC_GEN_FILE} OBJECT_DEPENDS ${DARC_SOURCE_FILE})
+
+endfunction()

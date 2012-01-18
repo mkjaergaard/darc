@@ -27,6 +27,6 @@ catkin_project(darc
   VERSION 0.0.1
   INCLUDE_DIRS include
   LIBRARIES darc
-  )
+  CFG_EXTRAS darc-macros.cmake)
 
 add_subdirectory(src/pybindings)
