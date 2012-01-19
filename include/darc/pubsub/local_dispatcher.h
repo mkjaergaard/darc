@@ -93,7 +93,7 @@ public:
          it != subscriber_list_.end();
          it++)
     {
-      it->lock()->dispatch( msg );
+      it->second.lock()->dispatch( msg );
     }
   }
 

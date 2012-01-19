@@ -47,19 +47,23 @@ namespace pubsub
 template<typename T>
 Subscriber<T>::Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback) :
   io_service_(owner->getIOService()),
+  owner_(owner),
+  topic_(topic),
   callback_(callback)
 {
-  boost::shared_ptr<LocalDispatcher<T> > dispatcher =
 }
 
-void onStart()
+template<typename T>
+void Subscriber<T>::onStart()
 {
-  owner->getNode()->getPublisherManager().registerSubscriber<T>(topic, this->getWeakPtr());
+  owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_)->template registerSubscriber<T>(this);
 }
 
-void onStop()
+template<typename T>
+void Subscriber<T>::onStop()
 {
-  owner->getNode()->getPublisherManager().unregisterSubscriber<T>(topic, this->getWeakPtr());
+  owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_)->template unregisterSubscriber<T>(this);
+
 }
 
 }

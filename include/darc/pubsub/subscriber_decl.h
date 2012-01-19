@@ -42,8 +42,6 @@
 namespace darc
 {
 
-class Owner;
-
 namespace pubsub
 {
 
@@ -52,6 +50,8 @@ class Subscriber : public darc::EnableWeakFromStatic<Subscriber<T> >
 {
 private:
   boost::asio::io_service * io_service_;
+  darc::Owner * owner_;
+  std::string topic_;
 
   typedef boost::function<void( boost::shared_ptr<T> )> CallbackType;
   CallbackType callback_;
@@ -62,14 +62,10 @@ private:
 
 
 public:
-  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback);/* :
-    io_service(owner->getIOService()),
-    callback_(callback)
-  {
-    boost::shared_ptr<LocalDispatcher<T> > dispatcher = owner->getNode()->getPublisherManager().registerSubscriber<T>(topic);
-    dispatcher->registerSubscriber(this);
-  }
-										   */
+  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback);
+  void onStart();
+  void onStop();
+
   ~Subscriber()
   {
     // unregister subscriber

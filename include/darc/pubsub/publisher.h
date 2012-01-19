@@ -37,9 +37,9 @@
 
 #include <boost/smart_ptr.hpp>
 #include <darc/node.h>
-#include <darc/owner.h>
 #include <darc/pubsub/manager.h>
 #include <darc/enable_weak_from_static.h>
+#include <darc/owner.h>
 
 namespace darc
 {
@@ -51,9 +51,13 @@ class Publisher : public darc::EnableWeakFromStatic<Publisher<T> >
 {
 protected:
   boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
+  darc::Owner * owner_;
+  std::string topic_;
 
 public:
-  Publisher(darc::Owner* owner, const std::string& topic)
+  Publisher(darc::Owner* owner, const std::string& topic) :
+    owner_(owner),
+    topic_(topic)
   {
   }
 
@@ -67,7 +71,7 @@ public:
 
   void onStart()
   {
-    dispatcher_ = owner->getNode()->getPublisherManager(topic);
+    dispatcher_ = owner_->getNode()->getPublisherManager(topic_);
     //todo: register
   }
 
