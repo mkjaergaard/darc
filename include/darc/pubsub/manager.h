@@ -42,6 +42,7 @@
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <darc/pubsub/fwd.h>
+#include <darc/pubsub/i_manager_callback.h>
 #include <darc/pubsub/local_dispatcher.h>
 #include <darc/pubsub/remote_dispatcher.h>
 
@@ -53,7 +54,7 @@ class NodeLinkManager; // todo
 namespace pubsub
 {
 
-class Manager
+class Manager : public IManagerCallback
 {
   typedef std::map<const std::string, LocalDispatcherAbstractPtr > LocalDispatcherListType;
   LocalDispatcherListType local_dispatcher_list_;
@@ -67,23 +68,17 @@ public:
   Manager( boost::asio::io_service * io_service, NodeLinkManager * node_link_manager );
   void receiveFromRemoteNode( const std::string& topic, SharedBuffer msg_s );
 
-  // called by the Subscriber
-  // todo: not thread safe
-  template<typename T>
-  boost::shared_ptr<LocalDispatcher<T> > registerSubscriber(const std::string& topic)
+  RemoteDispatcher& getRemoteDispatcher()
   {
-    return getLocalDispatcher<T>(topic);
+    return remote_dispatcher_;
   }
 
-  // Called by Publisher
-  // todo: not thread safe
-  template<typename T>
-  boost::shared_ptr<LocalDispatcher<T> > registerPublisher(const std::string& topic)
+  void notifyLocalDispatcherEmpty(const std::string& topic)
   {
-    return getLocalDispatcher<T>(topic);
+    //todo
   }
 
-private:
+  // todo, not thread safe!
   template<typename T>
   boost::shared_ptr<LocalDispatcher<T> > getLocalDispatcher( const std::string& topic )
   {

@@ -49,8 +49,17 @@ Subscriber<T>::Subscriber(darc::Owner * owner, const std::string& topic, Callbac
   io_service_(owner->getIOService()),
   callback_(callback)
 {
-  boost::shared_ptr<LocalDispatcher<T> > dispatcher = owner->getNode()->getPublisherManager().registerSubscriber<T>(topic);
-  dispatcher->registerSubscriber(this->getWeakPtr());
+  boost::shared_ptr<LocalDispatcher<T> > dispatcher =
+}
+
+void onStart()
+{
+  owner->getNode()->getPublisherManager().registerSubscriber<T>(topic, this->getWeakPtr());
+}
+
+void onStop()
+{
+  owner->getNode()->getPublisherManager().unregisterSubscriber<T>(topic, this->getWeakPtr());
 }
 
 }

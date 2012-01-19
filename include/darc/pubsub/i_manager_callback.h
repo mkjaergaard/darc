@@ -28,70 +28,27 @@
  */
 
 /**
- * DARC Item class
+ * DARC IManagerCallback Interface
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <darc/enable_weak_from_static.h>
-#include <darc/id.h>
+#include <darc/pubsub/remote_dispatcher.h>
 
 namespace darc
 {
 
-class Item
+namespace pubsub
 {
-protected:
-  typedef enum {STOPPED, PAUSED, RUNNING} StateType;
 
-  StateType state_;
-  ID id_;
-
-  virtual void onPause() {}
-  virtual void onUnpause() {}
-  virtual void onStop() {}
-  virtual void onStart() {}
-
+class IManagerCallback
+{
 public:
-  Item():
-    state_(STOPPED),
-    id_(createID())
-  {}
-
-  void pause()
-  {
-    if( state_ == RUNNING )
-    {
-      state_ = PAUSED;
-      onPause();
-    }
-  }
-
-  void stop()
-  {
-    if( state_ != STOPPED )
-    {
-      state_ = PAUSED;
-      onStop();
-    }
-  }
-
-  void start()
-  {
-    if( state_ == STOPPED )
-    {
-      state_ = RUNNING;
-      onStart();
-    }
-    else if( state_ == PAUSED )
-    {
-      state_ = RUNNING;
-      onUnpause();
-    }
-  }
-
+  virtual void notifyLocalDispatcherEmpty(const std::string& topic) = 0;
+  virtual RemoteDispatcher& getRemoteDispatcher() = 0;
 };
 
+}
 }

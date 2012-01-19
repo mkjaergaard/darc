@@ -55,7 +55,6 @@ protected:
 public:
   Publisher(darc::Owner* owner, const std::string& topic)
   {
-    dispatcher_ = owner->getNode()->getPublisherManager().registerPublisher<T>(topic);
   }
 
   void publish(boost::shared_ptr<T> msg)
@@ -65,6 +64,18 @@ public:
       dispatcher_sp->dispatchMessage(msg);
     }
   }
+
+  void onStart()
+  {
+    dispatcher_ = owner->getNode()->getPublisherManager(topic);
+    //todo: register
+  }
+
+  void onStop()
+  {
+    //todo: unregister
+  }
+
 };
 
 }

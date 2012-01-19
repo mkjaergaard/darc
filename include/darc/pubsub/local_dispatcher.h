@@ -39,9 +39,11 @@
 #include <vector>
 #include <boost/smart_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include <darc/id.h>
 #include <darc/pubsub/local_dispatcher_abstract.h>
 #include <darc/pubsub/subscriber_decl.h>
 #include <darc/pubsub/remote_dispatcher.h>
+#include <darc/pubsub/i_manager_callback.h>
 
 namespace darc
 {
@@ -53,21 +55,28 @@ class LocalDispatcher : public LocalDispatcherAbstract
 {
 private:
   std::string topic_;
-  RemoteDispatcher * remote_dispatcher_;
+  IManagerCallback * manager_callback_;
 
-  typedef std::vector< boost::weak_ptr<Subscriber<T> > > SubscriberListType; // <-- weak_ptr! dont keep alive
+  typedef std::map<ID, boost::weak_ptr<Subscriber<T> > > SubscriberListType; // <-- weak_ptr! dont keep alive
   SubscriberListType subscriber_list_;
 
 public:
-  LocalDispatcher( const std::string& topic, RemoteDispatcher * remote_dispatcher ) :
+  LocalDispatcher( const std::string& topic, IManagerCallback * manager_callback ) :
     topic_(topic),
-    remote_dispatcher_( remote_dispatcher )
+    manager_callback_( manager_callback )
   {
   }
 
-  void registerSubscriber( boost::weak_ptr<Subscriber<T> > sub )
+  void registerSubscriber( Subscriber<T> * sub )
   {
-    subscriber_list_.push_back( sub );
+    // todo: higher level remote subscribe
+    subscriber_list_[sub->getID(), sub->getWeakPtr()];
+  }
+
+  void unregisterSubscriber( Subscriber<T> * sub )
+  {
+    // todo: higher level remote subscribe
+    subscriber_list_.erase(sub->getID());
   }
 
   // Called by the local publishers
@@ -75,7 +84,7 @@ public:
   {
     dispatchMessageLocally(msg);
     // if remote subscribers
-    remote_dispatcher_->postRemoteDispatch<T>(topic_, msg);
+    manager_callback_->getRemoteDispatcher().postRemoteDispatch<T>(topic_, msg);
   }
 
   void dispatchMessageLocally( boost::shared_ptr<T> msg )

@@ -90,12 +90,6 @@ public:
     return instance;
   }
 
-public:
-  /*  ComponentCtrlHandle createCtrlHandle()
-  {
-    return ComponentCtrlHandle(shared_from_this());
-  }
-  */
   const std::string getName() const
   {
     return name_;
@@ -107,6 +101,11 @@ public:
   }
 
   void run()
+  {
+    node_->runComponent(id_);
+  }
+
+  void work()
   {
     std::cout << "Running Component: " << name_ << std::endl;
     boost::asio::io_service::work keep_alive(io_service_);

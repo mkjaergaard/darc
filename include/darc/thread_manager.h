@@ -51,7 +51,7 @@ protected:
 public:
   void allocateThreadAndRun( ComponentPtr component )
   {
-    thread_list_[component->getID()] = boost::shared_ptr<boost::thread>( new boost::thread(boost::bind(&Component::run, component)) );
+    thread_list_[component->getID()] = boost::shared_ptr<boost::thread>( new boost::thread(boost::bind(&Component::work, component)) );
   }
 
 };

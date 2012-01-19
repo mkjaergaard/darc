@@ -38,6 +38,7 @@
 #include <vector>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
+#include <darc/id.h>
 #include <darc/pubsub/fwd.h>
 #include <darc/procedure/manager.h>
 
@@ -59,7 +60,7 @@ public:
   virtual void connect( uint32_t remote_node_id, const std::string& url ) = 0;
   virtual void setNodeID( uint32_t node_id ) = 0;
   virtual boost::shared_ptr<Component> instantiateComponent(const std::string& instance_name) = 0;
-  virtual boost::shared_ptr<Component> runComponent(const std::string& instance_name) = 0;
+  virtual void runComponent(ID id) = 0;
 
   static Node::Ptr create();
 };

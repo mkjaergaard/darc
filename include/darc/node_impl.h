@@ -93,12 +93,9 @@ private:
     return c;
   }
 
-  boost::shared_ptr<Component> runComponent(const std::string& instance_name)
+  void runComponent(ID id)
   {
-    ComponentPtr c = Registry::instantiateComponent(instance_name, this->shared_from_this());
-    component_instances_[c->getID()] = c;
-    thread_manager_.allocateThreadAndRun(c);
-    return c;
+    thread_manager_.allocateThreadAndRun(component_instances_[id]);
   }
 
   pubsub::Manager& getPublisherManager()
