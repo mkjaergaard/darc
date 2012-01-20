@@ -60,6 +60,11 @@ public:
     id_(createID())
   {}
 
+  const ID& getID() const
+  {
+    return id_;
+  }
+
   void pause()
   {
     if( state_ == RUNNING )

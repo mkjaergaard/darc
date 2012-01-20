@@ -40,6 +40,11 @@
 namespace darc
 {
 
+void Owner::addPrimitive(boost::weak_ptr<Primitive> prim)
+{
+  all_list_.add(prim);
+}
+
 void Owner::addTimer(boost::weak_ptr<timer::PeriodicTimer> timer)
 {
   timer_list_.add(timer);

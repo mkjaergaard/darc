@@ -38,6 +38,7 @@
 #include <boost/shared_ptr.hpp>
 #include <darc/pubsub/subscriber_decl.h>
 #include <darc/pubsub/manager.h>
+#include <darc/pubsub/local_dispatcher.h>
 
 namespace darc
 {
@@ -51,18 +52,19 @@ Subscriber<T>::Subscriber(darc::Owner * owner, const std::string& topic, Callbac
   topic_(topic),
   callback_(callback)
 {
+  owner->addPrimitive(this->getWeakPtr());
 }
 
 template<typename T>
 void Subscriber<T>::onStart()
 {
-  owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_)->template registerSubscriber<T>(this);
+  owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_)->registerSubscriber(this);
 }
 
 template<typename T>
 void Subscriber<T>::onStop()
 {
-  owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_)->template unregisterSubscriber<T>(this);
+  owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_)->unregisterSubscriber(this);
 
 }
 

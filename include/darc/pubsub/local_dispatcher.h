@@ -70,7 +70,7 @@ public:
   void registerSubscriber( Subscriber<T> * sub )
   {
     // todo: higher level remote subscribe
-    subscriber_list_[sub->getID(), sub->getWeakPtr()];
+    subscriber_list_[sub->getID()] = sub->getWeakPtr();
   }
 
   void unregisterSubscriber( Subscriber<T> * sub )

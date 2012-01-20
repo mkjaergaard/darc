@@ -64,6 +64,7 @@ public:
     all_list_.startAll();
   }
 
+  void addPrimitive(boost::weak_ptr<Primitive> prim);
   void addTimer(boost::weak_ptr<timer::PeriodicTimer> timer);
   void addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter );
 

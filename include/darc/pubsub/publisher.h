@@ -37,6 +37,7 @@
 
 #include <boost/smart_ptr.hpp>
 #include <darc/node.h>
+#include <darc/primitive.h>
 #include <darc/pubsub/manager.h>
 #include <darc/enable_weak_from_static.h>
 #include <darc/owner.h>
@@ -47,7 +48,7 @@ namespace pubsub
 {
 
 template<typename T>
-class Publisher : public darc::EnableWeakFromStatic<Publisher<T> >
+class Publisher : public darc::Primitive, public darc::EnableWeakFromStatic<Publisher<T> >
 {
 protected:
   boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
@@ -60,6 +61,7 @@ public:
     topic_(topic)
   {
     std::cout << "wtf" << std::endl;
+    owner->addPrimitive(this->getWeakPtr());
   }
 
   void publish(boost::shared_ptr<T> msg)

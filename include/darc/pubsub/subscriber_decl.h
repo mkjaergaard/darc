@@ -46,7 +46,7 @@ namespace pubsub
 {
 
 template<typename T>
-class Subscriber : public darc::EnableWeakFromStatic<Subscriber<T> >
+class Subscriber : public darc::Primitive, public darc::EnableWeakFromStatic<Subscriber<T> >
 {
 private:
   boost::asio::io_service * io_service_;
