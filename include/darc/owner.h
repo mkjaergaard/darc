@@ -38,8 +38,8 @@
 
 #include <boost/asio.hpp>
 #include <darc/node.h>
-#include <darc/item_list.h>
-#include <darc/item.h>
+#include <darc/primitive_list.h>
+#include <darc/primitive.h>
 
 namespace darc
 {
@@ -50,9 +50,9 @@ namespace parameter { class ParameterAbstract; }
 class Owner
 {
 protected:
-  ItemList<timer::PeriodicTimer> timer_list_;
-  ItemList<parameter::ParameterAbstract> parameter_list_;
-  ItemList<Item> all_list_;
+  PrimitiveList<timer::PeriodicTimer> timer_list_;
+  PrimitiveList<parameter::ParameterAbstract> parameter_list_;
+  PrimitiveList<Primitive> all_list_;
 
 public:
   virtual boost::asio::io_service * getIOService() = 0;

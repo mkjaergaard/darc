@@ -38,7 +38,7 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
-#include <darc/item.h>
+#include <darc/primitive.h>
 #include <darc/enable_weak_from_static.h>
 
 namespace darc
@@ -49,7 +49,7 @@ namespace python{ class PeriodicTimerProxy; }
 namespace timer
 {
 
-class PeriodicTimer : public darc::Item, public boost::asio::deadline_timer, public EnableWeakFromStatic<PeriodicTimer>
+class PeriodicTimer : public darc::Primitive, public boost::asio::deadline_timer, public EnableWeakFromStatic<PeriodicTimer>
 {
   friend class python::PeriodicTimerProxy;
 

@@ -21,12 +21,12 @@ namespace python
 {
 
 template<typename T, typename PT, char const* myname>
-class ItemListProxy : public ProxyBase< ItemList<T> >
+class PrimitiveListProxy : public ProxyBase< PrimitiveList<T> >
 {
-  typedef ProxyBase< ItemList<T> > MyProxyBase;
+  typedef ProxyBase< PrimitiveList<T> > MyProxyBase;
 
 public:
-  ItemListProxy(boost::weak_ptr<ItemList<T> > instance) :
+  PrimitiveListProxy(boost::weak_ptr<PrimitiveList<T> > instance) :
     MyProxyBase(instance)
   {
   }
@@ -103,8 +103,8 @@ public:
 char timer_string[] = "timer_";
 char parameter_string[] = "parameter_";
 
-typedef ItemListProxy<timer::PeriodicTimer, PeriodicTimerProxy, timer_string> TimerListProxy;
-typedef ItemListProxy<parameter::ParameterAbstract, ParameterProxy, parameter_string> ParameterListProxy;
+typedef PrimitiveListProxy<timer::PeriodicTimer, PeriodicTimerProxy, timer_string> TimerListProxy;
+typedef PrimitiveListProxy<parameter::ParameterAbstract, ParameterProxy, parameter_string> ParameterListProxy;
 
 class ComponentProxy : public ProxyBase<Component>
 {
@@ -181,7 +181,9 @@ BOOST_PYTHON_MODULE(darc)
   // DARC
   bp::class_<darc::Component, darc::ComponentPtr, boost::noncopyable>("Component", bp::no_init)
     .def("run", &darc::Component::run)
-    .def("getName", &darc::Component::getName);
+    .def("getName", &darc::Component::getName)
+    .def("getID", &darc::Component::getID);
+
 
   bp::class_<darc::Registry>("Registry", bp::no_init)
     .def("instantiateComponent", &darc::Registry::instantiateComponent)
@@ -191,6 +193,7 @@ BOOST_PYTHON_MODULE(darc)
     .def("create", &darc::Node::create)
     .staticmethod("create")
     .def("instantiateComponent", &darc::Node::instantiateComponent)
+    .def("runComponent", &darc::Node::runComponent)
     .def("setNodeID", &darc::Node::setNodeID)
     .def("connect", &darc::Node::connect)
     .def("accept", &darc::Node::accept);

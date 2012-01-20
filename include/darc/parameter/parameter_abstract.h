@@ -35,14 +35,14 @@
 
 #pragma once
 
-#include <darc/item.h>
+#include <darc/primitive.h>
 
 namespace darc
 {
 namespace parameter
 {
 
-class ParameterAbstract : public Item, public EnableWeakFromStatic<ParameterAbstract>
+class ParameterAbstract : public Primitive, public EnableWeakFromStatic<ParameterAbstract>
 {
 
 protected:

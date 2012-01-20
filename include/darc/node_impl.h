@@ -78,12 +78,26 @@ public:
   {
   }
 
-private:
-  void run()
+protected:
+  void work()
   {
     std::cout << "Running Node with ID " << node_link_manager_.getNodeID() << std::endl;
     boost::asio::io_service::work keep_alive(io_service_);
     io_service_.run();
+  }
+
+  void run(bool blocking = false)
+  {
+    node_thread_ = boost::thread( boost::bind(&NodeImpl::work, this) );
+    if(blocking)
+    {
+      node_thread_.join();
+    }
+  }
+
+  void attach(ComponentPtr component)
+  {
+    component_instances_[component->getID()] = component;
   }
 
   boost::shared_ptr<Component> instantiateComponent(const std::string& instance_name)
@@ -95,6 +109,7 @@ private:
 
   void runComponent(ID id)
   {
+    assert(component_instances_.count(id) > 0);
     thread_manager_.allocateThreadAndRun(component_instances_[id]);
   }
 

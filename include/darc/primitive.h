@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,43 +24,72 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF bvSUCH DAMAGE.
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
- * DARC ItemList class
+ * DARC Primitive class
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <vector>
 #include <darc/enable_weak_from_static.h>
+#include <darc/id.h>
 
 namespace darc
 {
 
-template<typename T>
-class ItemList : public EnableWeakFromStatic<ItemList<T> >
+class Primitive
 {
 protected:
-public:
-  typedef std::vector<boost::weak_ptr<T> > ItemListType;
-  ItemListType list_;
+  typedef enum {STOPPED, PAUSED, RUNNING} StateType;
+
+  StateType state_;
+  ID id_;
+
+  virtual void onPause() {}
+  virtual void onUnpause() {}
+  virtual void onStop() {}
+  virtual void onStart() {}
 
 public:
-  void startAll()
+  Primitive():
+    state_(STOPPED),
+    id_(createID())
+  {}
+
+  void pause()
   {
-    for( typename ItemListType::iterator it = list_.begin(); it != list_.end(); it++)
+    if( state_ == RUNNING )
     {
-      it->lock()->start();
+      state_ = PAUSED;
+      onPause();
     }
   }
 
-  void add(boost::weak_ptr<T> item)
+  void stop()
   {
-    list_.push_back(item);
+    if( state_ != STOPPED )
+    {
+      state_ = PAUSED;
+      onStop();
+    }
+  }
+
+  void start()
+  {
+    if( state_ == STOPPED )
+    {
+      state_ = RUNNING;
+      onStart();
+    }
+    else if( state_ == PAUSED )
+    {
+      state_ = RUNNING;
+      onUnpause();
+    }
   }
 
 };

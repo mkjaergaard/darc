@@ -87,6 +87,7 @@ public:
   static boost::shared_ptr<T> instantiate( const std::string& instance_name, Node::Ptr node )
   {
     boost::shared_ptr<T> instance( new T(instance_name, node) );
+    node->attach(instance);
     return instance;
   }
 

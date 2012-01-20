@@ -36,7 +36,6 @@
 #pragma once
 
 #include <darc/owner.h>
-#include <darc/item.h>
 #include <darc/parameter/parameter_abstract.h>
 
 namespace darc

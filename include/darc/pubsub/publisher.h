@@ -59,6 +59,7 @@ public:
     owner_(owner),
     topic_(topic)
   {
+    std::cout << "wtf" << std::endl;
   }
 
   void publish(boost::shared_ptr<T> msg)
@@ -71,7 +72,7 @@ public:
 
   void onStart()
   {
-    dispatcher_ = owner_->getNode()->getPublisherManager(topic_);
+    dispatcher_ = owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_);
     //todo: register
   }
 

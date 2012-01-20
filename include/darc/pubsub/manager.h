@@ -86,7 +86,7 @@ public:
     LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
     if( elem == local_dispatcher_list_.end() )
     {
-      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( topic, &remote_dispatcher_ ) );
+      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( topic, this ) );
       local_dispatcher_list_[ topic ] = disp;
       return disp;
     }
