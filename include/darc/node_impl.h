@@ -113,6 +113,12 @@ protected:
     thread_manager_.allocateThreadAndRun(component_instances_[id]);
   }
 
+  void stopComponent(ID id)
+  {
+    assert(component_instances_.count(id) > 0);
+    thread_manager_.stopThread(component_instances_[id]);
+  }
+
   pubsub::Manager& getPublisherManager()
   {
     return publish_manager_;

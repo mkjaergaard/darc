@@ -74,11 +74,20 @@ public:
     }
   }
 
+  void unpause()
+  {
+    if( state_ == PAUSED )
+    {
+      state_ = RUNNING;
+      onUnpause();
+    }
+  }
+
   void stop()
   {
     if( state_ != STOPPED )
     {
-      state_ = PAUSED;
+      state_ = STOPPED;
       onStop();
     }
   }
@@ -89,11 +98,6 @@ public:
     {
       state_ = RUNNING;
       onStart();
-    }
-    else if( state_ == PAUSED )
-    {
-      state_ = RUNNING;
-      onUnpause();
     }
   }
 

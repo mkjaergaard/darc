@@ -58,6 +58,30 @@ public:
     }
   }
 
+  void stopAll()
+  {
+    for( typename PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+    {
+      it->lock()->stop();
+    }
+  }
+
+  void pauseAll()
+  {
+    for( typename PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+    {
+      it->lock()->pause();
+    }
+  }
+
+  void unpauseAll()
+  {
+    for( typename PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+    {
+      it->lock()->unpause();
+    }
+  }
+
   void add(boost::weak_ptr<T> item)
   {
     list_.push_back(item);

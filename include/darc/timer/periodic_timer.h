@@ -38,6 +38,8 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <boost/date_time/posix_time/time_formatters.hpp>
+#include <darc/log.h>
 #include <darc/primitive.h>
 #include <darc/enable_weak_from_static.h>
 
@@ -77,6 +79,7 @@ protected:
   void onStart()
   {
     expected_deadline_ = boost::posix_time::microsec_clock::universal_time() + period_;
+    expires_from_now( period_ );
     async_wait( boost::bind( &PeriodicTimer::handler, this, boost::asio::placeholders::error ) );
   }
 
@@ -85,25 +88,37 @@ protected:
     cancel();
   }
 
+  void onPause()
+  {
+  }
+
   void handler( const boost::system::error_code& error )
   {
     if( error == boost::asio::error::operation_aborted )
     {
       std::cout << "Aborted" << std::endl;
     }
-    else if( state_ != RUNNING )
+    else if(error)
+    {
+      std::cout << "Some error in timer callback: " << error << std::endl;
+    }
+    else if( state_ == STOPPED )
     {
       std::cout << "Ignored" << std::endl;
     }
     else
     {
       boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - expected_deadline_;
+      expires_from_now( period_ - diff );
+      std::cout << "Diff: " << boost::posix_time::to_simple_string(diff) << std::endl;
       expected_deadline_ += period_;
       //    std::cout << diff.total_milliseconds() << std::endl;
-      expires_from_now( period_ - diff );
       async_wait( boost::bind( &PeriodicTimer::handler, this, boost::asio::placeholders::error ) );
       //    Consumer::cpu_usage_.start();
-      callback_();
+      if( state_ == RUNNING)
+      {
+	callback_();
+      }
       //    Consumer::cpu_usage_.stop();
     }
   }

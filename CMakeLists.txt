@@ -20,6 +20,7 @@ add_library(darc SHARED
   src/lib/pubsub/manager.cpp
   src/lib/owner.cpp
   src/lib/id.cpp
+  src/lib/log.cpp
 )
 
 target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES} -ldl)

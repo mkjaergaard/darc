@@ -62,6 +62,7 @@ public:
   virtual void setNodeID( uint32_t node_id ) = 0;
   virtual ComponentPtr instantiateComponent(const std::string& instance_name) = 0;
   virtual void runComponent(ID id) = 0;
+  virtual void stopComponent(ID id) = 0;
   virtual void attach(ComponentPtr component) = 0;
 
   static Node::Ptr create();

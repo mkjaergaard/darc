@@ -42,6 +42,7 @@
 #include <darc/owner.h>
 #include <darc/enable_weak_from_static.h>
 #include <darc/id.h>
+#include <darc/log.h>
 
 namespace darc
 {
@@ -59,6 +60,7 @@ protected:
   std::string name_;
   boost::shared_ptr<Node> node_;
   boost::asio::io_service io_service_;
+  boost::scoped_ptr<boost::asio::io_service::work> keep_alive_;
   ID id_;
 
 protected:
@@ -106,13 +108,37 @@ public:
     node_->runComponent(id_);
   }
 
+  void stop()
+  {
+    node_->stopComponent(id_);
+  }
+
+  void pause()
+  {
+    pausePrimitives();
+  }
+
+  void unpause()
+  {
+    unpausePrimitives();
+  }
+
   void work()
   {
+    DARC_AUTOTRACE();
     std::cout << "Running Component: " << name_ << std::endl;
-    boost::asio::io_service::work keep_alive(io_service_);
-    start();
+    keep_alive_.reset( new boost::asio::io_service::work(io_service_) );
+    startPrimitives();
+    io_service_.reset();
     io_service_.run();
     std::cout << "Component " << name_ << " Stopped!" << std::endl;
+  }
+
+  void stop_work()
+  {
+    DARC_AUTOTRACE();
+    stopPrimitives();
+    keep_alive_.reset();
   }
 
 };

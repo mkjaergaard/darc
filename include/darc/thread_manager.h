@@ -49,9 +49,17 @@ protected:
   ThreadList thread_list_;
 
 public:
-  void allocateThreadAndRun( ComponentPtr component )
+  void allocateThreadAndRun(ComponentPtr component)
   {
     thread_list_[component->getID()] = boost::shared_ptr<boost::thread>( new boost::thread(boost::bind(&Component::work, component)) );
+  }
+
+  void stopThread(ComponentPtr component)
+  {
+    assert(thread_list_.count(component->getID()) != 0);
+    component->stop_work();
+    thread_list_[component->getID()]->join();
+    thread_list_.erase(component->getID());
   }
 
 };

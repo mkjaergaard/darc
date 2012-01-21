@@ -58,10 +58,28 @@ public:
   virtual boost::asio::io_service * getIOService() = 0;
   virtual boost::shared_ptr<Node> getNode() = 0;
 
-  void start()
+  void startPrimitives()
   {
-    std::cout << "start called in owner.h" << std::endl;
+    std::cout << "startPrimitives called in owner.h" << std::endl;
     all_list_.startAll();
+  }
+
+  void stopPrimitives()
+  {
+    std::cout << "stopPrimitives called in owner.h" << std::endl;
+    all_list_.stopAll();
+  }
+
+  void pausePrimitives()
+  {
+    std::cout << "pausePrimitives called in owner.h" << std::endl;
+    all_list_.pauseAll();
+  }
+
+  void unpausePrimitives()
+  {
+    std::cout << "unpausePrimitives called in owner.h" << std::endl;
+    all_list_.unpauseAll();
   }
 
   void addPrimitive(boost::weak_ptr<Primitive> prim);

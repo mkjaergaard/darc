@@ -129,6 +129,9 @@ public:
     return ParameterListProxy( instance_.lock()->parameter_list_.getWeakPtr() );
   }
 
+  void pause() { instance_.lock()->pause(); }
+  void unpause() { instance_.lock()->unpause(); }
+
 };
 
 class NodeProxy : public ProxyBase<NodeImpl>
@@ -181,6 +184,9 @@ BOOST_PYTHON_MODULE(darc)
   // DARC
   bp::class_<darc::Component, darc::ComponentPtr, boost::noncopyable>("Component", bp::no_init)
     .def("run", &darc::Component::run)
+    .def("stop", &darc::Component::stop)
+    .def("pause", &darc::Component::pause)
+    .def("unpause", &darc::Component::unpause)
     .def("getName", &darc::Component::getName)
     .def("getID", &darc::Component::getID);
 
@@ -208,7 +214,9 @@ BOOST_PYTHON_MODULE(darc)
   bp::class_<darc::python::ComponentProxy>("Component_", bp::init<darc::ComponentPtr>())
     .def("instanceName", &darc::python::ComponentProxy::instanceName)
     .add_property("timers", &darc::python::ComponentProxy::timers)
-    .add_property("parameters", &darc::python::ComponentProxy::parameters);
+    .add_property("parameters", &darc::python::ComponentProxy::parameters)
+    .def("pause", &darc::python::ComponentProxy::pause)
+    .def("unpause", &darc::python::ComponentProxy::unpause);
 
   bp::class_<darc::python::NodeProxy>("Node_", bp::init<boost::shared_ptr<darc::NodeImpl> >())
     .def("instantiateComponent", &darc::python::NodeProxy::instantiateComponent)
