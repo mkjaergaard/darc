@@ -48,9 +48,14 @@ Log::LevelType Log::current_level_ = Log::LOG_ALL;
 
 const char* Log::level_names_[] = {"?????","TRACE","DEBUG","INFO ","WARN ","ERROR", "FATAL"};
 
-Log::LevelType& Log::level()
+Log::LevelType Log::getLevel()
 {
   return current_level_;
+}
+
+void Log::setLevel(Log::LevelType new_level)
+{
+  current_level_ = new_level;
 }
 
 void Log::report(Log::LevelType level, const char * msg)

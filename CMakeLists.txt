@@ -12,9 +12,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${ROS_INCLUDE_DIRS})
 
 #set(CMAKE_CXX_FLAGS "-Wall -g")
-set(CMAKE_CXX_FLAGS "-Os -pg")
+set(CMAKE_CXX_FLAGS "-Os")
 
-set(CMAKE_SHARED_LINKER_FLAGS "-pg")
+#set(CMAKE_SHARED_LINKER_FLAGS "-pg")
 
 add_library(darc SHARED
   src/lib/node.cpp

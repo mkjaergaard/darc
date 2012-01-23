@@ -12,6 +12,7 @@
 #include <darc/timer/periodic_timer.h>
 #include <darc/python/proxy_base.h>
 #include <darc/parameter/parameter.h>
+#include <darc/log.h>
 
 namespace bp = boost::python;
 
@@ -182,6 +183,18 @@ public:
 BOOST_PYTHON_MODULE(darc)
 {
   // DARC
+  bp::class_<darc::Log, boost::noncopyable>("Log", bp::no_init)
+    .add_static_property("level", &darc::Log::getLevel ,&darc::Log::setLevel);
+
+  bp::enum_<darc::Log::LevelType>("LevelType")
+    .value("ALL", darc::Log::LOG_ALL)
+    .value("TRACE", darc::Log::LOG_TRACE)
+    .value("DEBUG", darc::Log::LOG_DEBUG)
+    .value("INFO", darc::Log::LOG_INFO)
+    .value("WARNING", darc::Log::LOG_WARNING)
+    .value("ERROR", darc::Log::LOG_ERROR)
+    .value("FATAL", darc::Log::LOG_FATAL);
+
   bp::class_<darc::Component, darc::ComponentPtr, boost::noncopyable>("Component", bp::no_init)
     .def("run", &darc::Component::run)
     .def("stop", &darc::Component::stop)

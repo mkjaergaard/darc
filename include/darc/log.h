@@ -55,7 +55,8 @@ private:
   static const char* level_names_[];
 
 public:
-  static LevelType& level();
+  static LevelType getLevel();
+  static void setLevel(LevelType);
   static void report(LevelType level, const char * msg);
 
   static void report2(LevelType level, const char * msg, ...);
