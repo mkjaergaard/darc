@@ -37,6 +37,7 @@
 
 #include <map>
 #include <iostream>
+#include <boost/function.hpp>
 #include <darc/component.h>
 #include <darc/node.h>
 

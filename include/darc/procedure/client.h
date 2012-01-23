@@ -28,17 +28,16 @@
  */
 
 /**
- * DARC Procedure class
+ * DARC Client class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PROCEDURE_CLIENT_H_INCLUDED__
-#define __DARC_PROCEDURE_CLIENT_H_INCLUDED__
+#pragma once
 
-#include <boost/shared_ptr.hpp>
-#include <darc/procedure/client_impl.h>
-#include <darc/owner.h>
+#include <darc/procedure/client_decl.h>
+#include <darc/procedure/manager.h>
+#include <darc/procedure/local_dispatcher.h>
 
 namespace darc
 {
@@ -46,34 +45,25 @@ namespace procedure
 {
 
 template<typename T_Arg, typename T_Ret, typename T_Sta>
-class Client
+void Client<T_Arg, T_Ret, T_Sta>::onStart()
 {
-private:
-  typename ClientImpl<T_Arg, T_Ret, T_Sta>::Ptr impl_;
+  boost::shared_ptr<LocalDispatcher<T_Arg, T_Ret, T_Sta> > dispatcher = owner_->getNode()->getProcedureManager().getLocalDispatcher<T_Arg, T_Ret, T_Sta>(name_);
+  dispatcher->registerClient(this);
+  dispatcher_ = dispatcher;
+}
 
-public:
-  Client(darc::Owner * owner,
-	 const std::string& name,
-	 typename ClientImpl<T_Arg, T_Ret, T_Sta>::ReturnHandlerType return_handler,
-	 typename ClientImpl<T_Arg, T_Ret, T_Sta>::StatusHandlerType status_handler) :
-    impl_( new ClientImpl<T_Arg, T_Ret, T_Sta>(owner->getIOService(), name, return_handler, status_handler) )
-  {
-    owner->getNode()->getProcedureManager().registerClient<T_Arg, T_Ret, T_Sta>(name, impl_);
-  }
+template<typename T_Arg, typename T_Ret, typename T_Sta>
+void Client<T_Arg, T_Ret, T_Sta>::onStop()
+{
+  assert(false);
+}
 
-  ~Client()
-  {
-    //unregister
-  }
-
-  void call(boost::shared_ptr<T_Arg> argument)
-  {
-    impl_->call(argument);
-  }
-
-};
+template<typename T_Arg, typename T_Ret, typename T_Sta>
+void Client<T_Arg, T_Ret, T_Sta>::call( boost::shared_ptr<T_Arg>& argument )
+{
+  dispatcher_.lock()->dispatchCall(argument);
+}
 
 }
 }
 
-#endif

@@ -110,7 +110,7 @@ protected:
     {
       boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - expected_deadline_;
       expires_from_now( period_ - diff );
-      DARC_INFO("Diff: %s", boost::posix_time::to_simple_string(diff).c_str());
+      //DARC_INFO("Diff: %s", boost::posix_time::to_simple_string(diff).c_str());
       expected_deadline_ += period_;
       //    std::cout << diff.total_milliseconds() << std::endl;
       async_wait( boost::bind( &PeriodicTimer::handler, this, boost::asio::placeholders::error ) );

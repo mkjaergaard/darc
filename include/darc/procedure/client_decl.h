@@ -28,18 +28,22 @@
  */
 
 /**
- * DARC ClientImpl class
+ * DARC Client class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PROCEDURE_CLIENT_IMPL_H_INCLUDED__
-#define __DARC_PROCEDURE_CLIENT_IMPL_H_INCLUDED__
+#ifndef __DARC_PROCEDURE_CLIENT_H_INCLUDED__
+#define __DARC_PROCEDURE_CLIENT_H_INCLUDED__
 
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <darc/procedure/local_dispatcher_fwd.h>
+#include <darc/owner.h>
+#include <darc/primitive.h>
+#include <darc/enable_weak_from_static.h>
 
 namespace darc
 {
@@ -47,55 +51,49 @@ namespace procedure
 {
 
 template<typename T_Arg, typename T_Ret, typename T_Sta>
-class ClientImpl
+class Client : public darc::Primitive, public::darc::EnableWeakFromStatic<Client<T_Arg, T_Ret, T_Sta> >
 {
 public:
-  typedef boost::shared_ptr< ClientImpl<T_Arg, T_Ret, T_Sta> > Ptr;
-
-  typedef boost::function<void( boost::shared_ptr<T_Ret> )> ReturnHandlerType;
-  typedef boost::function<void( boost::shared_ptr<T_Sta> )> StatusHandlerType;
-
-  typedef boost::function< void( boost::shared_ptr<T_Arg> ) > DispatchCallFunctionType;
+  typedef boost::function<void( boost::shared_ptr<T_Ret>& )> ReturnHandlerType;
+  typedef boost::function<void( boost::shared_ptr<T_Sta>& )> StatusHandlerType;
 
 protected:
   boost::asio::io_service * io_service_;
+  darc::Owner * owner_;
+  std::string name_;
   ReturnHandlerType return_handler_;
   StatusHandlerType status_handler_;
 
-  DispatchCallFunctionType dispatch_call_function_;
+  boost::weak_ptr<LocalDispatcher<T_Arg, T_Ret, T_Sta> > dispatcher_;
 
 public:
-  ClientImpl( boost::asio::io_service * io_service, const std::string& name, ReturnHandlerType return_handler, StatusHandlerType status_handler ) :
-    io_service_(io_service),
+  Client(darc::Owner* owner, const std::string& name, ReturnHandlerType return_handler, StatusHandlerType status_handler ) :
+    io_service_(owner->getIOService()),
+    owner_(owner),
+    name_(name),
     return_handler_(return_handler),
     status_handler_(status_handler)
   {
+    owner->addPrimitive(this->getWeakPtr());
   }
 
   // Called by darc::procedure::LocalDispatcher
-  void registerDispatchFunctions( DispatchCallFunctionType dispatch_call_function )
+  void postStatus( boost::shared_ptr<T_Sta>& msg )
   {
-    dispatch_call_function_ = dispatch_call_function;
+    io_service_->post( boost::bind( &Client::statusReceived, this, msg ) );
   }
 
   // Called by darc::procedure::LocalDispatcher
-  void postStatus( boost::shared_ptr<T_Sta> msg )
+  void postReturn( boost::shared_ptr<T_Sta>& msg )
   {
-    io_service_->post( boost::bind( &ClientImpl::statusReceived, this, msg ) );
+    io_service_->post( boost::bind( &Client::returnReceived, this, msg ) );
   }
 
-  // Called by darc::procedure::LocalDispatcher
-  void postReturn( boost::shared_ptr<T_Sta> msg )
-  {
-    io_service_->post( boost::bind( &ClientImpl::returnReceived, this, msg ) );
-  }
+  void call( boost::shared_ptr<T_Arg>& argument );
+  void onStart();
+  void onStop();
 
-  void call( boost::shared_ptr<T_Arg> argument )
-  {
-    dispatch_call_function_(argument);
-  }
-
-private:
+protected:
   void statusReceived( boost::shared_ptr<T_Sta> msg )
   {
     if( status_handler_ )

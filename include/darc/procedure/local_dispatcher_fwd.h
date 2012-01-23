@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,67 +28,19 @@
  */
 
 /**
- * DARC Owner class
+ * DARC LocalDispatcher forward declaration
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_OWNER_H_INCLUDED__
-#define __DARC_OWNER_H_INCLUDED__
-
-#include <boost/asio.hpp>
-#include <darc/primitive_list.h>
-#include <darc/primitive.h>
+#pragma once
 
 namespace darc
 {
-
-namespace timer { class PeriodicTimer; }
-namespace parameter { class ParameterAbstract; }
-
-class Node;
-
-class Owner
+namespace procedure
 {
-protected:
-  PrimitiveList<timer::PeriodicTimer> timer_list_;
-  PrimitiveList<parameter::ParameterAbstract> parameter_list_;
-  PrimitiveList<Primitive> all_list_;
 
-public:
-  virtual boost::asio::io_service * getIOService() = 0;
-  virtual boost::shared_ptr<darc::Node> getNode() = 0;
-
-  void startPrimitives()
-  {
-    std::cout << "startPrimitives called in owner.h" << std::endl;
-    all_list_.startAll();
-  }
-
-  void stopPrimitives()
-  {
-    std::cout << "stopPrimitives called in owner.h" << std::endl;
-    all_list_.stopAll();
-  }
-
-  void pausePrimitives()
-  {
-    std::cout << "pausePrimitives called in owner.h" << std::endl;
-    all_list_.pauseAll();
-  }
-
-  void unpausePrimitives()
-  {
-    std::cout << "unpausePrimitives called in owner.h" << std::endl;
-    all_list_.unpauseAll();
-  }
-
-  void addPrimitive(boost::weak_ptr<Primitive> prim);
-  void addTimer(boost::weak_ptr<timer::PeriodicTimer> timer);
-  void addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter );
-
-};
+template<typename T_Arg, typename T_Ret, typename T_Sta> class LocalDispatcher;
 
 }
-
-#endif
+}

@@ -1,5 +1,6 @@
 function(darc_pybindings ARG_COMPONENT_NAME ARG_SOURCE_FILE)
   find_package(PythonLibs)
+  find_package(Boost COMPONENTS python thread)
   include_directories(${PYTHON_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
   set(DARC_COMPONENT_NAME ${ARG_COMPONENT_NAME})

@@ -108,7 +108,6 @@ public:
   void run()
   {
     node_->runComponent(id_);
-    onStart();
   }
 
   void stop()
@@ -132,6 +131,7 @@ public:
     std::cout << "Running Component: " << name_ << std::endl;
     keep_alive_.reset( new boost::asio::io_service::work(io_service_) );
     startPrimitives();
+    onStart();
     io_service_.reset();
     io_service_.run();
     std::cout << "Component " << name_ << " Stopped!" << std::endl;

@@ -40,7 +40,7 @@
 #include <boost/shared_ptr.hpp>
 #include <darc/id.h>
 #include <darc/pubsub/fwd.h>
-#include <darc/procedure/manager.h>
+#include <darc/procedure/manager_fwd.h>
 
 namespace darc
 {

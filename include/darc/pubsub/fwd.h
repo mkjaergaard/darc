@@ -44,8 +44,6 @@ namespace pubsub
 
 class Manager;
 class RemoteDispatcher;
-template<typename T> class PublisherImpl;
-template<typename T> class SubscriberImpl;
 template<typename T> class LocalDispatcher;
 
 typedef boost::shared_ptr<Manager> ManagerPtr;

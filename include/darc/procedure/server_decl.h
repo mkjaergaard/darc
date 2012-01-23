@@ -28,67 +28,76 @@
  */
 
 /**
- * DARC Owner class
+ * DARC Server class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_OWNER_H_INCLUDED__
-#define __DARC_OWNER_H_INCLUDED__
+#ifndef __DARC_PROCEDURE_SERVER_H_INCLUDED__
+#define __DARC_PROCEDURE_SERVER_H_INCLUDED__
 
-#include <boost/asio.hpp>
-#include <darc/primitive_list.h>
+#include <boost/shared_ptr.hpp>
+#include <darc/owner.h>
 #include <darc/primitive.h>
+#include <darc/enable_weak_from_static.h>
+#include <darc/procedure/local_dispatcher_fwd.h>
 
 namespace darc
 {
-
-namespace timer { class PeriodicTimer; }
-namespace parameter { class ParameterAbstract; }
-
-class Node;
-
-class Owner
+namespace procedure
 {
+
+template<typename T_Arg, typename T_Ret, typename T_Sta>
+class Server : public darc::Primitive, public darc::EnableWeakFromStatic<Server<T_Arg, T_Ret, T_Sta> >
+{
+public:
+  typedef boost::function<void( boost::shared_ptr<T_Arg>& )> MethodType;
+
 protected:
-  PrimitiveList<timer::PeriodicTimer> timer_list_;
-  PrimitiveList<parameter::ParameterAbstract> parameter_list_;
-  PrimitiveList<Primitive> all_list_;
+  boost::asio::io_service * io_service_;
+  darc::Owner * owner_;
+  std::string name_;
+  boost::weak_ptr<LocalDispatcher<T_Arg, T_Ret, T_Sta> > dispatcher_;
+
+  MethodType method_;
 
 public:
-  virtual boost::asio::io_service * getIOService() = 0;
-  virtual boost::shared_ptr<darc::Node> getNode() = 0;
-
-  void startPrimitives()
+  Server(darc::Owner * owner, const std::string& name, MethodType method ) :
+    io_service_(owner->getIOService()),
+    owner_(owner),
+    name_(name),
+    method_(method)
   {
-    std::cout << "startPrimitives called in owner.h" << std::endl;
-    all_list_.startAll();
+    owner->addPrimitive(this->getWeakPtr());
   }
 
-  void stopPrimitives()
+  // Called by darc::procedure::Dispatcher
+  void postCall( boost::shared_ptr<T_Arg>& argument )
   {
-    std::cout << "stopPrimitives called in owner.h" << std::endl;
-    all_list_.stopAll();
+    io_service_->post( boost::bind( &Server::call, this, argument) );
   }
 
-  void pausePrimitives()
+  // Called by components
+  void dispatchStatusMessage( boost::shared_ptr<T_Sta>& msg )
   {
-    std::cout << "pausePrimitives called in owner.h" << std::endl;
-    all_list_.pauseAll();
+    dispatchStatusMessageLocally(msg);
   }
 
-  void unpausePrimitives()
-  {
-    std::cout << "unpausePrimitives called in owner.h" << std::endl;
-    all_list_.unpauseAll();
-  }
+  void onStart();
+  void onStop();
+  void reply( boost::shared_ptr<T_Ret>& msg );
+  void status( boost::shared_ptr<T_Ret>& msg );
 
-  void addPrimitive(boost::weak_ptr<Primitive> prim);
-  void addTimer(boost::weak_ptr<timer::PeriodicTimer> timer);
-  void addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter );
+private:
+  void call( boost::shared_ptr<T_Arg> argument )
+  {
+    assert(method_);
+    method_( argument );
+  }
 
 };
 
+}
 }
 
 #endif
