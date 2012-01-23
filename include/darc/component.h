@@ -85,6 +85,8 @@ public:
     return node_;
   }
 
+  virtual void onStart() {}
+
   template<typename T>
   static boost::shared_ptr<T> instantiate( const std::string& instance_name, Node::Ptr node )
   {
@@ -106,6 +108,7 @@ public:
   void run()
   {
     node_->runComponent(id_);
+    onStart();
   }
 
   void stop()

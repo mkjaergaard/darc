@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,61 +28,51 @@
  */
 
 /**
- * DARC Publisher class
+ * DARC Log Impl
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
+#include <darc/log.h>
+#include <iostream>
+#include <stdio.h>
+#include <boost/date_time/posix_time/time_formatters.hpp>
 
-#include <boost/smart_ptr.hpp>
-#include <darc/node.h>
-#include <darc/primitive.h>
-#include <darc/pubsub/manager.h>
-#include <darc/enable_weak_from_static.h>
-#include <darc/owner.h>
+namespace bt = boost::posix_time;
 
 namespace darc
 {
-namespace pubsub
+
+Log::LevelType Log::current_level_ = Log::LOG_ALL;
+
+const char* Log::level_names_[] = {"?????","TRACE","DEBUG","INFO ","WARN ","ERROR", "FATAL"};
+
+Log::LevelType& Log::level()
 {
-
-template<typename T>
-class Publisher : public darc::Primitive, public darc::EnableWeakFromStatic<Publisher<T> >
-{
-protected:
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
-  darc::Owner * owner_;
-  std::string topic_;
-
-public:
-  Publisher(darc::Owner* owner, const std::string& topic) :
-    owner_(owner),
-    topic_(topic)
-  {
-    owner->addPrimitive(this->getWeakPtr());
-  }
-
-  void publish(boost::shared_ptr<T> msg)
-  {
-    if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
-    {
-      dispatcher_sp->dispatchMessage(msg);
-    }
-  }
-
-  void onStart()
-  {
-    dispatcher_ = owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_);
-    //todo: register
-  }
-
-  void onStop()
-  {
-    //todo: unregister
-  }
-
-};
-
+  return current_level_;
 }
+
+void Log::report(Log::LevelType level, const char * msg)
+{
+  if(level >= current_level_)
+  {
+    std::cout << "[" << level_names_[level] << " " << bt::to_simple_string(bt::microsec_clock::universal_time().time_of_day()) << "] " << msg << std::endl;
+  }
+}
+
+void Log::report2(Log::LevelType level, const char * msg, ...)
+{
+  if(level >= current_level_)
+  {
+    va_list args;
+    va_start(args, msg);
+    std::cout << "[" << level_names_[level] << " " << bt::to_simple_string(bt::microsec_clock::universal_time().time_of_day()) << "] ";
+    vprintf(msg, args);
+    va_end(args);
+    std::cout << std::endl;
+  }
+}
+
+
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,61 +28,44 @@
  */
 
 /**
- * DARC Publisher class
+ * DARC Log Stuff
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <boost/smart_ptr.hpp>
-#include <darc/node.h>
-#include <darc/primitive.h>
-#include <darc/pubsub/manager.h>
-#include <darc/enable_weak_from_static.h>
-#include <darc/owner.h>
-
 namespace darc
 {
-namespace pubsub
+class Log
 {
+public:
+  typedef enum {
+    LOG_ALL = 0,
+    LOG_TRACE,
+    LOG_DEBUG,
+    LOG_INFO,
+    LOG_WARNING,
+    LOG_ERROR,
+    LOG_FATAL
+  } LevelType;
 
-template<typename T>
-class Publisher : public darc::Primitive, public darc::EnableWeakFromStatic<Publisher<T> >
-{
-protected:
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
-  darc::Owner * owner_;
-  std::string topic_;
+private:
+  static LevelType current_level_;
+  static const char* level_names_[];
 
 public:
-  Publisher(darc::Owner* owner, const std::string& topic) :
-    owner_(owner),
-    topic_(topic)
-  {
-    owner->addPrimitive(this->getWeakPtr());
-  }
+  static LevelType& level();
+  static void report(LevelType level, const char * msg);
 
-  void publish(boost::shared_ptr<T> msg)
-  {
-    if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
-    {
-      dispatcher_sp->dispatchMessage(msg);
-    }
-  }
-
-  void onStart()
-  {
-    dispatcher_ = owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_);
-    //todo: register
-  }
-
-  void onStop()
-  {
-    //todo: unregister
-  }
+  static void report2(LevelType level, const char * msg, ...);
 
 };
 
 }
-}
+
+#define DARC_AUTOTRACE() darc::Log::report(darc::Log::LOG_TRACE, __PRETTY_FUNCTION__)
+#define DARC_INFO(...) darc::Log::report2(darc::Log::LOG_INFO, __VA_ARGS__)
+#define DARC_WARNING(arg) darc::Log::report(darc::Log::LOG_WARNING, arg)
+#define DARC_ERROR(arg) darc::Log::report(darc::Log::LOG_ERROR, arg)
+#define DARC_FATAL(arg) darc::Log::report(darc::Log::LOG_FATAL, arg); exit(1)
