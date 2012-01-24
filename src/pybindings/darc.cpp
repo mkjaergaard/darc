@@ -130,6 +130,11 @@ public:
     return ParameterListProxy( instance_.lock()->parameter_list_.getWeakPtr() );
   }
 
+  void run()
+  {
+    return instance_.lock()->run();
+  }
+
   void pause() { instance_.lock()->pause(); }
   void unpause() { instance_.lock()->unpause(); }
 
@@ -149,18 +154,18 @@ public:
   }
 
   ComponentProxy getitem(std::string text)
-  {/*
-    boost::regex rex( "component_(\\d+)" );
-    boost::smatch what;
-    if( regex_match(text, what, rex) )
+  {
+    for( NodeImpl::ComponentInstancesList::iterator it = instance_.lock()->component_instances_.begin();
+	 it != instance_.lock()->component_instances_.end();
+	 it++)
     {
-      return ComponentProxy( instance_.lock()->component_instances_[what[1]] );
-    }
-    else*/
-    {
-      PyErr_SetString(PyExc_AttributeError, "object has no attribute with that name" );
-      throw boost::python::error_already_set();
+      if(it->second->getName() == text)
+      {
+	return ComponentProxy(it->second);
       }
+    }
+    PyErr_SetString(PyExc_AttributeError, "object has no attribute with that name" );
+    throw boost::python::error_already_set();
   }
 
   boost::python::list dir()
@@ -170,11 +175,17 @@ public:
 	 it != instance_.lock()->component_instances_.end();
 	 it++)
     {
-      //l.insert(0, std::string("component_") + it->first );
+      l.insert(0, it->second->getName() );
     }
     return l;
   }
 };
+
+
+NodeProxy createNodeProxy( darc::NodeImpl* source)
+{
+  return NodeProxy(source->shared_from_this());
+}
 
 }
 }
@@ -203,7 +214,6 @@ BOOST_PYTHON_MODULE(darc)
     .def("getName", &darc::Component::getName)
     .def("getID", &darc::Component::getID);
 
-
   bp::class_<darc::Registry>("Registry", bp::no_init)
     .def("instantiateComponent", &darc::Registry::instantiateComponent)
     .staticmethod("instantiateComponent");
@@ -216,10 +226,10 @@ BOOST_PYTHON_MODULE(darc)
     .def("setNodeID", &darc::Node::setNodeID)
     .def("run", &darc::Node::run)
     .def("connect", &darc::Node::connect)
-    .def("accept", &darc::Node::accept);
+    .def("accept", &darc::Node::accept)
+    .add_property("proxy", &darc::python::createNodeProxy);
 
   bp::class_<darc::NodeImpl, bp::bases<darc::Node>, boost::noncopyable>("NodeImpl", bp::no_init);
-
 
   // Proxys
   bp::class_<darc::python::ProxyBaseAbstract, boost::noncopyable >("Abstract_", bp::no_init );
@@ -229,7 +239,8 @@ BOOST_PYTHON_MODULE(darc)
     .add_property("timers", &darc::python::ComponentProxy::timers)
     .add_property("parameters", &darc::python::ComponentProxy::parameters)
     .def("pause", &darc::python::ComponentProxy::pause)
-    .def("unpause", &darc::python::ComponentProxy::unpause);
+    .def("unpause", &darc::python::ComponentProxy::unpause)
+    .def("run", &darc::python::ComponentProxy::run);
 
   bp::class_<darc::python::NodeProxy>("Node_", bp::init<boost::shared_ptr<darc::NodeImpl> >())
     .def("instantiateComponent", &darc::python::NodeProxy::instantiateComponent)
