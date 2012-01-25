@@ -10,6 +10,9 @@ DARC was created as a prototype for a new generation of the core library of `ROS
 It uses the `ROS message files <http://www.ros.org/wiki/msg>`_ as data format, so it is often quite straightforward to update code written for ROS to use DARC instead.
 The `Catkin <https://github.com/willowgarage/catkin>`_ build system introduced in ROS Fuerte allows ROS messages to be used seperately from ROS and thus allowed a system like DARC to be created.
 
+DARC doesnt use XMLRPC, and the transport protocol is different, so it is not compatible with a running ROS system.
+It is possible to create a bridge between a DARC and a ROS system to exchange messages between them.
+
 Purpose
 -------
 DARC is designed to fix some of the limitations in ROS, resulting from inadequate design, and code difficult to maintain.
