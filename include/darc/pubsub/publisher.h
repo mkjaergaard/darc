@@ -63,13 +63,14 @@ public:
     owner->addPrimitive(this->getWeakPtr());
   }
 
-  void publish(boost::shared_ptr<T> msg)
+  void publish(boost::shared_ptr<const T> msg)
   {
     if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
     {
       dispatcher_sp->dispatchMessage(msg);
     }
   }
+
 
   void onStart()
   {

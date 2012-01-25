@@ -50,7 +50,7 @@ class Serialization
 
 public:
   template<typename T>
-  static boost::shared_ptr<T> deserialize(SharedBuffer msg_data)
+  static boost::shared_ptr<const T> deserialize(SharedBuffer msg_data)
   {
     boost::shared_ptr<T> msg( new T() );
 

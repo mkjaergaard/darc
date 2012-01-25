@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,66 +24,56 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * POSSIBILITY OF bvSUCH DAMAGE.
  */
 
 /**
- * DARC Subscriber class
+ * DARC SubcomponentList class impl
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
-
-#include <boost/shared_ptr.hpp>
-#include <darc/owner.h>
-#include <darc/enable_weak_from_static.h>
+#include <darc/subcomponent_list.h>
+#include <darc/subcomponent.h>
 
 namespace darc
 {
 
-namespace pubsub
+void SubcomponentList::startAll()
 {
-
-template<typename T>
-class Subscriber : public darc::Primitive, public darc::EnableWeakFromStatic<Subscriber<T> >
-{
-private:
-  boost::asio::io_service * io_service_;
-  darc::Owner * owner_;
-  std::string topic_;
-
-  typedef boost::function<void( boost::shared_ptr<const T> )> CallbackType;
-  CallbackType callback_;
-
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
-
-  typedef boost::shared_ptr<const T> MsgPtrType;
-
-
-public:
-  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback);
-  void onStart();
-  void onStop();
-
-  ~Subscriber()
+  for(SubcomponentListType::iterator it = list_.begin(); it != list_.end(); it++)
   {
-    // unregister subscriber
+    it->lock()->startPrimitives();
   }
-
-  void dispatch( MsgPtrType &msg)
-  {
-    io_service_->post( boost::bind( &Subscriber::receive, this, msg ) );
-  }
-
-private:
-  void receive(MsgPtrType& msg)
-  {
-    callback_( msg );
-  }
-
-
-};
-
 }
+
+void SubcomponentList::stopAll()
+{
+  for(SubcomponentListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {
+    it->lock()->stopPrimitives();
+  }
+}
+
+void SubcomponentList::pauseAll()
+{
+  for(SubcomponentListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {
+    it->lock()->pausePrimitives();
+  }
+}
+
+void SubcomponentList::unpauseAll()
+{
+  for(SubcomponentListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {
+    it->lock()->unpausePrimitives();
+  }
+}
+
+void SubcomponentList::add(boost::weak_ptr<Subcomponent> item)
+{
+  list_.push_back(item);
+}
+
 }

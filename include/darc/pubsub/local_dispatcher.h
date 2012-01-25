@@ -80,14 +80,14 @@ public:
   }
 
   // Called by the local publishers
-  void dispatchMessage( boost::shared_ptr<T> msg )
+  void dispatchMessage( boost::shared_ptr<const T> &msg )
   {
     dispatchMessageLocally(msg);
     // if remote subscribers
     manager_callback_->getRemoteDispatcher().postRemoteDispatch<T>(topic_, msg);
   }
 
-  void dispatchMessageLocally( boost::shared_ptr<T> msg )
+  void dispatchMessageLocally( boost::shared_ptr<const T> msg )
   {
     for( typename SubscriberListType::iterator it = subscriber_list_.begin();
          it != subscriber_list_.end();

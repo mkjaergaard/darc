@@ -57,4 +57,9 @@ void Owner::addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter
   all_list_.add(parameter);
 }
 
+void Owner::addSubcomponent(boost::weak_ptr<Subcomponent> sc)
+{
+  subcomponent_list_.add(sc);
+}
+
 }

@@ -24,75 +24,39 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * POSSIBILITY OF bvSUCH DAMAGE.
  */
 
 /**
- * DARC Registry class
+ * DARC SubcomponentList class
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <map>
-#include <iostream>
-#include <boost/function.hpp>
-#include <darc/component.h>
-#include <darc/node.h>
+#include <vector>
+#include <darc/enable_weak_from_static.h>
 
 namespace darc
 {
 
-class Registry
+class Subcomponent;
+
+class SubcomponentList : public EnableWeakFromStatic<SubcomponentList>
 {
-private:
-  typedef boost::function<Component::Ptr(const std::string&, Node::Ptr)> InstantiateComponentMethod;
-  typedef std::map<const std::string, InstantiateComponentMethod> ComponentListType;
-
-  ComponentListType component_list_;
-
-  static Registry * instance_;
-
-private:
-  Registry() {}
-
-  static Registry * instance()
-  {
-    if( instance_ == 0 )
-    {
-      instance_ = new Registry();
-    }
-    return instance_;
-  }
+protected:
+public:
+  typedef std::vector<boost::weak_ptr<Subcomponent> > SubcomponentListType;
+  SubcomponentListType list_;
 
 public:
-  static int registerComponent( const std::string& component_name, InstantiateComponentMethod method )
-  {
-    Registry * inst = instance();
-    inst->component_list_[component_name] = method;
-    std::cout << "Registered Component: " << component_name << std::endl;
-    return 1;
-  }
-
-  static darc::Component::Ptr instantiateComponent( const std::string& instance_name, Node::Ptr node )
-  {
-    Registry * inst = instance();
-    if( inst->component_list_.count(instance_name) )
-    {
-      std::cout << "Instantiate " << instance_name << std::endl;
-      return inst->component_list_[instance_name](instance_name, node);
-    }
-    else
-    {
-      std::cout << "Component " << instance_name << " not registered" << std::endl;
-      assert(0);
-      return darc::Component::Ptr();
-    }
-  }
+  void startAll();
+  void stopAll();
+  void pauseAll();
+  void unpauseAll();
+  void add(boost::weak_ptr<Subcomponent> item);
 
 };
 
 }
-
-#define DARC_REGISTER_COMPONENT(classname) namespace classname##_reg { static int dummy = darc::Registry::registerComponent( #classname, boost::bind(&classname::instantiate<classname>, _1, _2) ); }

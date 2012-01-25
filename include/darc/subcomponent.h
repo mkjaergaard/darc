@@ -40,11 +40,12 @@
 #include <boost/bind.hpp>
 #include <darc/node.h>
 #include <darc/component.h>
+#include <darc/enable_weak_from_static.h>
 
 namespace darc
 {
 
-class Subcomponent : public Owner
+class Subcomponent : public Owner, public EnableWeakFromStatic<Subcomponent>
 {
 protected:
   Owner * parent_;
@@ -53,6 +54,7 @@ protected:
   Subcomponent(Owner * parent):
     parent_(parent)
   {
+    parent->addSubcomponent(this->getWeakPtr());
   }
 
   virtual ~Subcomponent()
