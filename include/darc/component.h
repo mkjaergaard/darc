@@ -105,6 +105,11 @@ public:
     return id_;
   }
 
+  const ID& getComponentID()
+  {
+    return id_;
+  }
+
   void run()
   {
     node_->runComponent(id_);

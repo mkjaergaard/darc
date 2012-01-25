@@ -74,6 +74,11 @@ public:
     return parent_->getNode();
   }
 
+  const ID& getComponentID()
+  {
+    return parent_->getComponentID();
+  }
+
 };
 
 }

@@ -60,6 +60,7 @@ protected:
 public:
   virtual boost::asio::io_service * getIOService() = 0;
   virtual boost::shared_ptr<darc::Node> getNode() = 0;
+  virtual const ID& getComponentID() = 0;
 
   void startPrimitives()
   {

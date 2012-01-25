@@ -38,6 +38,7 @@
 #include <boost/shared_ptr.hpp>
 #include <darc/owner.h>
 #include <darc/enable_weak_from_static.h>
+#include <darc/pubsub/callback_info.h>
 
 namespace darc
 {
@@ -53,7 +54,7 @@ private:
   darc::Owner * owner_;
   std::string topic_;
 
-  typedef boost::function<void( boost::shared_ptr<const T> )> CallbackType;
+  typedef boost::function<void( boost::shared_ptr<const T>, CallbackInfo)> CallbackType;
   CallbackType callback_;
 
   boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
@@ -71,15 +72,15 @@ public:
     // unregister subscriber
   }
 
-  void dispatch( MsgPtrType &msg)
+  void dispatch( MsgPtrType &msg, CallbackInfo &info)
   {
-    io_service_->post( boost::bind( &Subscriber::receive, this, msg ) );
+    io_service_->post( boost::bind( &Subscriber::receive, this, msg, info ) );
   }
 
 private:
-  void receive(MsgPtrType& msg)
+  void receive(MsgPtrType msg, CallbackInfo info)
   {
-    callback_( msg );
+    callback_(msg, info);
   }
 
 

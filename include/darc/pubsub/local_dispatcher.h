@@ -80,27 +80,29 @@ public:
   }
 
   // Called by the local publishers
-  void dispatchMessage( boost::shared_ptr<const T> &msg )
+  void dispatchMessage( boost::shared_ptr<const T> &msg, darc::ID &sender_component_id )
   {
-    dispatchMessageLocally(msg);
+    CallbackInfo info;
+    info.sender_component_id = sender_component_id;
+    dispatchMessageLocally(msg, info);
     // if remote subscribers
     manager_callback_->getRemoteDispatcher().postRemoteDispatch<T>(topic_, msg);
   }
 
-  void dispatchMessageLocally( boost::shared_ptr<const T> msg )
+  void dispatchMessageLocally( boost::shared_ptr<const T> msg, CallbackInfo info )
   {
     for( typename SubscriberListType::iterator it = subscriber_list_.begin();
          it != subscriber_list_.end();
          it++)
     {
-      it->second.lock()->dispatch( msg );
+      it->second.lock()->dispatch( msg, info );
     }
   }
 
   // impl of virtual
   void dispatchMessageLocally( SharedBuffer msg_s )
   {
-    dispatchMessageLocally( Serialization::deserialize<T>(msg_s) );
+    dispatchMessageLocally( Serialization::deserialize<T>(msg_s), CallbackInfo() );
   }
 
 };

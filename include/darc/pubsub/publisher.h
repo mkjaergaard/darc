@@ -67,7 +67,8 @@ public:
   {
     if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
     {
-      dispatcher_sp->dispatchMessage(msg);
+      ID someid = owner_->getComponentID();;
+      dispatcher_sp->dispatchMessage(msg, someid);
     }
   }
 
