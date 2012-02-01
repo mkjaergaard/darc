@@ -35,8 +35,9 @@
 
 #pragma once
 
-#include <darc/enable_weak_from_static.h>
-#include <darc/primitive.h>
+#include <map>
+#include <darc/id.h>
+#include <darc/parameter/group.h>
 #include <darc/parameter/status.h>
 
 namespace darc
@@ -44,29 +45,37 @@ namespace darc
 namespace parameter
 {
 
-class ParameterAbstract : public Primitive, public EnableWeakFromStatic<ParameterAbstract>
+class Manager
 {
-public:
-
 protected:
-  std::string name_;
-  Status status_;
+  typedef std::map<const ID, GroupPtr> GroupListType;
+  GroupListType group_list_;
 
 public:
-  ParameterAbstract(const std::string& name) :
-    name_(name)
+  GroupPtr getParameterGroup(const ID& id)
   {
+    GroupListType::iterator elem = group_list_.find(id);
+    if( elem == group_list_.end() )
+    {
+      GroupPtr group = GroupPtr( new Group() );
+      group_list_[id] = group;
+      return group;
+    }
+    else
+    {
+      return elem->second;
+    }
   }
 
-  const std::string& getName()
+  template<typename T>
+  void changeParameter(const ID& group_id, const std::string& name, const T& new_value, const Status& status)
   {
-    return name_;
+    GroupListType::iterator elem = group_list_.find(group_id);
+    assert(elem != group_list_.end());
+    elem->second->setParameter<T>(name, new_value, status);
   }
 
 };
-
-typedef boost::weak_ptr<ParameterAbstract> ParameterAbstractWkPtr;
-typedef boost::shared_ptr<ParameterAbstract> ParameterAbstractPtr;
 
 }
 }

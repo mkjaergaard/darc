@@ -35,38 +35,46 @@
 
 #pragma once
 
-#include <darc/enable_weak_from_static.h>
-#include <darc/primitive.h>
-#include <darc/parameter/status.h>
+#include <darc/parameter/parameter_abstract.h>
+#include <darc/parameter/parameter.h>
 
 namespace darc
 {
 namespace parameter
 {
 
-class ParameterAbstract : public Primitive, public EnableWeakFromStatic<ParameterAbstract>
+class Group
 {
-public:
-
 protected:
-  std::string name_;
-  Status status_;
+  typedef std::map<const std::string, ParameterAbstractWkPtr> ParameterListType;
+  ParameterListType parameter_list_;
 
 public:
-  ParameterAbstract(const std::string& name) :
-    name_(name)
+  void registerParameter(ParameterAbstract * parameter)
   {
+    assert(parameter_list_.count(parameter->getName()) == 0);
+    parameter_list_[parameter->getName()] = parameter->getWeakPtr();
   }
 
-  const std::string& getName()
+  void unregisterParameter(ParameterAbstract * parameter)
   {
-    return name_;
+    // do something
+  }
+
+  template<typename T>
+  void setParameter(const std::string& name, const T& new_value)
+  {
+    ParameterListType::iterator elem = parameter_list_.find(name);
+    assert(elem != parameter_list_.end());
+    ParameterAbstractPtr param_shared = elem->second.lock();
+    //todo: try!!
+    boost::shared_ptr< Parameter<T> > t_param = boost::dynamic_pointer_cast<T>(param_shared);
+    t_param->setValue(new_value);
   }
 
 };
 
-typedef boost::weak_ptr<ParameterAbstract> ParameterAbstractWkPtr;
-typedef boost::shared_ptr<ParameterAbstract> ParameterAbstractPtr;
+typedef boost::shared_ptr<Group> GroupPtr;
 
 }
 }

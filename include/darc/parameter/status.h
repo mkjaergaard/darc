@@ -28,45 +28,54 @@
  */
 
 /**
- * DARC ParameterAbstract class
+ * DARC Status class
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <darc/enable_weak_from_static.h>
-#include <darc/primitive.h>
-#include <darc/parameter/status.h>
-
 namespace darc
 {
 namespace parameter
 {
 
-class ParameterAbstract : public Primitive, public EnableWeakFromStatic<ParameterAbstract>
+class Status
 {
 public:
+  typedef enum
+  {
+    OVERRIDDEN = 0,
+    DEFAULT = 95,
+    UNKNOWN = 98,
+    MISSING = 99
+  } Type;
 
 protected:
-  std::string name_;
-  Status status_;
+  Type status_;
 
 public:
-  ParameterAbstract(const std::string& name) :
-    name_(name)
+  Status( Type status = UNKNOWN ) :
+    status_( status )
   {
   }
 
-  const std::string& getName()
+  const Type& status() const
   {
-    return name_;
+    return status_;
+  }
+
+  Type& status()
+  {
+    return status_;
+  }
+
+  bool isKnown() const
+  {
+    return (status_ != UNKNOWN) && (status_ != MISSING);
   }
 
 };
-
-typedef boost::weak_ptr<ParameterAbstract> ParameterAbstractWkPtr;
-typedef boost::shared_ptr<ParameterAbstract> ParameterAbstractPtr;
 
 }
 }

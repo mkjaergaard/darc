@@ -46,14 +46,17 @@ namespace parameter
 template<typename T>
 class Parameter : public ParameterAbstract
 {
+protected:
+  typedef boost::function<void(void)> UpdateCallbackType;
+  UpdateCallbackType update_callback_;
 
 protected:
   T value_;
 
 public:
-  Parameter(darc::Owner * owner, const std::string& name, T initial_value) :
+  Parameter(darc::Owner * owner, const std::string& name, UpdateCallbackType update_callback = UpdateCallbackType()) :
     ParameterAbstract(name),
-    value_(initial_value)
+    update_callback_(update_callback)
   {
     owner->addParameter(this->getWeakPtr());
   }
@@ -63,9 +66,14 @@ public:
     return value_;
   }
 
-  void setValue(const T& value)
+  void setValue(const T& value, const Status& status)
   {
     value_ = value;
+    status_ = status;
+    if(update_callback_)
+    {
+      update_callback_();
+    }
   }
 
 };

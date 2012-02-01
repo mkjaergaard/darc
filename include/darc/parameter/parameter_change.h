@@ -28,15 +28,13 @@
  */
 
 /**
- * DARC ParameterAbstract class
+ * DARC ParameterSourceAbstract  class
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <darc/enable_weak_from_static.h>
-#include <darc/primitive.h>
 #include <darc/parameter/status.h>
 
 namespace darc
@@ -44,29 +42,20 @@ namespace darc
 namespace parameter
 {
 
-class ParameterAbstract : public Primitive, public EnableWeakFromStatic<ParameterAbstract>
+class ParameterValueChange
 {
-public:
 
 protected:
-  std::string name_;
-  Status status_;
+  const std::string name_;
+  boost::shared_ptr<ParameterValueAbstract> value_;
 
 public:
-  ParameterAbstract(const std::string& name) :
+  ParameterValueChange(name):
     name_(name)
   {
   }
 
-  const std::string& getName()
-  {
-    return name_;
-  }
-
 };
-
-typedef boost::weak_ptr<ParameterAbstract> ParameterAbstractWkPtr;
-typedef boost::shared_ptr<ParameterAbstract> ParameterAbstractPtr;
 
 }
 }

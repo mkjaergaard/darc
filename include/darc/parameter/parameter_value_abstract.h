@@ -28,45 +28,23 @@
  */
 
 /**
- * DARC ParameterAbstract class
+ * DARC Parameter Value Abstract class
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
 
-#include <darc/enable_weak_from_static.h>
-#include <darc/primitive.h>
-#include <darc/parameter/status.h>
+#ifndef __PARAMETER_VALUE_ABSTRACT_H_INCLUDED__
+#define __PARAMETER_VALUE_ABSTRACT_H_INCLUDED__
 
-namespace darc
-{
-namespace parameter
-{
-
-class ParameterAbstract : public Primitive, public EnableWeakFromStatic<ParameterAbstract>
+class ParameterValueAbstract
 {
 public:
-
-protected:
-  std::string name_;
-  Status status_;
-
-public:
-  ParameterAbstract(const std::string& name) :
-    name_(name)
-  {
-  }
-
-  const std::string& getName()
-  {
-    return name_;
-  }
-
+  virtual const std::string& getType() const = 0;
+  virtual const std::string getEncodedValue() const = 0;
+  virtual void setFromEncodedValue( const std::string& encoded_value ) = 0;
+  virtual const ParameterStatus::Type& getStatus() const = 0;
+  virtual bool isKnown() const = 0;
 };
 
-typedef boost::weak_ptr<ParameterAbstract> ParameterAbstractWkPtr;
-typedef boost::shared_ptr<ParameterAbstract> ParameterAbstractPtr;
-
-}
-}
+#endif
