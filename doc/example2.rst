@@ -3,7 +3,7 @@
 Creating a Node in C++
 ======
 
-TDB
+TBD
 
 .. literalinclude:: code/pubsub_node.cpp
    :language: c++

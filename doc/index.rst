@@ -1,6 +1,8 @@
 DARC
 ======
 
+Author: Morten Kjærgaard
+
 Overview
 --------------
 DARC is a component based framework for building control systems.
@@ -13,7 +15,7 @@ The `Catkin <https://github.com/willowgarage/catkin>`_ build system introduced i
 DARC doesnt use XMLRPC, and the transport protocol is different, so it is not compatible with a running ROS system.
 It is possible to create a bridge between a DARC and a ROS system to exchange messages between them.
 
-Purpose
+Motivation
 -------
 DARC is designed to fix some of the limitations in ROS, resulting from inadequate design, and code difficult to maintain.
 In addition, it strives to greatly improve the control you get over your system, and adds introspectrum and profiling options allowing you to get an overview of the performance of the running system (bottlenecks, etc).
@@ -29,7 +31,7 @@ Recently a lot of extra functionality have been built on top of ROS and the mess
 
 These sub-projects show some of the functionality and use-cases that people need, and ROS fundamentally lacks. But instead of fixing the underlying architecture (which of course would be a large effort), they have been overcome by creating workarounds, sacrificing performance, and by using a lot of code generators.
 
-The fundamental design of DARC take all these use-cases into account. They are handled by design or on the system level, and thus none of the hacky workarounds mentioned above are needed in a DARC system.
+The fundamental design of DARC take all these use-cases into account. They are handled by design or on the system level, and thus none of the workarounds mentioned above are needed in a DARC system.
 
 Architecture
 ------------
@@ -74,6 +76,17 @@ A Procedure is the equivalent of a ROS action.
 It is a asyncronous procedure call taking a ROS msg as argument, will return a ROS msg when it is completed, and in the meantime can send ROS msgs as status updates.
 Since it is implemented on the system level (and not on top of publishers and subscribers), it is faster than ROS actions, and it doesnt require creating .action files.
 
+**Soft Realtime Quality of Service**
+
+To function properly, a control system must be able to run at the desired frequency, and get the required data fast enough.
+Some low level control systems have extreme timing constraints, and require hard realtime timing, but this is out of scope of DARC.
+DARC is meant for implementing soft realtime control, which usually runs at slower frequency.
+Soft realtime is not the same as total ignorance, but instead you have some looser timing constraints, which still must be fulfilled.
+It is possible to set up event handlers to supervise these constraints. E.g. if the periodic timer is not triggered often enough (due to a congested CPU, or busy thread).
+Or if you expect to receive messages at a certain frequency from a sensor component, but that component is taking too long processing the data and not delivering it fast enough.
+In ROS these congestion scenarios are not discovered, and instead the system starts running weird for no clear reason.
+In DARC you define the soft realtime constrains (e.g. expect to receive data X every 100ms ± 50ms) and get notifications or trigger certain behaviour if they are not fulfilled (such as stop the robot, or drive slower and decrease processing frequency).
+
 **Network Topology**
 
 The network is decentralized (No rosmaster required).
@@ -114,13 +127,17 @@ A published message is thus serialized and transported only once, even if there 
      "Node1" -> "Node2" [dir=both];
    }
 
+It is transparent to the component designer whether the component will be running alone in a remote node, or together with many other components in a single node.
+Thus it is possible to run your component in a seperate process during development and debugging.
+When it is working properly, it can be deployed into same node as the rest of the system and get fast shared memory communication between them.
+
 Python Bindings
 ---------------
 TBD
 
 Python Interface
 ----------------
-TDB
+TBD
 
 Examples
 --------
@@ -139,3 +156,5 @@ Source
 * `DARC library <https://github.com/mkjaergaard/darc>`_
 * `DARC examples <https://github.com/mkjaergaard/darc_examples>`_
 * `DARC/ROS bridge <https://github.com/mkjaergaard/darc_ros>`_
+* `DARC Wrapper for Stage Simulator <https://github.com/mkjaergaard/stage_darc>`_
+* `DARC Benchmark Projects <https://github.com/mkjaergaard/darc_benchmark>`_
