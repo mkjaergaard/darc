@@ -24,6 +24,7 @@ add_library(darc SHARED
   src/lib/id.cpp
   src/lib/log.cpp
   src/lib/subcomponent_list.cpp
+  src/lib/parameter/server_component.cpp
 )
 
 target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES} -ldl)

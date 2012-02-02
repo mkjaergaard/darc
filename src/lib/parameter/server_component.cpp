@@ -28,55 +28,34 @@
  */
 
 /**
- * DARC ParameterSourceAbstract  class
+ * DARC Parameter Component Server
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
-
-#include <darc/parameter/parameter_change.h>
+#include <darc/darc.h>
+#include <darc/parameter/component_parameter_source.h>
 
 namespace darc
 {
 namespace parameter
 {
 
-class ParameterSourceAbstract
+class ParameterServerComponent : darc::Component
 {
 public:
-  typedef boost::function<void(ParameterChange&)> ValueChangeCallbackType;
-
 
 protected:
-  const std::string name_;
-  ValueChangeCallbackType value_change_callback_;
+  typedef std::map<const std::string, ComponentParameterSource*> ComponentParameterSourceListType;
+  ComponentParameterSourceListType source_list_;
 
 public:
-  ParameterSourceAbstract(const std::string& name):
-    name_(name)
+  ParameterServerComponent(const std::string& name, boost::shared_ptr<Node> node) :
+    darc::Component(name, node)
   {
   }
-
-  virtual void update()
-  {
-    // if changes
-  }
-
-  const std::string& getName() const
-  {
-    return name_;
-  }
-
-  void setValueChangeCallback(ValueChangeCallbackType callback)
-  {
-    value_change_callback_ = callback;
-  }
-
 
 };
-
-typedef boost::shared_ptr<ParameterSourceAbstract> ParameterSourceAbstractPtr;
 
 }
 }

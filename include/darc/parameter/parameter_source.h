@@ -46,7 +46,6 @@ namespace parameter
 template<typename T>
 class ParameterSource : public ParameterSourceAbstract
 {
-
 protected:
   T current_value_;
 

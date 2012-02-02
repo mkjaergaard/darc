@@ -35,8 +35,10 @@
 
 #pragma once
 
+#include <darc/parameter/manager.h>
 #include <darc/parameter/parameter_source_abstract.h>
 #include <darc/parameter/status.h>
+#include <darc/parameter/parameter_change.h>
 #include <darc/subcomponent.h>
 
 namespace darc
@@ -57,28 +59,28 @@ protected:
   ID deployed_component_id_;
 
 public:
-  ComponentParameterSource(darc::Owner * owner) :
-    darc::Subcomponent(owner)
+  ComponentParameterSource(darc::Owner * owner, const std::string& component_name) :
+    darc::Subcomponent(owner),
     component_name_(component_name),
     found_component_(false)
   {
   }
 
-  template<typename T>
-  void addParameterSource(boost::shared_ptr<ParameterSource<T> > parameter_source)
+  void addParameterSource(ParameterSourceAbstractPtr parameter_source)
   {
     parameter_list_[parameter_source->getName()] = parameter_source;
+    parameter_source->setValueChangeCallback(boost::bind(&ComponentParameterSource::parameterValueChangeCallback, this, _1));
   }
 
   void update()
   {
     for( ParameterSourceListType::iterator it = parameter_list_.begin(); it != parameter_list_.end(); it++ )
     {
-      (*it)->update();
+      (*it).second->update();
     }
   }
 
-  void parameterValueChangeCallback(ParameterValueChange& change_info)
+  void parameterValueChangeCallback(ParameterChange& change_info)
   {
     DARC_AUTOTRACE();
     assert(found_component_);
