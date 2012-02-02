@@ -39,6 +39,7 @@
 #include <darc/id.h>
 #include <darc/parameter/status.h>
 #include <darc/parameter/group.h>
+#include <darc/parameter/parameter_change.h>
 
 namespace darc
 {
@@ -53,7 +54,7 @@ protected:
 
 public:
   GroupPtr getParameterGroup(const ID& id);
-
+  /*
   template<typename T>
   void changeParameter(const ID& group_id, const std::string& name, const T& new_value, const Status& status)
   {
@@ -61,7 +62,8 @@ public:
     assert(elem != group_list_.end());
     elem->second->setParameter<T>(name, new_value, status);
   }
-
+  */
+  void changeParameterValue(const ID& group_id, ParameterChange& change_info);
 };
 
 }

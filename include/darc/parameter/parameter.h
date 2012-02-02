@@ -61,6 +61,11 @@ public:
   {
   }
 
+  void change(ParameterChange& change_info)
+  {
+    
+  }
+
   const T& getValue() const
   {
     return value_;

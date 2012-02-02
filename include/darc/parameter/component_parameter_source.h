@@ -37,13 +37,14 @@
 
 #include <darc/parameter/parameter_source_abstract.h>
 #include <darc/parameter/status.h>
+#include <darc/subcomponent.h>
 
 namespace darc
 {
 namespace parameter
 {
 
-class ComponentParameterSource
+class ComponentParameterSource : darc::Subcomponent
 {
 public:
 
@@ -52,10 +53,14 @@ protected:
   ParameterSourceListType parameter_list_;
 
   std::string component_name_;
+  bool found_component_;
+  ID deployed_component_id_;
 
 public:
-  ComponentParameterSource() :
-    component_name_(component_name)
+  ComponentParameterSource(darc::Owner * owner) :
+    darc::Subcomponent(owner)
+    component_name_(component_name),
+    found_component_(false)
   {
   }
 
@@ -71,6 +76,13 @@ public:
     {
       (*it)->update();
     }
+  }
+
+  void parameterValueChangeCallback(ParameterValueChange& change_info)
+  {
+    DARC_AUTOTRACE();
+    assert(found_component_);
+    parent_->getNode()->getParameterManager().changeParameterValue(deployed_component_id_, change_info);
   }
 
 };

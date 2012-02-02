@@ -37,12 +37,16 @@
 #define __PARAMETER_VALUE_IMPL_H_INCLUDED__
 
 #include <string>
-#include <yaml-cpp/yaml.h>
+//#include <yaml-cpp/yaml.h>
 #include <boost/shared_ptr.hpp>
 
-#include <smart_cfg_server/parameter_value_abstract.h>
-#include <smart_cfg_server/parameter_status.h>
-#include <smart_cfg_server/parameter_types.h>
+#include <darc/parameter/parameter_value_abstract.h>
+#include <darc/parameter/status.h>
+
+namespace darc
+{
+namespace parameter
+{
 
 class UnsetValue {};
 
@@ -54,27 +58,27 @@ public:
 
 protected:
   T value_;
-  ParameterStatus status_;
+  Status status_;
 
 public:
   ParameterValueImpl() :
     value_(),
-    status_( ParameterStatus::UNKNOWN )
+    status_( Status::UNKNOWN )
   {
   }
 
-  ParameterValueImpl(const T& value, const ParameterStatus::Type status = ParameterStatus::UNKNOWN) :
+  ParameterValueImpl(const T& value, const Status::Type status = Status::UNKNOWN) :
     value_(value),
     status_( status )
   {
   }
 
-  ParameterValueImpl(const ParameterStatus::Type status) :
+  ParameterValueImpl(const Status::Type status) :
     value_(),
     status_( status )
   {
   }
-
+  /*
   static boost::shared_ptr<ParameterValueAbstract> createFromType( const std::string& type )
   {
     if( type == ParameterTypes::TYPE_int )
@@ -90,7 +94,7 @@ public:
       return boost::shared_ptr<ParameterValueAbstract>( new ParameterValueImpl<UnsetValue>() );
     }
   }
-
+  */
   T& value()
   {
     return value_;
@@ -101,7 +105,7 @@ public:
     return value_;
   }
 
-  const ParameterStatus::Type& getStatus() const
+  const Status::Type& getStatus() const
   {
     return status_.status();
   }
@@ -110,12 +114,13 @@ public:
   {
     return status_.isKnown();
   }
-
+  /*
   virtual const std::string& getType() const
   {
     return ParameterTypes::typeOf<T>();
   }
-
+  */
+  /*
   virtual const std::string getEncodedValue() const
   {
     YAML::Emitter yaml_encoded;
@@ -141,11 +146,11 @@ public:
       assert(false);
     }
   }
-
+  */
 };
 
 // Specialization for UnsetValue
-
+/*
 template<>
 const std::string& ParameterValueImpl<UnsetValue>::getType() const;
 
@@ -154,6 +159,8 @@ const std::string ParameterValueImpl<UnsetValue>::getEncodedValue() const;
 
 template<>
 void ParameterValueImpl<UnsetValue>::setFromEncodedValue( const std::string& encoded_value );
-
+*/
+}
+}
 
 #endif

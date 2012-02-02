@@ -1,4 +1,4 @@
-l/*
+ /*
  * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
@@ -33,9 +33,15 @@ l/*
  * \author Morten Kjaergaard
  */
 
-
 #ifndef __PARAMETER_VALUE_ABSTRACT_H_INCLUDED__
 #define __PARAMETER_VALUE_ABSTRACT_H_INCLUDED__
+
+#include <darc/parameter/status.h>
+
+namespace darc
+{
+namespace parameter
+{
 
 class ParameterValueAbstract
 {
@@ -43,8 +49,11 @@ public:
   virtual const std::string& getType() const = 0;
   virtual const std::string getEncodedValue() const = 0;
   virtual void setFromEncodedValue( const std::string& encoded_value ) = 0;
-  virtual const ParameterStatus::Type& getStatus() const = 0;
+  virtual const Status::Type& getStatus() const = 0;
   virtual bool isKnown() const = 0;
 };
+
+}
+}
 
 #endif

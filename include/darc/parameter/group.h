@@ -37,6 +37,7 @@
 
 #include <darc/parameter/parameter_abstract.h>
 #include <darc/parameter/parameter.h>
+#include <darc/parameter/parameter_change.h>
 
 namespace darc
 {
@@ -61,6 +62,14 @@ public:
     // do something
   }
 
+  void change(ParameterChange& change_info)
+  {
+    ParameterListType::iterator elem = parameter_list_.find(change_info.getName());
+    assert(elem != parameter_list_.end());
+    elem->second.lock()->change(change_info);
+  }
+
+  // dep?
   template<typename T>
   void setParameter(const std::string& name, const T& new_value)
   {

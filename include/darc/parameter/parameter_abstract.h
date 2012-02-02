@@ -37,6 +37,7 @@
 
 #include <darc/enable_weak_from_static.h>
 #include <darc/primitive.h>
+#include <darc/parameter/parameter_change.h>
 #include <darc/parameter/status.h>
 #include <darc/owner.h>
 
@@ -56,6 +57,7 @@ protected:
 public:
   ParameterAbstract(darc::Owner * owner, const std::string& name);
 
+  virtual void change(ParameterChange& change_info) = 0;
   const std::string& getName();
 
 };

@@ -56,5 +56,12 @@ GroupPtr Manager::getParameterGroup(const ID& id)
   }
 }
 
+void Manager::changeParameterValue(const ID& group_id, ParameterChange& change_info)
+{
+  GroupListType::iterator elem = group_list_.find(group_id);
+  assert(elem != group_list_.end());
+  elem->second->change(change_info);
+}
+
 }
 }

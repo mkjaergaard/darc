@@ -36,13 +36,15 @@
 #pragma once
 
 #include <darc/parameter/status.h>
+#include <darc/parameter/parameter_value_abstract.h>
+#include <darc/parameter/parameter_value_impl.h>
 
 namespace darc
 {
 namespace parameter
 {
 
-class ParameterValueChange
+class ParameterChange
 {
 
 protected:
@@ -50,9 +52,23 @@ protected:
   boost::shared_ptr<ParameterValueAbstract> value_;
 
 public:
-  ParameterValueChange(name):
+  ParameterChange(const std::string& name):
     name_(name)
   {
+  }
+
+  const std::string& getName() const
+  {
+    return name_;
+  }
+
+  template<typename T>
+  const T& getValue()
+  {
+    //try and throw a proper exception or something
+    boost::shared_ptr< ParameterValueImpl<T> > typed_param = boost::dynamic_pointer_cast<ParameterValueImpl<T> >(value_);
+    return typed_param->value();
+
   }
 
 };
