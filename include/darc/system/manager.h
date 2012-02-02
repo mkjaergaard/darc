@@ -28,17 +28,16 @@
  */
 
 /**
- * DARC ParameterAbstract class
+ * DARC System Manager class
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <map>
 #include <darc/id.h>
-#include <darc/parameter/status.h>
 #include <darc/parameter/group.h>
+#include <darc/parameter/status.h>
 
 namespace darc
 {
@@ -48,19 +47,8 @@ namespace parameter
 class Manager
 {
 protected:
-  typedef std::map<const ID, GroupPtr> GroupListType;
-  GroupListType group_list_;
 
 public:
-  GroupPtr getParameterGroup(const ID& id);
-
-  template<typename T>
-  void changeParameter(const ID& group_id, const std::string& name, const T& new_value, const Status& status)
-  {
-    GroupListType::iterator elem = group_list_.find(group_id);
-    assert(elem != group_list_.end());
-    elem->second->setParameter<T>(name, new_value, status);
-  }
 
 };
 

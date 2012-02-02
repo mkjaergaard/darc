@@ -41,6 +41,7 @@
 #include <darc/id.h>
 #include <darc/pubsub/fwd.h>
 #include <darc/procedure/manager_fwd.h>
+#include <darc/parameter/manager_fwd.h>
 
 namespace darc
 {
@@ -57,6 +58,7 @@ public:
   virtual void run(bool blocking = true) = 0;
   virtual pubsub::Manager& getPublisherManager() = 0;
   virtual procedure::Manager& getProcedureManager() = 0;
+  virtual parameter::Manager& getParameterManager() = 0;
   virtual void accept( const std::string& url ) = 0;
   virtual void connect( uint32_t remote_node_id, const std::string& url ) = 0;
   virtual void setNodeID( uint32_t node_id ) = 0;

@@ -35,6 +35,7 @@
 
 #pragma once
 
+#include <boost/function.hpp>
 #include <darc/owner.h>
 #include <darc/parameter/parameter_abstract.h>
 
@@ -55,10 +56,9 @@ protected:
 
 public:
   Parameter(darc::Owner * owner, const std::string& name, UpdateCallbackType update_callback = UpdateCallbackType()) :
-    ParameterAbstract(name),
+    ParameterAbstract(owner, name),
     update_callback_(update_callback)
   {
-    owner->addParameter(this->getWeakPtr());
   }
 
   const T& getValue() const

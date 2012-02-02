@@ -38,6 +38,7 @@
 #include <darc/enable_weak_from_static.h>
 #include <darc/primitive.h>
 #include <darc/parameter/status.h>
+#include <darc/owner.h>
 
 namespace darc
 {
@@ -53,15 +54,9 @@ protected:
   Status status_;
 
 public:
-  ParameterAbstract(const std::string& name) :
-    name_(name)
-  {
-  }
+  ParameterAbstract(darc::Owner * owner, const std::string& name);
 
-  const std::string& getName()
-  {
-    return name_;
-  }
+  const std::string& getName();
 
 };
 
