@@ -34,6 +34,7 @@
  */
 
 #include <darc/darc.h>
+#include <darc/timer/periodic_timer.h>
 #include <darc/parameter/component_parameter_source.h>
 
 namespace darc
@@ -43,15 +44,28 @@ namespace parameter
 
 class ParameterServerComponent : darc::Component
 {
-public:
-
 protected:
   typedef std::map<const std::string, ComponentParameterSource*> ComponentParameterSourceListType;
   ComponentParameterSourceListType source_list_;
 
+  darc::timer::PeriodicTimer timer_;
+
+protected:
+  void timerHandler()
+  {
+    for( ComponentParameterSourceListType::iterator it = source_list_.begin(); it != source_list_.end(); it++ )
+    {
+      if( (*it).second->isLinked() == false )
+      {
+	//	parent_->getNode()->
+      }
+    }
+  }
+
 public:
   ParameterServerComponent(const std::string& name, boost::shared_ptr<Node> node) :
-    darc::Component(name, node)
+    darc::Component(name, node),
+    timer_( this, boost::bind(&ParameterServerComponent::timerHandler, this), boost::posix_time::seconds(1) )
   {
   }
 

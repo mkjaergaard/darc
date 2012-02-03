@@ -72,6 +72,11 @@ public:
     parameter_source->setValueChangeCallback(boost::bind(&ComponentParameterSource::parameterValueChangeCallback, this, _1));
   }
 
+  bool isLinked()
+  {
+    return found_component_;
+  }
+
   void update()
   {
     for( ParameterSourceListType::iterator it = parameter_list_.begin(); it != parameter_list_.end(); it++ )
@@ -80,11 +85,19 @@ public:
     }
   }
 
+  void linkComponent(ID& id)
+  {
+    found_component_ = true;
+    deployed_component_id_ = id;
+  }
+
   void parameterValueChangeCallback(ParameterChange& change_info)
   {
     DARC_AUTOTRACE();
-    assert(found_component_);
-    parent_->getNode()->getParameterManager().changeParameterValue(deployed_component_id_, change_info);
+    if(found_component_)
+    {
+      parent_->getNode()->getParameterManager().changeParameterValue(deployed_component_id_, change_info);
+    }
   }
 
 };

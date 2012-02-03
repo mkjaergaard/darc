@@ -151,6 +151,17 @@ protected:
     node_link_manager_.connect(remote_node_id, url);
   }
 
+  const ID& lookupComponentInstance(const std::string& instance_name)
+  {
+    for( ComponentInstancesList::iterator it = component_instances_.begin(); it != component_instances_.end(); it++ )
+    {
+      if( it->second->getName() == instance_name )
+      {
+	return it->second->getComponentID();
+      }
+    }
+    return nullID();
+  }
 
 };
 

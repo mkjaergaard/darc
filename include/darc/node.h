@@ -66,6 +66,7 @@ public:
   virtual void runComponent(ID id) = 0;
   virtual void stopComponent(ID id) = 0;
   virtual void attach(ComponentPtr component) = 0;
+  virtual const ID& lookupComponentInstance(const std::string& instance_name) = 0;
 
   static Node::Ptr create();
 };

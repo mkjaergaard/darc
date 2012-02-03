@@ -43,5 +43,6 @@ namespace darc
 typedef boost::uuids::uuid ID;
 
 ID createID();
+const ID& nullID();
 
 }

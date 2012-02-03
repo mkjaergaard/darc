@@ -40,10 +40,16 @@ namespace darc
 {
 
 boost::uuids::random_generator random_generator_;
+const ID null_id_ = boost::uuids::nil_uuid();
 
 ID createID()
 {
   return random_generator_();
+}
+
+const ID& nullID()
+{
+  return null_id_;
 }
 
 }
