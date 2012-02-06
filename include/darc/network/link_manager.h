@@ -28,7 +28,7 @@
  */
 
 /**
- * DARC NodeLinkManager class
+ * DARC LinkManager class
  *
  * \author Morten Kjaergaard
  */
@@ -42,8 +42,10 @@
 
 namespace darc
 {
+namespace network
+{
 
-class NodeLinkManager
+class LinkManager
 {
 private:
   uint32_t node_id_;
@@ -56,10 +58,10 @@ private:
 
   // List of links
   //  Connections (Outgoing)
-  typedef std::map< uint32_t, NodeLink::Ptr > ConnectionListType;
+  typedef std::map< uint32_t, LinkBase::Ptr > ConnectionListType;
   ConnectionListType connection_list_;
   //  Acceptors (Incoming)
-  typedef std::vector< NodeLink::Ptr > AcceptorListType;
+  typedef std::vector< LinkBase::Ptr > AcceptorListType;
   AcceptorListType acceptor_list_;
 
   // Callbacks
@@ -67,7 +69,7 @@ private:
   std::map< packet::Header::PayloadType, PacketReceivedHandlerType > packet_received_handlers_;
 
 public:
-  NodeLinkManager( boost::asio::io_service * io_service ) :
+  LinkManager( boost::asio::io_service * io_service ) :
     node_id_(0xFFFF),
     udp_manager_( io_service )
   {
@@ -91,15 +93,15 @@ public:
 
   void accept( const std::string& url )
   {
-    NodeLink::Ptr link = createFromAccept(url);
+    LinkBase::Ptr link = createFromAccept(url);
     acceptor_list_.push_back( link );
     //? link->setReceiveCallback( boost::bind(&RemoteDispatcherManager::receiveFromRemoteNode, this, _1, _2, _3) );
-    link->setReceiveCallback( boost::bind(&NodeLinkManager::receiveHandler, this, _1, _2) );
+    link->setReceiveCallback( boost::bind(&LinkManager::receiveHandler, this, _1, _2) );
   }
 
   void connect( uint32_t remote_node_id, const std::string& url )
   {
-    NodeLink::Ptr link = createFromConnect(remote_node_id, url);
+    LinkBase::Ptr link = createFromConnect(remote_node_id, url);
     connection_list_[remote_node_id] = link;
     link->setNodeID( node_id_ );
   }
@@ -135,7 +137,7 @@ private:
     }
   }
 
-  NodeLink::Ptr createFromAccept( const std::string& url )
+  LinkBase::Ptr createFromAccept( const std::string& url )
   {
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
@@ -148,17 +150,17 @@ private:
       else
       {
 	std::cout << "Unsupported protocol: " << what[1] << std::endl;
-	return NodeLink::Ptr();
+	return LinkBase::Ptr();
       }
     }
     else
     {
       std::cout << "Invalid URL: " << url << std::endl;
-	return NodeLink::Ptr();
+	return LinkBase::Ptr();
     }
   }
 
-  NodeLink::Ptr createFromConnect( uint32_t remote_node_id, const std::string& url )
+  LinkBase::Ptr createFromConnect( uint32_t remote_node_id, const std::string& url )
   {
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
@@ -167,18 +169,18 @@ private:
       if( mngr )
       {
 	return mngr->connect(remote_node_id, what[2]);
-	return NodeLink::Ptr();
+	return LinkBase::Ptr();
       }
       else
       {
 	std::cout << "Unsupported protocol: " << what[1] << std::endl;
-	return NodeLink::Ptr();
+	return LinkBase::Ptr();
       }
     }
     else
     {
       std::cout << "Invalid URL: " << url << std::endl;
-      return NodeLink::Ptr();
+      return LinkBase::Ptr();
     }
   }
 
@@ -198,6 +200,7 @@ private:
 
 };
 
+}
 }
 
 #endif

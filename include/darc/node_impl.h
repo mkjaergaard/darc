@@ -45,10 +45,10 @@
 #include <darc/node.h>
 #include <darc/component.h>
 #include <darc/thread_manager.h>
-#include <darc/node_link_manager.h>
 #include <darc/pubsub/manager.h>
 #include <darc/procedure/manager.h>
 #include <darc/parameter/manager.h>
+#include <darc/network/link_manager.h>
 
 namespace darc
 {
@@ -63,7 +63,7 @@ private:
   boost::asio::io_service io_service_;
   boost::thread node_thread_;
 
-  NodeLinkManager node_link_manager_;
+  network::LinkManager node_link_manager_;
   ThreadManager thread_manager_;
 
   pubsub::Manager publish_manager_;

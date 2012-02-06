@@ -37,18 +37,17 @@
 #define __DARC_UDP_LINK_H_INCLUDED__
 
 #include <boost/asio.hpp>
-#include <darc/link_manager_abstract.h>
-#include <darc/node_link.h>
 #include <darc/shared_buffer.h>
 #include <darc/packet/header.h>
 #include <darc/packet/message.h>
+#include <darc/network/link_base.h>
 
 namespace darc
 {
 namespace udp
 {
 
-class Link : public darc::NodeLink
+class Link : public darc::network::LinkBase
 {
 public:
   typedef boost::shared_ptr<udp::Link> Ptr;

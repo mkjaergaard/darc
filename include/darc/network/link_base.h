@@ -28,82 +28,57 @@
  */
 
 /**
- * DARC LinkManager class
+ * DARC NodeLink class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_UDP_LINK_MANAGER_H__
-#define __DARC_UDP_LINK_MANAGER_H__
+#ifndef __DARC_NODE_LINK_H_INCLUDED__
+#define __DARC_NODE_LINK_H_INCLUDED__
 
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
-#include <darc/network/link_manager_abstract.h>
-#include <darc/udp/link.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
+#include <darc/packet/header.h>
+#include <darc/shared_buffer.h>
 
 namespace darc
 {
-
-namespace udp
+namespace network
 {
 
-class LinkManager : public darc::network::LinkManagerAbstract
+class LinkBase
 {
-private:
-  boost::asio::io_service * io_service_;
-  udp::Link::Ptr link_;
+protected:
+  typedef boost::function<void (SharedBuffer, std::size_t)> ReceiveCallbackType;
+  ReceiveCallbackType receive_callback_;
+  uint32_t node_id_;
+
+  LinkBase() : node_id_( 0xFFFFFF )
+  {
+  }
 
 public:
-  LinkManager( boost::asio::io_service * io_service ) :
-    io_service_(io_service)
+  typedef boost::shared_ptr<LinkBase> Ptr;
+
+  ~LinkBase()
   {
   }
 
-  darc::network::LinkBase::Ptr accept( const std::string& url )
+  void setNodeID( uint32_t node_id )
   {
-    boost::smatch what;
-    if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
-    {
-      if( link_.get() == 0 ) // only works for one acceptor
-      {
-	link_.reset( new udp::Link( io_service_, boost::lexical_cast<int>(what[2]) ) );
-      }
-      else
-      {
-        std::cout << "only one UDP acceptor allowed right now: " << std::endl;
-      }
-    }
-    else
-    {
-      std::cout << "Invalid URL: " << url << std::endl;
-    }
-    return link_;
+    node_id_ = node_id;
   }
 
-  darc::network::LinkBase::Ptr connect( uint32_t remote_node_id, const std::string& url )
+  virtual void sendPacket( uint32_t remote_node_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len ) = 0;
+
+  void setReceiveCallback( ReceiveCallbackType receive_callback )
   {
-    boost::smatch what;
-    if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) )
-    {
-      if( link_.get() != 0 )
-      {
-	link_->addRemoteNode(remote_node_id, what[1], what[2]);
-      }
-      else
-      {
-        std::cout << "Must create UDP acceptor before connecting" << std::endl;
-      }
-    }
-    else
-    {
-      std::cout << "Invalid URL: " << url << std::endl;
-    }
-    return link_;
+    receive_callback_ = receive_callback;
   }
 
 };
 
-} // namespace udp
-} // namespace darc
+}
+}
 
 #endif

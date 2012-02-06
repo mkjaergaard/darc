@@ -45,11 +45,10 @@
 #include <darc/pubsub/i_manager_callback.h>
 #include <darc/pubsub/local_dispatcher.h>
 #include <darc/pubsub/remote_dispatcher.h>
+#include <darc/network/link_manager_fwd.h>
 
 namespace darc
 {
-
-class NodeLinkManager; // todo
 
 namespace pubsub
 {
@@ -65,7 +64,7 @@ public:
   RemoteDispatcher remote_dispatcher_;
 
 public:
-  Manager( boost::asio::io_service * io_service, NodeLinkManager * node_link_manager );
+  Manager( boost::asio::io_service * io_service, network::LinkManager * node_link_manager );
   void receiveFromRemoteNode( const std::string& topic, SharedBuffer msg_s );
 
   RemoteDispatcher& getRemoteDispatcher()
