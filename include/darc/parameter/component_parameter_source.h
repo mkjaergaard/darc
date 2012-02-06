@@ -77,6 +77,11 @@ public:
     return found_component_;
   }
 
+  const std::string& getComponentInstanceName()
+  {
+    return component_name_;
+  }
+
   void update()
   {
     for( ParameterSourceListType::iterator it = parameter_list_.begin(); it != parameter_list_.end(); it++ )

@@ -42,7 +42,7 @@ namespace darc
 namespace parameter
 {
 
-class ParameterServerComponent : darc::Component
+class ParameterServerComponent : public darc::Component
 {
 protected:
   typedef std::map<const std::string, ComponentParameterSource*> ComponentParameterSourceListType;
@@ -57,7 +57,12 @@ protected:
     {
       if( (*it).second->isLinked() == false )
       {
-	//	parent_->getNode()->
+	ID id = node_->lookupComponentInstance( (*it).second->getComponentInstanceName() );
+	if( id != nullID() )
+	{
+	  DARC_INFO("Found Component %s", (*it).second->getComponentInstanceName().c_str() );
+	  (*it).second->linkComponent(id);
+	}
       }
     }
   }
@@ -67,9 +72,13 @@ public:
     darc::Component(name, node),
     timer_( this, boost::bind(&ParameterServerComponent::timerHandler, this), boost::posix_time::seconds(1) )
   {
+    ComponentParameterSource * s = new ComponentParameterSource(this, "MyPublisherComponent");
+    source_list_["MyPublisherComponent"] = s;
   }
 
 };
+
+DARC_REGISTER_COMPONENT(ParameterServerComponent);
 
 }
 }
