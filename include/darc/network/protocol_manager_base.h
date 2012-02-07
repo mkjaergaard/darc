@@ -28,82 +28,33 @@
  */
 
 /**
- * DARC LinkManager class
+ * DARC LinkManagerAbstract class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_UDP_LINK_MANAGER_H__
-#define __DARC_UDP_LINK_MANAGER_H__
+#ifndef __DARC_PROTOCOL_MANAGER_ABSTRACT_H__
+#define __DARC_PROTOCOL_MANAGER_ABSTRACT_H__
 
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
-#include <darc/network/link_manager_abstract.h>
-#include <darc/udp/link.h>
+#include <string>
+#include <darc/network/link_base.h>
 
 namespace darc
 {
-
-namespace udp
+namespace network
 {
 
-class LinkManager : public darc::network::LinkManagerAbstract
+class ProtocolManagerBase
 {
-private:
-  boost::asio::io_service * io_service_;
-  udp::Link::Ptr link_;
-
 public:
-  LinkManager( boost::asio::io_service * io_service ) :
-    io_service_(io_service)
-  {
-  }
+  virtual ~ProtocolManagerBase() {}
 
-  darc::network::LinkBase::Ptr accept( const std::string& url )
-  {
-    boost::smatch what;
-    if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
-    {
-      if( link_.get() == 0 ) // only works for one acceptor
-      {
-	link_.reset( new udp::Link( io_service_, boost::lexical_cast<int>(what[2]) ) );
-      }
-      else
-      {
-        std::cout << "only one UDP acceptor allowed right now: " << std::endl;
-      }
-    }
-    else
-    {
-      std::cout << "Invalid URL: " << url << std::endl;
-    }
-    return link_;
-  }
-
-  darc::network::LinkBase::Ptr connect( uint32_t remote_node_id, const std::string& url )
-  {
-    boost::smatch what;
-    if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) )
-    {
-      if( link_.get() != 0 )
-      {
-	link_->addRemoteNode(remote_node_id, what[1], what[2]);
-      }
-      else
-      {
-        std::cout << "Must create UDP acceptor before connecting" << std::endl;
-      }
-    }
-    else
-    {
-      std::cout << "Invalid URL: " << url << std::endl;
-    }
-    return link_;
-  }
+  virtual network::LinkBase::Ptr accept( const std::string& url ) = 0;
+  virtual network::LinkBase::Ptr connect( uint32_t remote_node_id, const std::string& url ) = 0;
 
 };
 
-} // namespace udp
+}
 } // namespace darc
 
 #endif

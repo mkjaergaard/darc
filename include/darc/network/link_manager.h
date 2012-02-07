@@ -37,7 +37,7 @@
 #define __DARC_NODE_LINK_MANAGER_H_INCLUDED__
 
 #include <boost/regex.hpp>
-#include <darc/udp/link_manager.h>
+#include <darc/network/udp/protocol_manager.h>
 #include <darc/packet/header.h>
 
 namespace darc
@@ -51,10 +51,11 @@ private:
   uint32_t node_id_;
 
   // Protocol handlers
-  typedef std::map<const std::string, LinkManagerAbstract*> ManagerMapType;
+  typedef std::map<const std::string, ProtocolManagerBase*> ManagerMapType;
   ManagerMapType manager_map_;
+
   // -
-  udp::LinkManager udp_manager_;
+  udp::ProtocolManager udp_manager_;
 
   // List of links
   //  Connections (Outgoing)
@@ -142,7 +143,7 @@ private:
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
     {
-      LinkManagerAbstract * mngr = getManager(what[1]);
+      ProtocolManagerBase * mngr = getManager(what[1]);
       if( mngr )
       {
 	return mngr->accept(what[2]);
@@ -165,7 +166,7 @@ private:
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
     {
-      LinkManagerAbstract * mngr = getManager(what[1]);
+      ProtocolManagerBase * mngr = getManager(what[1]);
       if( mngr )
       {
 	return mngr->connect(remote_node_id, what[2]);
@@ -185,7 +186,7 @@ private:
   }
 
   // Get the correct protocol handler
-  LinkManagerAbstract * getManager(const std::string& protocol)
+  ProtocolManagerBase * getManager(const std::string& protocol)
   {
     ManagerMapType::iterator elem = manager_map_.find(protocol);
     if( elem != manager_map_.end() )

@@ -28,33 +28,84 @@
  */
 
 /**
- * DARC LinkManagerAbstract class
+ * DARC LinkManager class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_LINK_MANAGER_ABSTRACT_H__
-#define __DARC_LINK_MANAGER_ABSTRACT_H__
+#ifndef __DARC_UDP_PROTOCOL_MANAGER_H_INCLUDED__
+#define __DARC_UDP_PROTOCOL_MANAGER_H_INCLUDED__
 
-#include <string>
-#include <darc/network/link_base.h>
+#include <boost/regex.hpp>
+#include <boost/lexical_cast.hpp>
+#include <darc/network/protocol_manager_base.h>
+#include <darc/network/udp/link.h>
 
 namespace darc
 {
 namespace network
 {
-
-class LinkManagerAbstract
+namespace udp
 {
-public:
-  virtual ~LinkManagerAbstract() {}
 
-  virtual network::LinkBase::Ptr accept( const std::string& url ) = 0;
-  virtual network::LinkBase::Ptr connect( uint32_t remote_node_id, const std::string& url ) = 0;
+class ProtocolManager : public darc::network::ProtocolManagerBase
+{
+private:
+  boost::asio::io_service * io_service_;
+  udp::Link::Ptr link_;
+
+public:
+  ProtocolManager( boost::asio::io_service * io_service ) :
+    io_service_(io_service)
+  {
+  }
+
+  darc::network::LinkBase::Ptr accept( const std::string& url )
+  {
+    boost::smatch what;
+    if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
+    {
+      if( link_.get() == 0 ) // only works for one acceptor
+      {
+	link_.reset( new udp::Link( io_service_, boost::lexical_cast<int>(what[2]) ) );
+      }
+      else
+      {
+        std::cout << "only one UDP acceptor allowed right now: " << std::endl;
+      }
+    }
+    else
+    {
+      std::cout << "Invalid URL: " << url << std::endl;
+    }
+    return link_;
+  }
+
+  darc::network::LinkBase::Ptr connect( uint32_t remote_node_id, const std::string& url )
+  {
+    boost::smatch what;
+    if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) )
+    {
+      if( link_.get() != 0 )
+      {
+	link_->addRemoteNode(remote_node_id, what[1], what[2]);
+      }
+      else
+      {
+        std::cout << "Must create UDP acceptor before connecting" << std::endl;
+      }
+    }
+    else
+    {
+      std::cout << "Invalid URL: " << url << std::endl;
+    }
+    return link_;
+  }
 
 };
 
-}
+} // namespace udp
+} // namespace network
 } // namespace darc
 
 #endif

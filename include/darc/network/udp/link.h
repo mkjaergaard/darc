@@ -44,6 +44,8 @@
 
 namespace darc
 {
+namespace network
+{
 namespace udp
 {
 
@@ -134,6 +136,7 @@ public:
 };
 
 } // namespace udp
+} // namespace network
 } // namespace darc
 
 #endif
