@@ -84,9 +84,9 @@ public:
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
     {
-      DARC_INFO("Accepting UDP on (ALL:%u) ", boost::lexical_cast<int>(what[2]));
+      DARC_INFO("Accepting UDP on (%s:%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str());
       links_.push_back(udp::Link::Ptr(new udp::Link(io_service_,
-						    boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), boost::lexical_cast<int>(what[2])))
+						    resolve(what[1], what[2]))
 				      ));
     }
     else
