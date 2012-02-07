@@ -40,7 +40,7 @@
 #include <ros/serialization.h>
 #include <ros/message_traits.h>
 #include <darc/shared_buffer.h>
-#include <darc/packet/parser.h>
+#include <darc/network/packet/parser.h>
 
 namespace darc
 {
@@ -59,10 +59,10 @@ public:
     std::string type_name;
     uint64_t md5_value1 = 0;
     uint64_t md5_value2 = 0;
-    msg_data.addOffset( packet::Parser::readString( type_name, msg_data.data(), msg_data.size() ) );
+    msg_data.addOffset( network::packet::Parser::readString( type_name, msg_data.data(), msg_data.size() ) );
     // MD5
-    msg_data.addOffset( packet::Parser::readUint64( md5_value1, msg_data.data(), msg_data.size() ) );
-    msg_data.addOffset( packet::Parser::readUint64( md5_value2, msg_data.data(), msg_data.size() ) );
+    msg_data.addOffset( network::packet::Parser::readUint64( md5_value1, msg_data.data(), msg_data.size() ) );
+    msg_data.addOffset( network::packet::Parser::readUint64( md5_value2, msg_data.data(), msg_data.size() ) );
 
     // Some Debug Stuff
     if( type_name != std::string(ros::message_traits::DataType<T>::value()) ||

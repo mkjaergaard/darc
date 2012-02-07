@@ -38,8 +38,8 @@
 
 #include <boost/asio.hpp>
 #include <darc/shared_buffer.h>
-#include <darc/packet/header.h>
-#include <darc/packet/message.h>
+#include <darc/network/packet/header.h>
+#include <darc/network/packet/message.h>
 #include <darc/network/link_base.h>
 
 namespace darc

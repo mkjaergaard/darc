@@ -28,48 +28,27 @@
  */
 
 /**
- * DARC Message class
+ * DARC Control class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PACKET_MESSAGE_H_INCLUDED__
-#define __DARC_PACKET_MESSAGE_H_INCLUDED__
-
-#include <darc/packet/parser.h>
+#ifndef __DARC_PACKET_CONTROL_H_INCLUDED__
+#define __DARC_PACKET_CONTROL_INCLUDED__
 
 namespace darc
+{
+namespace network
 {
 namespace packet
 {
 
-struct Message//Header
+struct Contrl
 {
-  std::string topic;
-
-  Message()
-  {
-  }
-
-  Message(const std::string& topic) :
-    topic(topic)
-  {
-  }
-
-  size_t read( const uint8_t * data, size_t data_len )
-  {
-    // Topic
-    return Parser::readString(topic, data, data_len);
-  }
-
-  size_t write( uint8_t * data, size_t size )
-  {
-    return Parser::writeString(topic.c_str(), data, size);
-  }
-
 };
 
 } // namespace packet
+} // namespace network
 } // namespace darc
 
 #endif

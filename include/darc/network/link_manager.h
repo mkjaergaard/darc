@@ -38,7 +38,7 @@
 
 #include <boost/regex.hpp>
 #include <darc/network/udp/protocol_manager.h>
-#include <darc/packet/header.h>
+#include <darc/network/packet/header.h>
 
 namespace darc
 {

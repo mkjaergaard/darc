@@ -53,7 +53,7 @@ Manager::Manager( boost::asio::io_service * io_service, network::LinkManager * n
 {
   remote_dispatcher_.setLocalDispatchFunction( boost::bind( &Manager::receiveFromRemoteNode,
 							     this, _1, _2 ) );
-  node_link_manager->registerPacketReceivedHandler( packet::Header::MSG_PACKET,
+  node_link_manager->registerPacketReceivedHandler( network::packet::Header::MSG_PACKET,
 						    boost::bind( &RemoteDispatcher::packetReceiveHandler,
 								 remote_dispatcher_, _1, _2 ) );
   remote_dispatcher_.setSendToNodeFunction( boost::bind( &network::LinkManager::sendPacket,

@@ -38,7 +38,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
-#include <darc/packet/header.h>
+#include <darc/network/packet/header.h>
 #include <darc/shared_buffer.h>
 
 namespace darc
@@ -69,7 +69,7 @@ public:
     node_id_ = node_id;
   }
 
-  virtual void sendPacket( uint32_t remote_node_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len ) = 0;
+  virtual void sendPacket( uint32_t remote_node_id, network::packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len ) = 0;
 
   void setReceiveCallback( ReceiveCallbackType receive_callback )
   {
