@@ -36,11 +36,30 @@
 #pragma once
 
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace darc
 {
 
-typedef boost::uuids::uuid ID;
+class ID : public boost::uuids::uuid
+{
+public:
+  ID() :
+    boost::uuids::uuid()
+  {
+  }
+
+  ID(const boost::uuids::uuid& id) :
+    boost::uuids::uuid(id)
+  {
+  }
+
+  const std::string short_string()
+  {
+    return to_string(*this).substr(0, 8);
+  }
+
+};
 
 ID createID();
 const ID& nullID();

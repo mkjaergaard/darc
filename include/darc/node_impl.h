@@ -62,6 +62,7 @@ class NodeImpl : public Node, public boost::enable_shared_from_this<NodeImpl>
 private:
   boost::asio::io_service io_service_;
   boost::thread node_thread_;
+  ID node_id_;
 
   network::LinkManager node_link_manager_;
   ThreadManager thread_manager_;
@@ -75,15 +76,17 @@ private:
 
 public:
   NodeImpl() :
-    node_link_manager_(&io_service_),
+    node_id_(createID()),
+    node_link_manager_(&io_service_, node_id_),
     publish_manager_(&io_service_, &node_link_manager_)
   {
+    DARC_INFO("Created node with ID: %s", node_id_.short_string().c_str() );
   }
 
 protected:
   void work()
   {
-    std::cout << "Running Node with ID " << node_link_manager_.getNodeID() << std::endl;
+    DARC_INFO("Running Node with ID: %s ", node_id_.short_string().c_str() );
     boost::asio::io_service::work keep_alive(io_service_);
     io_service_.run();
   }
@@ -134,11 +137,6 @@ protected:
   parameter::Manager& getParameterManager()
   {
     return parameter_manager_;
-  }
-
-  void setNodeID( uint32_t node_id )
-  {
-    node_link_manager_.setNodeID(node_id);
   }
 
   void accept( const std::string& url )

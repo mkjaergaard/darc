@@ -60,16 +60,13 @@ private:
   boost::asio::ip::udp::socket socket_;
   boost::asio::ip::udp::endpoint remote_endpoint_;
 
-  unsigned int local_port_;
-
-  typedef std::map<uint32_t, boost::asio::ip::udp::endpoint> EndpointsType;
+  typedef std::map<uint32_t, const boost::asio::ip::udp::endpoint> EndpointsType;
   EndpointsType endpoints_;
 
 public:
-  Link(boost::asio::io_service * io_service, unsigned int local_port):
+  Link(boost::asio::io_service * io_service, const boost::asio::ip::udp::endpoint& local_endpoint):
     io_service_(io_service),
-    socket_(*io_service),
-    local_port_(local_port)
+    socket_(*io_service)
   {
     socket_.open(boost::asio::ip::udp::v4());
 
@@ -77,7 +74,7 @@ public:
     socket_.set_option(option);
 
     socket_.set_option(option);
-    socket_.bind(boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), local_port));
+    socket_.bind(local_endpoint);
     startReceive();
   }
 
@@ -91,12 +88,9 @@ public:
                                 boost::asio::placeholders::bytes_transferred));
   }
 
-  void addRemoteNode( uint32_t remote_node_id, const std::string& host, const std::string& port)
+  void addRemoteNode( uint32_t remote_node_id, const boost::asio::ip::udp::endpoint& local_endpoint )
   {
-    // todo: do it async
-    boost::asio::ip::udp::resolver resolver(*io_service_);
-    boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), host, port);
-    endpoints_[remote_node_id] = *resolver.resolve(query);
+    endpoints_.insert( EndpointsType::value_type(remote_node_id, local_endpoint) );
   }
 
   void sendPacket( uint32_t remote_node_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )

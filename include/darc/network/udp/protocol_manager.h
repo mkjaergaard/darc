@@ -40,6 +40,7 @@
 #include <boost/lexical_cast.hpp>
 #include <darc/network/protocol_manager_base.h>
 #include <darc/network/udp/link.h>
+#include <darc/log.h>
 
 namespace darc
 {
@@ -51,13 +52,31 @@ namespace udp
 class ProtocolManager : public darc::network::ProtocolManagerBase
 {
 private:
+  const static int DEFAULT_LISTEN_PORT = 58500;
+
   boost::asio::io_service * io_service_;
-  udp::Link::Ptr link_;
+  boost::asio::ip::udp::resolver resolver_;
+
+  std::vector<udp::Link::Ptr> links_;
 
 public:
   ProtocolManager( boost::asio::io_service * io_service ) :
-    io_service_(io_service)
+    io_service_(io_service),
+    resolver_(*io_service)
   {
+  }
+
+  boost::asio::ip::udp::endpoint resolve(const std::string& host, const std::string& port)
+  {
+    // todo: do it async and handle errors and so on....
+    boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), host, port);
+    return *resolver_.resolve(query);
+  }
+
+  void createDefaultAcceptor()
+  {
+    DARC_INFO("Accepting UDP on (ALL:%u) ", DEFAULT_LISTEN_PORT);
+    links_.push_back( udp::Link::Ptr(new udp::Link(io_service_, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), DEFAULT_LISTEN_PORT))) );
   }
 
   darc::network::LinkBase::Ptr accept( const std::string& url )
@@ -65,20 +84,16 @@ public:
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
     {
-      if( link_.get() == 0 ) // only works for one acceptor
-      {
-	link_.reset( new udp::Link( io_service_, boost::lexical_cast<int>(what[2]) ) );
-      }
-      else
-      {
-        std::cout << "only one UDP acceptor allowed right now: " << std::endl;
-      }
+      DARC_INFO("Accepting UDP on (ALL:%u) ", boost::lexical_cast<int>(what[2]));
+      links_.push_back(udp::Link::Ptr(new udp::Link(io_service_,
+						    boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), boost::lexical_cast<int>(what[2])))
+				      ));
     }
     else
     {
       std::cout << "Invalid URL: " << url << std::endl;
     }
-    return link_;
+    return links_.back();
   }
 
   darc::network::LinkBase::Ptr connect( uint32_t remote_node_id, const std::string& url )
@@ -86,20 +101,18 @@ public:
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) )
     {
-      if( link_.get() != 0 )
+      if( links_.size() == 0 )
       {
-	link_->addRemoteNode(remote_node_id, what[1], what[2]);
+	createDefaultAcceptor();
       }
-      else
-      {
-        std::cout << "Must create UDP acceptor before connecting" << std::endl;
-      }
+      DARC_INFO("Connecting to UDP (%s:%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str());
+      links_.back()->addRemoteNode(remote_node_id, resolve(what[1], what[2]) );
     }
     else
     {
       std::cout << "Invalid URL: " << url << std::endl;
     }
-    return link_;
+    return links_.back();
   }
 
 };

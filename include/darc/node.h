@@ -61,7 +61,7 @@ public:
   virtual parameter::Manager& getParameterManager() = 0;
   virtual void accept( const std::string& url ) = 0;
   virtual void connect( uint32_t remote_node_id, const std::string& url ) = 0;
-  virtual void setNodeID( uint32_t node_id ) = 0;
+  virtual void setNodeID( uint32_t node_id ) {};
   virtual ComponentPtr instantiateComponent(const std::string& instance_name) = 0;
   virtual void runComponent(ID id) = 0;
   virtual void stopComponent(ID id) = 0;

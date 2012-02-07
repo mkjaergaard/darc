@@ -51,9 +51,10 @@ class LinkBase
 protected:
   typedef boost::function<void (SharedBuffer, std::size_t)> ReceiveCallbackType;
   ReceiveCallbackType receive_callback_;
-  uint32_t node_id_;
+  ID node_id_;
 
-  LinkBase() : node_id_( 0xFFFFFF )
+  LinkBase() :
+    node_id_() //nullID
   {
   }
 
@@ -64,7 +65,7 @@ public:
   {
   }
 
-  void setNodeID( uint32_t node_id )
+  void setNodeID( ID& node_id )
   {
     node_id_ = node_id;
   }

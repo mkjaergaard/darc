@@ -48,7 +48,7 @@ namespace network
 class LinkManager
 {
 private:
-  uint32_t node_id_;
+  ID node_id_;
 
   // Protocol handlers
   typedef std::map<const std::string, ProtocolManagerBase*> ManagerMapType;
@@ -70,8 +70,8 @@ private:
   std::map< packet::Header::PayloadType, PacketReceivedHandlerType > packet_received_handlers_;
 
 public:
-  LinkManager( boost::asio::io_service * io_service ) :
-    node_id_(0xFFFF),
+  LinkManager( boost::asio::io_service * io_service, ID& node_id ) :
+    node_id_(node_id),
     udp_manager_( io_service )
   {
     // Link protocol names and protocol handlers
@@ -105,18 +105,6 @@ public:
     LinkBase::Ptr link = createFromConnect(remote_node_id, url);
     connection_list_[remote_node_id] = link;
     link->setNodeID( node_id_ );
-  }
-
-  // todo: create one automatically
-  void setNodeID( uint32_t node_id )
-  {
-    node_id_ = node_id;
-    // todo: update alle existing links
-  }
-
-  uint32_t getNodeID()
-  {
-    return node_id_;
   }
 
 private:
