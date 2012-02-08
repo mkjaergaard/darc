@@ -37,6 +37,7 @@
 #define __DARC_UDP_LINK_H_INCLUDED__
 
 #include <boost/asio.hpp>
+#include <darc/log.h>
 #include <darc/shared_buffer.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/message.h>
@@ -60,11 +61,12 @@ private:
   boost::asio::ip::udp::socket socket_;
   boost::asio::ip::udp::endpoint remote_endpoint_;
 
-  typedef std::map<uint32_t, const boost::asio::ip::udp::endpoint> EndpointsType;
+  typedef std::map<ID, const boost::asio::ip::udp::endpoint> EndpointsType;
   EndpointsType endpoints_;
 
 public:
-  Link(boost::asio::io_service * io_service, const boost::asio::ip::udp::endpoint& local_endpoint):
+  Link(LinkBase::ReceiveCallbackType receive_callback, boost::asio::io_service * io_service, const boost::asio::ip::udp::endpoint& local_endpoint):
+    LinkBase(receive_callback),
     io_service_(io_service),
     socket_(*io_service)
   {
@@ -88,15 +90,16 @@ public:
                                 boost::asio::placeholders::bytes_transferred));
   }
 
-  void addRemoteNode( uint32_t remote_node_id, const boost::asio::ip::udp::endpoint& local_endpoint )
+  void addRemoteEndpoint( ID connection_id, const boost::asio::ip::udp::endpoint& remote_endpoint )
   {
-    endpoints_.insert( EndpointsType::value_type(remote_node_id, local_endpoint) );
+    endpoints_.insert( EndpointsType::value_type(connection_id, remote_endpoint) );
   }
 
-  void sendPacket( uint32_t remote_node_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
+  void sendPacket( const ID& connection_id, const ID& sender_node_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
   {
+    DARC_AUTOTRACE();
     // Create Header
-    packet::Header header(node_id_, type);
+    packet::Header header(sender_node_id, type);
 
     boost::array<uint8_t, 512> header_buffer;
 
@@ -109,7 +112,7 @@ public:
 
     // todo: to do an async send_to, msg must be kept alive until the send is finished. How to do this?
     //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....
-    socket_.send_to(combined_buffers, endpoints_[remote_node_id]);
+    socket_.send_to(combined_buffers, endpoints_[connection_id]);
   }
 
  public:

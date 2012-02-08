@@ -54,7 +54,7 @@ public:
   {
   }
 
-  const std::string short_string()
+  const std::string short_string() const
   {
     return to_string(*this).substr(0, 8);
   }

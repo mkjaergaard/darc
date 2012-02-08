@@ -48,13 +48,14 @@ namespace network
 
 class LinkBase
 {
-protected:
+public:
   typedef boost::function<void (SharedBuffer, std::size_t)> ReceiveCallbackType;
-  ReceiveCallbackType receive_callback_;
-  ID node_id_;
 
-  LinkBase() :
-    node_id_() //nullID
+protected:
+  ReceiveCallbackType receive_callback_;
+
+  LinkBase(ReceiveCallbackType receive_callback) :
+    receive_callback_(receive_callback)
   {
   }
 
@@ -65,17 +66,7 @@ public:
   {
   }
 
-  void setNodeID( ID& node_id )
-  {
-    node_id_ = node_id;
-  }
-
-  virtual void sendPacket( uint32_t remote_node_id, network::packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len ) = 0;
-
-  void setReceiveCallback( ReceiveCallbackType receive_callback )
-  {
-    receive_callback_ = receive_callback;
-  }
+  virtual void sendPacket( const ID& connection_id, const ID& sender_node_id, network::packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len ) = 0;
 
 };
 

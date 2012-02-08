@@ -60,7 +60,7 @@ public:
   virtual procedure::Manager& getProcedureManager() = 0;
   virtual parameter::Manager& getParameterManager() = 0;
   virtual void accept( const std::string& url ) = 0;
-  virtual void connect( uint32_t remote_node_id, const std::string& url ) = 0;
+  virtual void connect( const std::string& url ) = 0;
   virtual void setNodeID( uint32_t node_id ) {};
   virtual ComponentPtr instantiateComponent(const std::string& instance_name) = 0;
   virtual void runComponent(ID id) = 0;
@@ -69,6 +69,7 @@ public:
   virtual const ID& lookupComponentInstance(const std::string& instance_name) = 0;
 
   static Node::Ptr create();
+
 };
 
 typedef boost::shared_ptr<Node> NodePtr;

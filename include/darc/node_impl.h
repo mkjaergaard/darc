@@ -144,9 +144,9 @@ protected:
     node_link_manager_.accept(url);
   }
 
-  void connect( uint32_t remote_node_id, const std::string& url )
+  void connect( const std::string& url )
   {
-    node_link_manager_.connect(remote_node_id, url);
+    node_link_manager_.connect( url);
   }
 
   const ID& lookupComponentInstance(const std::string& instance_name)

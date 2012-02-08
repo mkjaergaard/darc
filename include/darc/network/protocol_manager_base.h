@@ -46,11 +46,19 @@ namespace network
 
 class ProtocolManagerBase
 {
+protected:
+  LinkBase::ReceiveCallbackType receive_callback_;
+
 public:
+  ProtocolManagerBase(LinkBase::ReceiveCallbackType receive_callback) :
+    receive_callback_(receive_callback)
+  {
+  }
+
   virtual ~ProtocolManagerBase() {}
 
-  virtual network::LinkBase::Ptr accept( const std::string& url ) = 0;
-  virtual network::LinkBase::Ptr connect( uint32_t remote_node_id, const std::string& url ) = 0;
+  virtual ID accept( const std::string& url ) = 0;
+  virtual ID connect( const std::string& url ) = 0;
 
 };
 

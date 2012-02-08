@@ -59,8 +59,12 @@ private:
 
   std::vector<udp::Link::Ptr> links_;
 
+  typedef std::map<const ID, udp::Link::Ptr> ConnectionsType;
+  ConnectionsType connections_;
+
 public:
-  ProtocolManager( boost::asio::io_service * io_service ) :
+  ProtocolManager(boost::asio::io_service * io_service, LinkBase::ReceiveCallbackType receive_callback) :
+    network::ProtocolManagerBase(receive_callback),
     io_service_(io_service),
     resolver_(*io_service)
   {
@@ -76,16 +80,26 @@ public:
   void createDefaultAcceptor()
   {
     DARC_INFO("Accepting UDP on (ALL:%u) ", DEFAULT_LISTEN_PORT);
-    links_.push_back( udp::Link::Ptr(new udp::Link(io_service_, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), DEFAULT_LISTEN_PORT))) );
+    links_.push_back( udp::Link::Ptr(new udp::Link(receive_callback_,
+						   io_service_,
+						   boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), DEFAULT_LISTEN_PORT))
+				     ));
   }
 
-  darc::network::LinkBase::Ptr accept( const std::string& url )
+  void sendPacketOnConnection(const ID& connection_id, const ID& sender_node_id,
+			      packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
+  {
+    connections_[connection_id]->sendPacket(connection_id, sender_node_id, type, buffer, data_len);
+  }
+
+  ID accept( const std::string& url )
   {
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
     {
       DARC_INFO("Accepting UDP on (%s:%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str());
-      links_.push_back(udp::Link::Ptr(new udp::Link(io_service_,
+      links_.push_back(udp::Link::Ptr(new udp::Link(receive_callback_,
+						    io_service_,
 						    resolve(what[1], what[2]))
 				      ));
     }
@@ -93,10 +107,10 @@ public:
     {
       std::cout << "Invalid URL: " << url << std::endl;
     }
-    return links_.back();
+    return nullID();
   }
 
-  darc::network::LinkBase::Ptr connect( uint32_t remote_node_id, const std::string& url )
+  ID connect( const std::string& url )
   {
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) )
@@ -105,14 +119,18 @@ public:
       {
 	createDefaultAcceptor();
       }
-      DARC_INFO("Connecting to UDP (%s:%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str());
-      links_.back()->addRemoteNode(remote_node_id, resolve(what[1], what[2]) );
+      // Allocate a connection ID
+      ID connection_id = createID();
+      links_.back()->addRemoteEndpoint(connection_id, resolve(what[1], what[2]) );
+      connections_.insert( ConnectionsType::value_type(connection_id, links_.back()) );
+      DARC_INFO("Connecting to UDP (%s:%s) (%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str(), connection_id.short_string().c_str());
+      return connection_id;
     }
     else
     {
-      std::cout << "Invalid URL: " << url << std::endl;
+      DARC_ERROR("Invalid UDP URL: %s", url.c_str());
+      return nullID();
     }
-    return links_.back();
   }
 
 };

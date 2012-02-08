@@ -49,17 +49,17 @@ struct Header
 {
   typedef enum {NONE = 0x00,
 		DISCOVER_PACKET = 0x01,
-		DISCOVER_REPLY_PACKET = 0x01,
-		MSG_PACKET = 0x02,
-		PROCEDURE_CALL_PACKET = 0x03,
-		PROCEDURE_STATUS_PACKET = 0x04,
-		PROCEDURE_RETURN_PACKET = 0x05
+		DISCOVER_REPLY_PACKET = 0x02,
+		MSG_PACKET = 0x03,
+		PROCEDURE_CALL_PACKET = 0x04,
+		PROCEDURE_STATUS_PACKET = 0x05,
+		PROCEDURE_RETURN_PACKET = 0x06
   } PayloadType;
 
   ID sender_node_id;
   PayloadType payload_type; //store as uint8
 
-  Header( ID& node_id, PayloadType payload_type):
+  Header( const ID& node_id, PayloadType payload_type):
     sender_node_id(node_id),
     payload_type(payload_type)
   {
