@@ -47,7 +47,14 @@ namespace packet
 
 struct Header
 {
-  typedef enum {NONE = 0x00, CONTROL_PACKET = 0x01, MSG_PACKET = 0x02} PayloadType;
+  typedef enum {NONE = 0x00,
+		DISCOVER_PACKET = 0x01,
+		DISCOVER_REPLY_PACKET = 0x01,
+		MSG_PACKET = 0x02,
+		PROCEDURE_CALL_PACKET = 0x03,
+		PROCEDURE_STATUS_PACKET = 0x04,
+		PROCEDURE_RETURN_PACKET = 0x05
+  } PayloadType;
 
   ID sender_node_id;
   PayloadType payload_type; //store as uint8
@@ -66,22 +73,14 @@ struct Header
 
   size_t read( const uint8_t * data, size_t len )
   {
-    size_t idx = 0;
-    for(ID::iterator it = sender_node_id.begin(); it != sender_node_id.end(); it++)
-    {
-      (*it) = data[idx++];
-    }
+    size_t idx = Parser::readID(sender_node_id, data, len);
     payload_type = (PayloadType)data[idx];
     return size();
   }
 
   size_t write( uint8_t * data, size_t len )
   {
-    size_t idx = 0;
-    for(ID::iterator it = sender_node_id.begin(); it != sender_node_id.end(); it++)
-    {
-      data[idx++] = (uint8_t)(*it);
-    }
+    size_t idx = Parser::writeID(sender_node_id, data, len);
     data[idx] = (uint8_t) payload_type;
     return size();
   }

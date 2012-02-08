@@ -36,6 +36,8 @@
 #ifndef __DARC_PACKET_PARSER_H_INCLUDED__
 #define __DARC_PACKET_PARSER_H_INCLUDED__
 
+#include <darc/id.h>
+
 namespace darc
 {
 namespace network
@@ -58,7 +60,7 @@ public:
     return string.length() + 1;
   }
 
-  static size_t readUint32(uint32_t& result, uint8_t * data, size_t len)
+  static size_t readUint32(uint32_t& result, const uint8_t * data, size_t len)
   {
     result = ((uint32_t)data[0]) +
             (((uint32_t)data[1]) << 8) +
@@ -76,7 +78,7 @@ public:
     return 4;
   }
 
-  static size_t readUint64(uint64_t& result, uint8_t * data, size_t len)
+  static size_t readUint64(uint64_t& result, const uint8_t * data, size_t len)
   {
     result = ((uint64_t)data[0]) +
             (((uint64_t)data[1]) << 8) +
@@ -101,6 +103,26 @@ public:
     data[7] = (value >> 56) & 0xFF;
     return 8;
   }
+
+  static size_t readID(ID& id, const uint8_t * data, size_t len)
+  {
+    for(ID::iterator it = id.begin(); it != id.end(); it++)
+    {
+      (*it) = *data++;
+    }
+    return ID::static_size();
+  }
+
+  static size_t writeID(const ID& id, uint8_t * data, size_t len)
+  {
+    for(ID::const_iterator it = id.begin(); it != id.end(); it++)
+    {
+      *data++ = (uint8_t)(*it);
+    }
+    return ID::static_size();
+  }
+
+
 
 };
 
