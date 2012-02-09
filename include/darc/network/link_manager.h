@@ -141,6 +141,12 @@ private:
     buffer.addOffset( packet::Header::size() );
     data_len -= packet::Header::size();
 
+    // Discard packages from self, e.g. due to multicasting
+    if(header.sender_node_id == getNodeID())
+    {
+      return;
+    }
+
     // Switch on packet type
     switch(header.payload_type)
     {

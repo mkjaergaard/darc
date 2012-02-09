@@ -157,7 +157,6 @@ public:
 
   void sendPacket(const ID& outbound_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len)
   {
-    DARC_AUTOTRACE();
     // Create Header
     packet::Header header(callback_->getNodeID(), type);
 
