@@ -38,6 +38,7 @@
 
 #include <string>
 #include <darc/network/link_base.h>
+#include <darc/network/link_manager_callback_if.h>
 
 namespace darc
 {
@@ -47,11 +48,11 @@ namespace network
 class ProtocolManagerBase
 {
 protected:
-  LinkBase::ReceiveCallbackType receive_callback_;
+  LinkManagerCallbackIF * callback_;
 
 public:
-  ProtocolManagerBase(LinkBase::ReceiveCallbackType receive_callback) :
-    receive_callback_(receive_callback)
+  ProtocolManagerBase(LinkManagerCallbackIF * callback) :
+    callback_(callback)
   {
   }
 

@@ -41,13 +41,14 @@
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/discover.h>
 #include <darc/network/packet/discover_reply.h>
+#include <darc/network/link_manager_callback_if.h>
 
 namespace darc
 {
 namespace network
 {
 
-class LinkManager
+class LinkManager : public LinkManagerCallbackIF
 {
 private:
   ID node_id_;
@@ -56,37 +57,44 @@ private:
   typedef std::map<const std::string, ProtocolManagerBase*> ManagerMapType;
   ManagerMapType manager_map_;
 
-  // -
+  // Protocol Managers
   udp::ProtocolManager udp_manager_;
 
-  // Callbacks
+  // Node -> Outbound connection map (handle this a little more intelligent, more connections per nodes, timeout etc)
+  typedef std::map<const ID, const ID> NearNodesType;
+  NearNodesType near_nodes_;
+
+  // Callbacks to handlers of certain packet types
   typedef boost::function< void(SharedBuffer, std::size_t) > PacketReceivedHandlerType;
   std::map< packet::Header::PayloadType, PacketReceivedHandlerType > packet_received_handlers_;
 
 public:
   LinkManager( boost::asio::io_service * io_service, ID& node_id ) :
     node_id_(node_id),
-    udp_manager_(io_service, boost::bind(&LinkManager::receiveHandler, this, _1, _2, _3))
+    udp_manager_(io_service, this)
   {
     // Link protocol names and protocol handlers
     manager_map_["udp"] = &udp_manager_;
   }
 
+  const ID& getNodeID()
+  {
+    return node_id_;
+  }
+
   void sendPacket( packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
   {
-    /*
     // todo: right now we send to all nodes.... should add routing functionality instead
-    for( ConnectionListType::iterator it = connection_list_.begin(); it != connection_list_.end(); it++ )
+    for( NearNodesType::iterator it = near_nodes_.begin(); it != near_nodes_.end(); it++ )
     {
-      it->second->sendPacket( it->first, type, buffer, data_len );
+      udp_manager_.sendPacketOnOutboundConnection(it->second, type, buffer, data_len );
     }
-    */
   }
 
   void sendPacketOnOutboundConnection( const ID& outbound_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
   {
     // todo: here we should check which protocol manager is the right one to dispatch to
-    udp_manager_.sendPacketOnOutboundConnection(outbound_id, node_id_, type, buffer, data_len);
+    udp_manager_.sendPacketOnOutboundConnection(outbound_id, type, buffer, data_len);
   }
 
   void registerPacketReceivedHandler( packet::Header::PayloadType type, PacketReceivedHandlerType handler )
@@ -102,43 +110,31 @@ public:
   void connect(const std::string& url)
   {
     ID connection_id = createFromConnect(url);
-    sendDiscover(connection_id);
   }
 
 private:
-  void sendDiscover(const ID& outbound_id)
-  {
-    std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBuffer::create(data_len);
-
-    DARC_INFO("Sending DISCOVER for connection: %s", outbound_id.short_string().c_str());
-    // Create packet
-    network::packet::Discover discover(outbound_id);
-    std::size_t len = discover.write( buffer.data(), buffer.size() );
-    sendPacketOnOutboundConnection( outbound_id, network::packet::Header::DISCOVER_PACKET, buffer, data_len );
-  }
-
-  void sendDiscoverReply(const ID& inbound_id, const ID& remote_outbound_id)
-  {
-    std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBuffer::create(data_len);
-
-    DARC_INFO("Sending DISCOVER_REPLY for connection: %s", remote_outbound_id.short_string().c_str());
-    // Create packet
-    network::packet::DiscoverReply discover_reply(remote_outbound_id);
-    std::size_t len = discover_reply.write( buffer.data(), buffer.size() );
-    udp_manager_.sendPacketToInboundGroup( inbound_id, node_id_, network::packet::Header::DISCOVER_REPLY_PACKET, buffer, data_len );
-  }
-
-  void handleDiscoverPacket(const ID& inbound_id, SharedBuffer buffer, std::size_t data_len)
+  void handleDiscoverPacket(const ID& sender_node_id, LinkBase * source_link, SharedBuffer buffer, std::size_t data_len)
   {
     packet::Discover discover;
     discover.read(buffer.data(), data_len);
-    sendDiscoverReply(inbound_id, discover.link_id);
-    // Send reply
+    source_link->sendDiscoverReply(discover.link_id);
+    // If we received a DISCOVER from a node we dont know that we have a direct link to, send a DISCOVER back
+    if(near_nodes_.count(sender_node_id) == 0)
+    {
+      source_link->sendDiscoverToAll();
+    }
   }
 
-  void receiveHandler( const ID& inbound_id, SharedBuffer buffer, std::size_t data_len )
+  void handleDiscoverReplyPacket(const ID& sender_node_id, const ID& inbound_id, SharedBuffer buffer, std::size_t data_len)
+  {
+    // todo: check that we have such inbound link!
+    packet::DiscoverReply discover_reply;
+    discover_reply.read(buffer.data(), data_len);
+    DARC_INFO("Found Node %s on outbound connection %s", sender_node_id.short_string().c_str(), discover_reply.link_id.short_string().c_str() );
+    near_nodes_.insert(NearNodesType::value_type(sender_node_id, discover_reply.link_id));
+  }
+
+  void receiveHandler( const ID& inbound_id, LinkBase * source_link, SharedBuffer buffer, std::size_t data_len )
   {
     packet::Header header;
     header.read( buffer.data(), data_len );
@@ -156,12 +152,13 @@ private:
       case packet::Header::DISCOVER_PACKET:
       {
 	DARC_INFO("DISCOVER_PACKET");
-	handleDiscoverPacket(inbound_id, buffer, data_len);
+	handleDiscoverPacket(header.sender_node_id, source_link, buffer, data_len);
 	break;
       }
       case packet::Header::DISCOVER_REPLY_PACKET:
       {
 	DARC_INFO("DISCOVER_REPLY_PACKET");
+	handleDiscoverReplyPacket(header.sender_node_id, inbound_id, buffer, data_len);
 	break;
       }
       default:

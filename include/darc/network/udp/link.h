@@ -42,6 +42,8 @@
 #include <darc/shared_buffer.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/message.h>
+#include <darc/network/packet/discover.h>
+#include <darc/network/packet/discover_reply.h>
 #include <darc/network/link_base.h>
 
 namespace darc
@@ -64,12 +66,12 @@ private:
 
   ID inbound_id_;
 
-  typedef std::map<ID, const boost::asio::ip::udp::endpoint> OutboundConnectionListType;
+  typedef std::map<const ID, const boost::asio::ip::udp::endpoint> OutboundConnectionListType;
   OutboundConnectionListType outbound_connection_list_;
 
 public:
-  Link(LinkBase::ReceiveCallbackType receive_callback, boost::asio::io_service * io_service, const boost::asio::ip::udp::endpoint& local_endpoint):
-    LinkBase(receive_callback),
+  Link(network::LinkManagerCallbackIF * callback, boost::asio::io_service * io_service, const boost::asio::ip::udp::endpoint& local_endpoint):
+    LinkBase(callback),
     io_service_(io_service),
     socket_(*io_service),
     inbound_id_(createID())
@@ -99,6 +101,42 @@ public:
                                 boost::asio::placeholders::bytes_transferred));
   }
 
+  void sendDiscoverToAll()
+  {
+    for(OutboundConnectionListType::iterator it = outbound_connection_list_.begin();
+	it != outbound_connection_list_.end();
+	it++)
+    {
+      sendDiscover(it->first);
+    }
+  }
+
+  void sendDiscover(const ID& outbound_id)
+  {
+    std::size_t data_len = 1024*32;
+    SharedBuffer buffer = SharedBuffer::create(data_len);
+
+    DARC_INFO("Sending DISCOVER for connection: %s", outbound_id.short_string().c_str());
+    // Create packet
+    network::packet::Discover discover(outbound_id);
+    std::size_t len = discover.write( buffer.data(), buffer.size() );
+    sendPacket( outbound_id, network::packet::Header::DISCOVER_PACKET, buffer, data_len );
+  }
+
+  void sendDiscoverReply(const ID& remote_outbound_id)
+  {
+    DARC_INFO("Sending DISCOVER_REPLY for connection: %s", remote_outbound_id.short_string().c_str());
+
+    // Create packet
+    std::size_t data_len = 1024*32;
+    SharedBuffer buffer = SharedBuffer::create(data_len);
+    network::packet::DiscoverReply discover_reply(remote_outbound_id);
+    std::size_t len = discover_reply.write( buffer.data(), buffer.size() );
+
+    // Send packet
+    sendPacketToAll(network::packet::Header::DISCOVER_REPLY_PACKET, buffer, data_len );
+  }
+
   ID addOutboundConnection(const boost::asio::ip::udp::endpoint& remote_endpoint)
   {
     ID outbound_id = createID();
@@ -107,24 +145,21 @@ public:
   }
 
   //todo do this better
-  void sendPacketToAll(const ID& sender_node_id, packet::Header::PayloadType type,
-		       SharedBuffer buffer, std::size_t data_len)
+  void sendPacketToAll(packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len)
   {
     for( OutboundConnectionListType::iterator it = outbound_connection_list_.begin();
 	 it != outbound_connection_list_.end();
 	 it++ )
     {
-      sendPacket(it->first, sender_node_id, type, buffer, data_len);
+      sendPacket(it->first, type, buffer, data_len);
     }
   }
 
-  void sendPacket(const ID& outbound_id,
-		  const ID& sender_node_id, packet::Header::PayloadType type,
-		  SharedBuffer buffer, std::size_t data_len)
+  void sendPacket(const ID& outbound_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len)
   {
     DARC_AUTOTRACE();
     // Create Header
-    packet::Header header(sender_node_id, type);
+    packet::Header header(callback_->getNodeID(), type);
 
     boost::array<uint8_t, 512> header_buffer;
 
@@ -149,7 +184,7 @@ public:
     }
     else
     {
-      receive_callback_(inbound_id_, recv_buffer, size);
+      callback_->receiveHandler(inbound_id_, this, recv_buffer, size);
     }
     startReceive();
   }

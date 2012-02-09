@@ -65,8 +65,8 @@ private:
   udp::Link::Ptr last_inbound_;
 
 public:
-  ProtocolManager(boost::asio::io_service * io_service, LinkBase::ReceiveCallbackType receive_callback) :
-    network::ProtocolManagerBase(receive_callback),
+  ProtocolManager(boost::asio::io_service * io_service, network::LinkManagerCallbackIF * callback) :
+    network::ProtocolManagerBase(callback),
     io_service_(io_service),
     resolver_(*io_service)
   {
@@ -82,25 +82,24 @@ public:
   void createDefaultAcceptor()
   {
     DARC_INFO("Accepting UDP on (ALL:%u) ", DEFAULT_LISTEN_PORT);
-    Link::Ptr connection(new udp::Link(receive_callback_, io_service_,
+    Link::Ptr connection(new udp::Link(callback_, io_service_,
 				       boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), DEFAULT_LISTEN_PORT)) );
     inbound_connection_list_.insert( InboundConnectionListType::value_type(connection->getInboundID(), connection) );
     last_inbound_ = connection;
   }
 
-  void sendPacketToInboundGroup(const ID& inbound_id,
+  /*  void sendPacketToInboundGroup(const ID& inbound_id,
 				const ID& sender_node_id, packet::Header::PayloadType type,
 				SharedBuffer buffer, std::size_t data_len )
   {
     inbound_connection_list_[inbound_id]->sendPacketToAll(sender_node_id, type, buffer, data_len);
   }
 
-
-  void sendPacketOnOutboundConnection(const ID& outbound_id,
-				      const ID& sender_node_id, packet::Header::PayloadType type,
+  */
+  void sendPacketOnOutboundConnection(const ID& outbound_id, packet::Header::PayloadType type,
 				      SharedBuffer buffer, std::size_t data_len )
   {
-    outbound_connection_list_[outbound_id]->sendPacket(outbound_id, sender_node_id, type, buffer, data_len);
+    outbound_connection_list_[outbound_id]->sendPacket(outbound_id, type, buffer, data_len);
   }
 
   ID accept( const std::string& url )
@@ -109,7 +108,7 @@ public:
     if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
     {
       DARC_INFO("Accepting UDP on (%s:%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str());
-      Link::Ptr connection(new udp::Link(receive_callback_, io_service_,
+      Link::Ptr connection(new udp::Link(callback_, io_service_,
 					 resolve(what[1], what[2])) );
       inbound_connection_list_.insert( InboundConnectionListType::value_type(connection->getInboundID(), connection) );
       last_inbound_ = connection;
@@ -135,6 +134,7 @@ public:
       ID outbound_id = last_inbound_->addOutboundConnection(resolve(what[1], what[2]) );
       outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, last_inbound_) );
       DARC_INFO("Connecting to UDP (%s:%s) (%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str(), outbound_id.short_string().c_str());
+      last_inbound_->sendDiscover(outbound_id);
       return outbound_id;
     }
     else

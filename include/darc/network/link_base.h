@@ -40,6 +40,7 @@
 #include <boost/function.hpp>
 #include <darc/network/packet/header.h>
 #include <darc/shared_buffer.h>
+#include <darc/network/link_manager_callback_if.h>
 
 namespace darc
 {
@@ -48,14 +49,11 @@ namespace network
 
 class LinkBase
 {
-public:
-  typedef boost::function<void (const ID&, SharedBuffer, std::size_t)> ReceiveCallbackType;
-
 protected:
-  ReceiveCallbackType receive_callback_;
+  LinkManagerCallbackIF * callback_;
 
-  LinkBase(ReceiveCallbackType receive_callback) :
-    receive_callback_(receive_callback)
+  LinkBase(LinkManagerCallbackIF * callback) :
+    callback_(callback)
   {
   }
 
@@ -67,8 +65,13 @@ public:
   }
 
   virtual void sendPacket( const ID& outbound_id,
-			   const ID& sender_node_id, network::packet::Header::PayloadType type,
+			   network::packet::Header::PayloadType type,
 			   SharedBuffer buffer, std::size_t data_len ) = 0;
+
+  virtual void sendDiscoverToAll() = 0;
+  virtual void sendDiscoverReply(const ID& remote_outbound_id) = 0;
+
+
 
 };
 
