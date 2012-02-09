@@ -40,6 +40,7 @@
 #include <darc/network/udp/protocol_manager.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/discover.h>
+#include <darc/network/packet/discover_reply.h>
 
 namespace darc
 {
@@ -58,16 +59,6 @@ private:
   // -
   udp::ProtocolManager udp_manager_;
 
-  /*
-  // List of links
-  //  Connections (Outgoing)
-  typedef std::map<ID, LinkBase::Ptr> ConnectionListType;
-  ConnectionListType connection_list_;
-  //  Acceptors (Incoming)
-  typedef std::vector< LinkBase::Ptr > AcceptorListType;
-  AcceptorListType acceptor_list_;
-  */
-
   // Callbacks
   typedef boost::function< void(SharedBuffer, std::size_t) > PacketReceivedHandlerType;
   std::map< packet::Header::PayloadType, PacketReceivedHandlerType > packet_received_handlers_;
@@ -75,7 +66,7 @@ private:
 public:
   LinkManager( boost::asio::io_service * io_service, ID& node_id ) :
     node_id_(node_id),
-    udp_manager_(io_service, boost::bind(&LinkManager::receiveHandler, this, _1, _2))
+    udp_manager_(io_service, boost::bind(&LinkManager::receiveHandler, this, _1, _2, _3))
   {
     // Link protocol names and protocol handlers
     manager_map_["udp"] = &udp_manager_;
@@ -92,10 +83,10 @@ public:
     */
   }
 
-  void sendPacketOnConnection( const ID& connection_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
+  void sendPacketOnOutboundConnection( const ID& outbound_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
   {
     // todo: here we should check which protocol manager is the right one to dispatch to
-    udp_manager_.sendPacketOnConnection(connection_id, node_id_, type, buffer, data_len);
+    udp_manager_.sendPacketOnOutboundConnection(outbound_id, node_id_, type, buffer, data_len);
   }
 
   void registerPacketReceivedHandler( packet::Header::PayloadType type, PacketReceivedHandlerType handler )
@@ -115,31 +106,39 @@ public:
   }
 
 private:
-  void sendDiscover(const ID& connection_id)
+  void sendDiscover(const ID& outbound_id)
   {
     std::size_t data_len = 1024*32;
     SharedBuffer buffer = SharedBuffer::create(data_len);
 
-    DARC_INFO("Sending DISCOVER for connection: %s", connection_id.short_string().c_str());
+    DARC_INFO("Sending DISCOVER for connection: %s", outbound_id.short_string().c_str());
     // Create packet
-    network::packet::Discover discover(connection_id);
+    network::packet::Discover discover(outbound_id);
     std::size_t len = discover.write( buffer.data(), buffer.size() );
-    sendPacketOnConnection( connection_id, network::packet::Header::DISCOVER_PACKET, buffer, data_len );
+    sendPacketOnOutboundConnection( outbound_id, network::packet::Header::DISCOVER_PACKET, buffer, data_len );
   }
 
-  void sendDiscoverReply(const ID& connection_id)
+  void sendDiscoverReply(const ID& inbound_id, const ID& remote_outbound_id)
   {
+    std::size_t data_len = 1024*32;
+    SharedBuffer buffer = SharedBuffer::create(data_len);
 
+    DARC_INFO("Sending DISCOVER_REPLY for connection: %s", remote_outbound_id.short_string().c_str());
+    // Create packet
+    network::packet::DiscoverReply discover_reply(remote_outbound_id);
+    std::size_t len = discover_reply.write( buffer.data(), buffer.size() );
+    udp_manager_.sendPacketToInboundGroup( inbound_id, node_id_, network::packet::Header::DISCOVER_REPLY_PACKET, buffer, data_len );
   }
 
-  void handleDiscoverPacket(SharedBuffer buffer, std::size_t data_len)
+  void handleDiscoverPacket(const ID& inbound_id, SharedBuffer buffer, std::size_t data_len)
   {
     packet::Discover discover;
     discover.read(buffer.data(), data_len);
+    sendDiscoverReply(inbound_id, discover.link_id);
     // Send reply
   }
 
-  void receiveHandler( SharedBuffer buffer, std::size_t data_len )
+  void receiveHandler( const ID& inbound_id, SharedBuffer buffer, std::size_t data_len )
   {
     packet::Header header;
     header.read( buffer.data(), data_len );
@@ -156,11 +155,13 @@ private:
       }
       case packet::Header::DISCOVER_PACKET:
       {
-	handleDiscoverPacket(buffer, data_len);
+	DARC_INFO("DISCOVER_PACKET");
+	handleDiscoverPacket(inbound_id, buffer, data_len);
 	break;
       }
       case packet::Header::DISCOVER_REPLY_PACKET:
       {
+	DARC_INFO("DISCOVER_REPLY_PACKET");
 	break;
       }
       default:

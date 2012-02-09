@@ -57,10 +57,12 @@ private:
   boost::asio::io_service * io_service_;
   boost::asio::ip::udp::resolver resolver_;
 
-  std::vector<udp::Link::Ptr> links_;
+  typedef std::map<const ID, udp::Link::Ptr> OutboundConnectionListType;
+  typedef std::map<const ID, udp::Link::Ptr> InboundConnectionListType;
 
-  typedef std::map<const ID, udp::Link::Ptr> ConnectionsType;
-  ConnectionsType connections_;
+  OutboundConnectionListType outbound_connection_list_;
+  InboundConnectionListType inbound_connection_list_;
+  udp::Link::Ptr last_inbound_;
 
 public:
   ProtocolManager(boost::asio::io_service * io_service, LinkBase::ReceiveCallbackType receive_callback) :
@@ -80,16 +82,25 @@ public:
   void createDefaultAcceptor()
   {
     DARC_INFO("Accepting UDP on (ALL:%u) ", DEFAULT_LISTEN_PORT);
-    links_.push_back( udp::Link::Ptr(new udp::Link(receive_callback_,
-						   io_service_,
-						   boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), DEFAULT_LISTEN_PORT))
-				     ));
+    Link::Ptr connection(new udp::Link(receive_callback_, io_service_,
+				       boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), DEFAULT_LISTEN_PORT)) );
+    inbound_connection_list_.insert( InboundConnectionListType::value_type(connection->getInboundID(), connection) );
+    last_inbound_ = connection;
   }
 
-  void sendPacketOnConnection(const ID& connection_id, const ID& sender_node_id,
-			      packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
+  void sendPacketToInboundGroup(const ID& inbound_id,
+				const ID& sender_node_id, packet::Header::PayloadType type,
+				SharedBuffer buffer, std::size_t data_len )
   {
-    connections_[connection_id]->sendPacket(connection_id, sender_node_id, type, buffer, data_len);
+    inbound_connection_list_[inbound_id]->sendPacketToAll(sender_node_id, type, buffer, data_len);
+  }
+
+
+  void sendPacketOnOutboundConnection(const ID& outbound_id,
+				      const ID& sender_node_id, packet::Header::PayloadType type,
+				      SharedBuffer buffer, std::size_t data_len )
+  {
+    outbound_connection_list_[outbound_id]->sendPacket(outbound_id, sender_node_id, type, buffer, data_len);
   }
 
   ID accept( const std::string& url )
@@ -98,10 +109,11 @@ public:
     if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
     {
       DARC_INFO("Accepting UDP on (%s:%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str());
-      links_.push_back(udp::Link::Ptr(new udp::Link(receive_callback_,
-						    io_service_,
-						    resolve(what[1], what[2]))
-				      ));
+      Link::Ptr connection(new udp::Link(receive_callback_, io_service_,
+					 resolve(what[1], what[2])) );
+      inbound_connection_list_.insert( InboundConnectionListType::value_type(connection->getInboundID(), connection) );
+      last_inbound_ = connection;
+      return connection->getInboundID();
     }
     else
     {
@@ -115,16 +127,15 @@ public:
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) )
     {
-      if( links_.size() == 0 )
+      if( last_inbound_.get() == 0 )
       {
 	createDefaultAcceptor();
       }
       // Allocate a connection ID
-      ID connection_id = createID();
-      links_.back()->addRemoteEndpoint(connection_id, resolve(what[1], what[2]) );
-      connections_.insert( ConnectionsType::value_type(connection_id, links_.back()) );
-      DARC_INFO("Connecting to UDP (%s:%s) (%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str(), connection_id.short_string().c_str());
-      return connection_id;
+      ID outbound_id = last_inbound_->addOutboundConnection(resolve(what[1], what[2]) );
+      outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, last_inbound_) );
+      DARC_INFO("Connecting to UDP (%s:%s) (%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str(), outbound_id.short_string().c_str());
+      return outbound_id;
     }
     else
     {

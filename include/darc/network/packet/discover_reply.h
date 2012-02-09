@@ -49,7 +49,7 @@ struct DiscoverReply
 {
   ID link_id;
 
-  DiscoverReply(ID& link_id):
+  DiscoverReply(const ID& link_id):
     link_id(link_id)
   {
   }

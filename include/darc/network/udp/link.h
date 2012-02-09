@@ -38,6 +38,7 @@
 
 #include <boost/asio.hpp>
 #include <darc/log.h>
+#include <darc/id.h>
 #include <darc/shared_buffer.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/message.h>
@@ -59,16 +60,19 @@ private:
   boost::asio::io_service * io_service_;
 
   boost::asio::ip::udp::socket socket_;
-  boost::asio::ip::udp::endpoint remote_endpoint_;
+  boost::asio::ip::udp::endpoint received_from_endpoint_;
 
-  typedef std::map<ID, const boost::asio::ip::udp::endpoint> EndpointsType;
-  EndpointsType endpoints_;
+  ID inbound_id_;
+
+  typedef std::map<ID, const boost::asio::ip::udp::endpoint> OutboundConnectionListType;
+  OutboundConnectionListType outbound_connection_list_;
 
 public:
   Link(LinkBase::ReceiveCallbackType receive_callback, boost::asio::io_service * io_service, const boost::asio::ip::udp::endpoint& local_endpoint):
     LinkBase(receive_callback),
     io_service_(io_service),
-    socket_(*io_service)
+    socket_(*io_service),
+    inbound_id_(createID())
   {
     socket_.open(boost::asio::ip::udp::v4());
 
@@ -80,22 +84,43 @@ public:
     startReceive();
   }
 
+  const ID& getInboundID()
+  {
+    return inbound_id_;
+  }
+
   void startReceive()
   {
     SharedBuffer recv_buffer = SharedBuffer::create(4098);
-    socket_.async_receive_from( boost::asio::buffer(recv_buffer.data(), recv_buffer.size()), remote_endpoint_,
+    socket_.async_receive_from( boost::asio::buffer(recv_buffer.data(), recv_buffer.size()), received_from_endpoint_,
                                 boost::bind(&Link::handleReceive, this,
 				recv_buffer,
                                 boost::asio::placeholders::error,
                                 boost::asio::placeholders::bytes_transferred));
   }
 
-  void addRemoteEndpoint( ID connection_id, const boost::asio::ip::udp::endpoint& remote_endpoint )
+  ID addOutboundConnection(const boost::asio::ip::udp::endpoint& remote_endpoint)
   {
-    endpoints_.insert( EndpointsType::value_type(connection_id, remote_endpoint) );
+    ID outbound_id = createID();
+    outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, remote_endpoint) );
+    return outbound_id;
   }
 
-  void sendPacket( const ID& connection_id, const ID& sender_node_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
+  //todo do this better
+  void sendPacketToAll(const ID& sender_node_id, packet::Header::PayloadType type,
+		       SharedBuffer buffer, std::size_t data_len)
+  {
+    for( OutboundConnectionListType::iterator it = outbound_connection_list_.begin();
+	 it != outbound_connection_list_.end();
+	 it++ )
+    {
+      sendPacket(it->first, sender_node_id, type, buffer, data_len);
+    }
+  }
+
+  void sendPacket(const ID& outbound_id,
+		  const ID& sender_node_id, packet::Header::PayloadType type,
+		  SharedBuffer buffer, std::size_t data_len)
   {
     DARC_AUTOTRACE();
     // Create Header
@@ -112,7 +137,7 @@ public:
 
     // todo: to do an async send_to, msg must be kept alive until the send is finished. How to do this?
     //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....
-    socket_.send_to(combined_buffers, endpoints_[connection_id]);
+    socket_.send_to(combined_buffers, outbound_connection_list_[outbound_id]);
   }
 
  public:
@@ -120,12 +145,11 @@ public:
   {
     if ( error )
     {
-      std::cerr << "read error: " << boost::system::system_error(error).what() << std::endl;
+      DARC_ERROR("UDP Receive Error: %s ", boost::system::system_error(error).what());
     }
     else
     {
-      //      std::cout << "Received: " << size << " on port " << local_port_ << std::endl;
-      receive_callback_( recv_buffer, size );
+      receive_callback_(inbound_id_, recv_buffer, size);
     }
     startReceive();
   }
