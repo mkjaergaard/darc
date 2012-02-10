@@ -111,7 +111,7 @@ public:
     {
       std::cout << "Invalid URL: " << url << std::endl;
     }
-    return nullID();
+    return ID::null();
   }
 
   const ID& connect( const std::string& url )
@@ -133,7 +133,7 @@ public:
     else
     {
       DARC_ERROR("Invalid UDP URL: %s", url.c_str());
-      return nullID();
+      return ID::null();
     }
   }
 

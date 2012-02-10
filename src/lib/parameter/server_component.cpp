@@ -58,7 +58,7 @@ protected:
       if( (*it).second->isLinked() == false )
       {
 	ID id = node_->lookupComponentInstance( (*it).second->getComponentInstanceName() );
-	if( id != nullID() )
+	if( id != ID::null() )
 	{
 	  DARC_INFO("Found Component %s", (*it).second->getComponentInstanceName().c_str() );
 	  (*it).second->linkComponent(id);

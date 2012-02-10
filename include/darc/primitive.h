@@ -57,7 +57,7 @@ protected:
 public:
   Primitive():
     state_(STOPPED),
-    id_(createID())
+    id_(ID::create())
   {}
 
   const ID& getID() const

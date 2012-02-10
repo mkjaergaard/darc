@@ -53,8 +53,4 @@ public:
 
 };
 
-// todo: dep
-ID createID();
-const ID& nullID();
-
 }

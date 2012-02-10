@@ -67,7 +67,7 @@ protected:
   Component(const std::string& name, boost::shared_ptr<Node> node):
     name_(name),
     node_(node),
-    id_(createID())
+    id_(ID::create())
   {
     std::cout << "construct component" << std::endl;
   }

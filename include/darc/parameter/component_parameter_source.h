@@ -62,8 +62,7 @@ public:
   ComponentParameterSource(darc::Owner * owner, const std::string& component_name) :
     darc::Subcomponent(owner),
     component_name_(component_name),
-    found_component_(false),
-    deployed_component_id_(nullID())
+    found_component_(false)
   {
   }
 

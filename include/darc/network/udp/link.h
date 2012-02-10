@@ -70,7 +70,7 @@ public:
     LinkBase(callback),
     io_service_(io_service),
     socket_(*io_service),
-    inbound_id_(createID())
+    inbound_id_(ID::create())
   {
     socket_.open(boost::asio::ip::udp::v4());
 
@@ -135,7 +135,7 @@ public:
 
   const ID& addOutboundConnection(const boost::asio::ip::udp::endpoint& remote_endpoint)
   {
-    ID outbound_id = createID();
+    ID outbound_id = ID::create();
     OutboundConnectionListType::iterator elem =
       outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, remote_endpoint) ).first;
     return elem->first;

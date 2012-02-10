@@ -76,7 +76,7 @@ private:
 
 public:
   NodeImpl() :
-    node_id_(createID()),
+    node_id_(ID::create()),
     node_link_manager_(&io_service_, node_id_),
     publish_manager_(&io_service_, &node_link_manager_)
   {
@@ -158,7 +158,7 @@ protected:
 	return it->second->getComponentID();
       }
     }
-    return nullID();
+    return ID::null();
   }
 
 };
