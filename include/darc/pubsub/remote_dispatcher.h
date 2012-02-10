@@ -58,7 +58,7 @@ private:
   LocalDispatchFunctionType local_dispatch_function_;
 
   // Function to send to remote node
-  typedef boost::function<void (network::packet::Header::PayloadType, SharedBuffer, std::size_t )> SendToNodeFunctionType;
+  typedef boost::function<void (network::packet::Header::PayloadType, const ID&, SharedBuffer, std::size_t )> SendToNodeFunctionType;
   SendToNodeFunctionType send_to_node_function_;
 
 public:
@@ -112,7 +112,7 @@ public:
     ros::serialization::serialize( ostream, *(msg.get()) );
 
     assert( send_to_node_function_ );
-    send_to_node_function_( network::packet::Header::MSG_PACKET, buffer, data_len );
+    send_to_node_function_( network::packet::Header::MSG_PACKET, ID::null(), buffer, data_len );
   }
 
   // Called by LocalDispatcher

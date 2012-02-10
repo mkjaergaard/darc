@@ -61,7 +61,7 @@ private:
   udp::ProtocolManager udp_manager_;
 
   // Node -> Outbound connection map (handle this a little more intelligent, more connections per nodes, timeout etc)
-  typedef std::map<const ID, const ID> NeighbourNodesType;
+  typedef std::map<const ID, const ID> NeighbourNodesType; // NodeID -> OutboundID
   NeighbourNodesType neighbour_nodes_;
 
   // Callbacks to handlers of certain packet types
@@ -83,19 +83,17 @@ public:
     return node_id_;
   }
 
-  void sendPacket( packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
+  void sendPacket( packet::Header::PayloadType type, const ID& recv_node_id, SharedBuffer buffer, std::size_t data_len )
   {
-    // todo: right now we send to all nodes.... should add routing functionality instead
-    for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
+    // todo: right now we can only send to all nodes.... should add routing functionality instead
+    if( recv_node_id == ID::null() )
     {
-      udp_manager_.sendPacketOnOutboundConnection(it->second, type, buffer, data_len );
+      for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
+      {
+	udp_manager_.sendPacket(it->second, type, it->first, buffer, data_len );
+      }
     }
-  }
-
-  void sendPacketOnOutboundConnection( const ID& outbound_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
-  {
-    // todo: here we should check which protocol manager is the right one to dispatch to
-    udp_manager_.sendPacketOnOutboundConnection(outbound_id, type, buffer, data_len);
+    // else
   }
 
   void registerPacketReceivedHandler( packet::Header::PayloadType type, PacketReceivedHandlerType handler )
@@ -150,7 +148,7 @@ private:
   {
     packet::Discover discover;
     discover.read(buffer.data(), data_len);
-    source_link->sendDiscoverReply(discover.link_id);
+    source_link->sendDiscoverReply(discover.link_id, sender_node_id);
     // If we received a DISCOVER from a node we dont know that we have a direct link to, send a DISCOVER back
     if(neighbour_nodes_.count(sender_node_id) == 0)
     {
@@ -174,8 +172,9 @@ private:
     buffer.addOffset( packet::Header::size() );
     data_len -= packet::Header::size();
 
-    // Discard packages from self, e.g. due to multicasting
-    if(header.sender_node_id == getNodeID())
+    // Discard packages not to us, or from self, e.g. due to multicasting
+    if((header.recv_node_id != ID::null() && header.recv_node_id != getNodeID()) ||
+       header.sender_node_id == getNodeID())
     {
       return;
     }

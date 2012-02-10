@@ -57,7 +57,7 @@ Manager::Manager( boost::asio::io_service * io_service, network::LinkManager * n
 						    boost::bind( &RemoteDispatcher::packetReceiveHandler,
 								 remote_dispatcher_, _1, _2 ) );
   remote_dispatcher_.setSendToNodeFunction( boost::bind( &network::LinkManager::sendPacket,
-							 node_link_manager, _1, _2, _3 ) );
+							 node_link_manager, _1, _2, _3, _4 ) );
 
 }
 

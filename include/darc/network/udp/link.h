@@ -116,10 +116,10 @@ public:
     // Create packet
     network::packet::Discover discover(outbound_id);
     std::size_t len = discover.write( buffer.data(), buffer.size() );
-    sendPacket( outbound_id, network::packet::Header::DISCOVER_PACKET, buffer, len );
+    sendPacket( outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len );
   }
 
-  void sendDiscoverReply(const ID& remote_outbound_id)
+  void sendDiscoverReply(const ID& remote_outbound_id, const ID& remote_node_id)
   {
     DARC_INFO("Sending DISCOVER_REPLY for connection: %s", remote_outbound_id.short_string().c_str());
 
@@ -130,7 +130,7 @@ public:
     std::size_t len = discover_reply.write( buffer.data(), buffer.size() );
 
     // Send packet
-    sendPacketToAll(network::packet::Header::DISCOVER_REPLY_PACKET, buffer, len );
+    sendPacketToAll(network::packet::Header::DISCOVER_REPLY_PACKET, remote_node_id, buffer, len );
   }
 
   const ID& addOutboundConnection(const boost::asio::ip::udp::endpoint& remote_endpoint)
@@ -142,20 +142,20 @@ public:
   }
 
   //todo do this better (e.g. reuse buffer)
-  void sendPacketToAll(packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len)
+  void sendPacketToAll(packet::Header::PayloadType type, const ID& recv_node_id, SharedBuffer buffer, std::size_t data_len)
   {
     for( OutboundConnectionListType::iterator it = outbound_connection_list_.begin();
 	 it != outbound_connection_list_.end();
 	 it++ )
     {
-      sendPacket(it->first, type, buffer, data_len);
+      sendPacket(it->first, type, recv_node_id, buffer, data_len);
     }
   }
 
-  void sendPacket(const ID& outbound_id, packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len)
+  void sendPacket(const ID& outbound_id, packet::Header::PayloadType type, const ID& recv_node_id, SharedBuffer buffer, std::size_t data_len)
   {
     // Create Header
-    packet::Header header(callback_->getNodeID(), type);
+    packet::Header header(callback_->getNodeID(), recv_node_id, type);
 
     boost::array<uint8_t, 512> header_buffer;
 

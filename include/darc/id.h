@@ -44,23 +44,16 @@ namespace darc
 class ID : public boost::uuids::uuid
 {
 public:
-  ID() :
-    boost::uuids::uuid()
-  {
-  }
+  ID();
+  ID(const boost::uuids::uuid& id);
 
-  ID(const boost::uuids::uuid& id) :
-    boost::uuids::uuid(id)
-  {
-  }
-
-  const std::string short_string() const
-  {
-    return to_string(*this).substr(0, 8);
-  }
+  const std::string short_string() const;
+  static ID create();
+  static const ID& null();
 
 };
 
+// todo: dep
 ID createID();
 const ID& nullID();
 

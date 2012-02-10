@@ -62,10 +62,10 @@ protected:
 
 public:
   virtual void sendPacket(const ID& outbound_id,
-			  packet::Header::PayloadType type,
+			  packet::Header::PayloadType type, const ID& recv_node_id,
 			  SharedBuffer buffer, std::size_t data_len) = 0;
   virtual void sendDiscoverToAll() = 0;
-  virtual void sendDiscoverReply(const ID& remote_outbound_id) = 0;
+  virtual void sendDiscoverReply(const ID& remote_outbound_id, const ID& remote_node_id) = 0;
 
 };
 

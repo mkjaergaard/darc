@@ -57,16 +57,23 @@ struct Header
   } PayloadType;
 
   ID sender_node_id;
+  ID recv_node_id;
   PayloadType payload_type; //store as uint8
 
-  Header( const ID& node_id, PayloadType payload_type):
-    sender_node_id(node_id),
+  Header(const ID& sender_node_id, const ID& recv_node_id, PayloadType payload_type):
+    sender_node_id(sender_node_id),
+    recv_node_id(recv_node_id),
+    payload_type(payload_type)
+  {
+  }
+
+  Header( const ID& sender_node_id, PayloadType payload_type):
+    sender_node_id(sender_node_id),
     payload_type(payload_type)
   {
   }
 
   Header():
-    sender_node_id(), //nullID
     payload_type(NONE)
   {
   }
@@ -74,6 +81,7 @@ struct Header
   size_t read( const uint8_t * data, size_t len )
   {
     size_t idx = Parser::readID(sender_node_id, data, len);
+    idx += Parser::readID(recv_node_id, data+idx, len-idx);
     payload_type = (PayloadType)data[idx];
     return size();
   }
@@ -81,13 +89,14 @@ struct Header
   size_t write( uint8_t * data, size_t len )
   {
     size_t idx = Parser::writeID(sender_node_id, data, len);
+    idx += Parser::writeID(recv_node_id, data+idx, len-idx);
     data[idx] = (uint8_t) payload_type;
     return size();
   }
 
   static size_t size()
   {
-    return ID::static_size()+1;
+    return ID::static_size()*2+1;
   }
 
 };

@@ -88,18 +88,11 @@ public:
     last_inbound_ = connection;
   }
 
-  /*  void sendPacketToInboundGroup(const ID& inbound_id,
-				const ID& sender_node_id, packet::Header::PayloadType type,
-				SharedBuffer buffer, std::size_t data_len )
+  void sendPacket(const ID& outbound_id,
+		  packet::Header::PayloadType type, const ID& recv_node_id,
+		  SharedBuffer buffer, std::size_t data_len )
   {
-    inbound_connection_list_[inbound_id]->sendPacketToAll(sender_node_id, type, buffer, data_len);
-  }
-
-  */
-  void sendPacketOnOutboundConnection(const ID& outbound_id, packet::Header::PayloadType type,
-				      SharedBuffer buffer, std::size_t data_len )
-  {
-    outbound_connection_list_[outbound_id]->sendPacket(outbound_id, type, buffer, data_len);
+    outbound_connection_list_[outbound_id]->sendPacket(outbound_id, type, recv_node_id, buffer, data_len);
   }
 
   const ID& accept( const std::string& url )
