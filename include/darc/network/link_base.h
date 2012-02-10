@@ -28,18 +28,17 @@
  */
 
 /**
- * DARC NodeLink class
+ * DARC LinkBase class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_NODE_LINK_H_INCLUDED__
-#define __DARC_NODE_LINK_H_INCLUDED__
+#ifndef __DARC_NETWORK_LINK_BASE_H_INCLUDED__
+#define __DARC_NETWORK_LINK_BASE_H_INCLUDED__
 
 #include <boost/shared_ptr.hpp>
-#include <boost/function.hpp>
-#include <darc/network/packet/header.h>
 #include <darc/shared_buffer.h>
+#include <darc/network/packet/header.h>
 #include <darc/network/link_manager_callback_if.h>
 
 namespace darc
@@ -57,23 +56,20 @@ protected:
   {
   }
 
-public:
-  typedef boost::shared_ptr<LinkBase> Ptr;
-
   ~LinkBase()
   {
   }
 
-  virtual void sendPacket( const ID& outbound_id,
-			   network::packet::Header::PayloadType type,
-			   SharedBuffer buffer, std::size_t data_len ) = 0;
-
+public:
+  virtual void sendPacket(const ID& outbound_id,
+			  packet::Header::PayloadType type,
+			  SharedBuffer buffer, std::size_t data_len) = 0;
   virtual void sendDiscoverToAll() = 0;
   virtual void sendDiscoverReply(const ID& remote_outbound_id) = 0;
 
-
-
 };
+
+typedef boost::shared_ptr<LinkBase> LinkBasePtr;
 
 }
 }

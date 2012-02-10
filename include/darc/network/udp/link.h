@@ -33,15 +33,14 @@
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_UDP_LINK_H_INCLUDED__
-#define __DARC_UDP_LINK_H_INCLUDED__
+#ifndef __DARC_NETWORK_UDP_LINK_H_INCLUDED__
+#define __DARC_NETWORK_UDP_LINK_H_INCLUDED__
 
 #include <boost/asio.hpp>
 #include <darc/log.h>
 #include <darc/id.h>
 #include <darc/shared_buffer.h>
 #include <darc/network/packet/header.h>
-#include <darc/network/packet/message.h>
 #include <darc/network/packet/discover.h>
 #include <darc/network/packet/discover_reply.h>
 #include <darc/network/link_base.h>
@@ -55,9 +54,6 @@ namespace udp
 
 class Link : public darc::network::LinkBase
 {
-public:
-  typedef boost::shared_ptr<udp::Link> Ptr;
-
 private:
   boost::asio::io_service * io_service_;
 
@@ -120,7 +116,7 @@ public:
     // Create packet
     network::packet::Discover discover(outbound_id);
     std::size_t len = discover.write( buffer.data(), buffer.size() );
-    sendPacket( outbound_id, network::packet::Header::DISCOVER_PACKET, buffer, data_len );
+    sendPacket( outbound_id, network::packet::Header::DISCOVER_PACKET, buffer, len );
   }
 
   void sendDiscoverReply(const ID& remote_outbound_id)
@@ -134,17 +130,18 @@ public:
     std::size_t len = discover_reply.write( buffer.data(), buffer.size() );
 
     // Send packet
-    sendPacketToAll(network::packet::Header::DISCOVER_REPLY_PACKET, buffer, data_len );
+    sendPacketToAll(network::packet::Header::DISCOVER_REPLY_PACKET, buffer, len );
   }
 
-  ID addOutboundConnection(const boost::asio::ip::udp::endpoint& remote_endpoint)
+  const ID& addOutboundConnection(const boost::asio::ip::udp::endpoint& remote_endpoint)
   {
     ID outbound_id = createID();
-    outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, remote_endpoint) );
-    return outbound_id;
+    OutboundConnectionListType::iterator elem =
+      outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, remote_endpoint) ).first;
+    return elem->first;
   }
 
-  //todo do this better
+  //todo do this better (e.g. reuse buffer)
   void sendPacketToAll(packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len)
   {
     for( OutboundConnectionListType::iterator it = outbound_connection_list_.begin();
@@ -189,6 +186,8 @@ public:
   }
 
 };
+
+typedef boost::shared_ptr<udp::Link> LinkPtr;
 
 } // namespace udp
 } // namespace network

@@ -57,12 +57,12 @@ private:
   boost::asio::io_service * io_service_;
   boost::asio::ip::udp::resolver resolver_;
 
-  typedef std::map<const ID, udp::Link::Ptr> OutboundConnectionListType;
-  typedef std::map<const ID, udp::Link::Ptr> InboundConnectionListType;
+  typedef std::map<const ID, udp::LinkPtr> OutboundConnectionListType;
+  typedef std::map<const ID, udp::LinkPtr> InboundConnectionListType;
 
   OutboundConnectionListType outbound_connection_list_;
   InboundConnectionListType inbound_connection_list_;
-  udp::Link::Ptr last_inbound_;
+  udp::LinkPtr last_inbound_;
 
 public:
   ProtocolManager(boost::asio::io_service * io_service, network::LinkManagerCallbackIF * callback) :
@@ -82,8 +82,8 @@ public:
   void createDefaultAcceptor()
   {
     DARC_INFO("Accepting UDP on (ALL:%u) ", DEFAULT_LISTEN_PORT);
-    Link::Ptr connection(new udp::Link(callback_, io_service_,
-				       boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), DEFAULT_LISTEN_PORT)) );
+    LinkPtr connection(new udp::Link(callback_, io_service_,
+				     boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), DEFAULT_LISTEN_PORT)) );
     inbound_connection_list_.insert( InboundConnectionListType::value_type(connection->getInboundID(), connection) );
     last_inbound_ = connection;
   }
@@ -102,13 +102,13 @@ public:
     outbound_connection_list_[outbound_id]->sendPacket(outbound_id, type, buffer, data_len);
   }
 
-  ID accept( const std::string& url )
+  const ID& accept( const std::string& url )
   {
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
     {
       DARC_INFO("Accepting UDP on (%s:%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str());
-      Link::Ptr connection(new udp::Link(callback_, io_service_,
+      LinkPtr connection(new udp::Link(callback_, io_service_,
 					 resolve(what[1], what[2])) );
       inbound_connection_list_.insert( InboundConnectionListType::value_type(connection->getInboundID(), connection) );
       last_inbound_ = connection;
@@ -121,7 +121,7 @@ public:
     return nullID();
   }
 
-  ID connect( const std::string& url )
+  const ID& connect( const std::string& url )
   {
     boost::smatch what;
     if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) )
@@ -131,7 +131,7 @@ public:
 	createDefaultAcceptor();
       }
       // Allocate a connection ID
-      ID outbound_id = last_inbound_->addOutboundConnection(resolve(what[1], what[2]) );
+      const ID& outbound_id = last_inbound_->addOutboundConnection(resolve(what[1], what[2]) );
       outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, last_inbound_) );
       DARC_INFO("Connecting to UDP (%s:%s) (%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str(), outbound_id.short_string().c_str());
       last_inbound_->sendDiscover(outbound_id);

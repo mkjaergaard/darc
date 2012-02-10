@@ -33,15 +33,15 @@
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_NODE_LINK_MANAGER_H_INCLUDED__
-#define __DARC_NODE_LINK_MANAGER_H_INCLUDED__
+#ifndef __DARC_NETWORK_LINK_MANAGER_H_INCLUDED__
+#define __DARC_NETWORK_LINK_MANAGER_H_INCLUDED__
 
 #include <boost/regex.hpp>
-#include <darc/network/udp/protocol_manager.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/discover.h>
 #include <darc/network/packet/discover_reply.h>
 #include <darc/network/link_manager_callback_if.h>
+#include <darc/network/udp/protocol_manager.h>
 
 namespace darc
 {
@@ -61,8 +61,8 @@ private:
   udp::ProtocolManager udp_manager_;
 
   // Node -> Outbound connection map (handle this a little more intelligent, more connections per nodes, timeout etc)
-  typedef std::map<const ID, const ID> NearNodesType;
-  NearNodesType near_nodes_;
+  typedef std::map<const ID, const ID> NeighbourNodesType;
+  NeighbourNodesType neighbour_nodes_;
 
   // Callbacks to handlers of certain packet types
   typedef boost::function< void(SharedBuffer, std::size_t) > PacketReceivedHandlerType;
@@ -73,10 +73,11 @@ public:
     node_id_(node_id),
     udp_manager_(io_service, this)
   {
-    // Link protocol names and protocol handlers
+    // Link protocol names and protocol managers
     manager_map_["udp"] = &udp_manager_;
   }
 
+  // Impl of CallbackIF
   const ID& getNodeID()
   {
     return node_id_;
@@ -85,7 +86,7 @@ public:
   void sendPacket( packet::Header::PayloadType type, SharedBuffer buffer, std::size_t data_len )
   {
     // todo: right now we send to all nodes.... should add routing functionality instead
-    for( NearNodesType::iterator it = near_nodes_.begin(); it != near_nodes_.end(); it++ )
+    for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
     {
       udp_manager_.sendPacketOnOutboundConnection(it->second, type, buffer, data_len );
     }
@@ -102,14 +103,46 @@ public:
     packet_received_handlers_[type] = handler;
   }
 
-  void accept( const std::string& url )
+  void accept(const std::string& url)
   {
-    createFromAccept(url);
+    boost::smatch what;
+    if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
+    {
+      ProtocolManagerBase * mngr = getManager(what[1]);
+      if( mngr )
+      {
+	mngr->accept(what[2]);
+      }
+      else
+      {
+	DARC_ERROR("Unsupported Protocol: %s in %s", std::string(what[1]).c_str(), url.c_str());
+      }
+    }
+    else
+    {
+      DARC_ERROR("Invalid URL: %s", url.c_str());
+    }
   }
 
   void connect(const std::string& url)
   {
-    ID connection_id = createFromConnect(url);
+    boost::smatch what;
+    if( boost::regex_match(url, what, boost::regex("^(.+)://(.+)$")) )
+    {
+      ProtocolManagerBase * mngr = getManager(what[1]);
+      if( mngr )
+      {
+	mngr->connect(what[2]);
+      }
+      else
+      {
+	DARC_ERROR("Unsupported Protocol: %s in %s", std::string(what[1]).c_str(), url.c_str());
+      }
+    }
+    else
+    {
+      DARC_ERROR("Invalid URL: %s", url.c_str());
+    }
   }
 
 private:
@@ -119,7 +152,7 @@ private:
     discover.read(buffer.data(), data_len);
     source_link->sendDiscoverReply(discover.link_id);
     // If we received a DISCOVER from a node we dont know that we have a direct link to, send a DISCOVER back
-    if(near_nodes_.count(sender_node_id) == 0)
+    if(neighbour_nodes_.count(sender_node_id) == 0)
     {
       source_link->sendDiscoverToAll();
     }
@@ -131,7 +164,7 @@ private:
     packet::DiscoverReply discover_reply;
     discover_reply.read(buffer.data(), data_len);
     DARC_INFO("Found Node %s on outbound connection %s", sender_node_id.short_string().c_str(), discover_reply.link_id.short_string().c_str() );
-    near_nodes_.insert(NearNodesType::value_type(sender_node_id, discover_reply.link_id));
+    neighbour_nodes_.insert(NeighbourNodesType::value_type(sender_node_id, discover_reply.link_id));
   }
 
   void receiveHandler( const ID& inbound_id, LinkBase * source_link, SharedBuffer buffer, std::size_t data_len )
@@ -175,50 +208,7 @@ private:
     }
   }
 
-  void createFromAccept(const std::string& url)
-  {
-    boost::smatch what;
-    if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
-    {
-      ProtocolManagerBase * mngr = getManager(what[1]);
-      if( mngr )
-      {
-	mngr->accept(what[2]);
-      }
-      else
-      {
-	DARC_ERROR("Unsupported Protocol: %s in %s", std::string(what[1]).c_str(), url.c_str());
-      }
-    }
-    else
-    {
-      DARC_ERROR("Invalid URL: %s", url.c_str());
-    }
-  }
-
-  ID createFromConnect(const std::string& url)
-  {
-    boost::smatch what;
-    if( boost::regex_match(url, what, boost::regex("^(.+)://(.+)$")) )
-    {
-      ProtocolManagerBase * mngr = getManager(what[1]);
-      if( mngr )
-      {
-	return mngr->connect(what[2]);
-      }
-      else
-      {
-	DARC_ERROR("Unsupported Protocol: %s in %s", std::string(what[1]).c_str(), url.c_str());
-      }
-    }
-    else
-    {
-      DARC_ERROR("Invalid URL: %s", url.c_str());
-    }
-    return nullID();
-  }
-
-  // Get the correct protocol handler
+  // Get the protocol manager from a protocol name
   ProtocolManagerBase * getManager(const std::string& protocol)
   {
     ManagerMapType::iterator elem = manager_map_.find(protocol);

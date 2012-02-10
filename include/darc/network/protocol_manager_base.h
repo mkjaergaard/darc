@@ -28,13 +28,13 @@
  */
 
 /**
- * DARC LinkManagerAbstract class
+ * DARC ProtocolManagerBase class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PROTOCOL_MANAGER_ABSTRACT_H__
-#define __DARC_PROTOCOL_MANAGER_ABSTRACT_H__
+#ifndef __DARC_NETWORK_PROTOCOL_MANAGER_BASE_H__
+#define __DARC_NETWORK_PROTOCOL_MANAGER_BASE_H__
 
 #include <string>
 #include <darc/network/link_base.h>
@@ -50,20 +50,20 @@ class ProtocolManagerBase
 protected:
   LinkManagerCallbackIF * callback_;
 
-public:
   ProtocolManagerBase(LinkManagerCallbackIF * callback) :
     callback_(callback)
   {
   }
 
+public:
   virtual ~ProtocolManagerBase() {}
 
-  virtual ID accept( const std::string& url ) = 0;
-  virtual ID connect( const std::string& url ) = 0;
+  virtual const ID& accept( const std::string& url ) = 0;
+  virtual const ID& connect( const std::string& url ) = 0;
 
 };
 
-}
+} // namespace network
 } // namespace darc
 
 #endif
