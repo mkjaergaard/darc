@@ -37,6 +37,7 @@
 #define __DARC_PACKET_HEADER_H_INCLUDED__
 
 #include <darc/id.h>
+#include <darc/network/packet/parser.h>
 
 namespace darc
 {

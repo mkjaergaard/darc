@@ -36,11 +36,8 @@
 #ifndef __DARC_UDP_PROTOCOL_MANAGER_H_INCLUDED__
 #define __DARC_UDP_PROTOCOL_MANAGER_H_INCLUDED__
 
-#include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
 #include <darc/network/protocol_manager_base.h>
 #include <darc/network/udp/link.h>
-#include <darc/log.h>
 
 namespace darc
 {
@@ -65,77 +62,19 @@ private:
   udp::LinkPtr last_inbound_;
 
 public:
-  ProtocolManager(boost::asio::io_service * io_service, network::LinkManagerCallbackIF * callback) :
-    network::ProtocolManagerBase(callback),
-    io_service_(io_service),
-    resolver_(*io_service)
-  {
-  }
-
-  boost::asio::ip::udp::endpoint resolve(const std::string& host, const std::string& port)
-  {
-    // todo: do it async and handle errors and so on....
-    boost::asio::ip::udp::resolver::query query(boost::asio::ip::udp::v4(), host, port);
-    return *resolver_.resolve(query);
-  }
-
-  void createDefaultAcceptor()
-  {
-    DARC_INFO("Accepting UDP on (ALL:%u) ", DEFAULT_LISTEN_PORT);
-    LinkPtr connection(new udp::Link(callback_, io_service_,
-				     boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), DEFAULT_LISTEN_PORT)) );
-    inbound_connection_list_.insert( InboundConnectionListType::value_type(connection->getInboundID(), connection) );
-    last_inbound_ = connection;
-  }
+  ProtocolManager(boost::asio::io_service * io_service, network::LinkManagerCallbackIF * callback);
 
   void sendPacket(const ID& outbound_id,
 		  packet::Header::PayloadType type, const ID& recv_node_id,
-		  SharedBuffer buffer, std::size_t data_len )
-  {
-    outbound_connection_list_[outbound_id]->sendPacket(outbound_id, type, recv_node_id, buffer, data_len);
-  }
+		  SharedBuffer buffer, std::size_t data_len );
 
-  const ID& accept( const std::string& url )
-  {
-    boost::smatch what;
-    if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) )
-    {
-      DARC_INFO("Accepting UDP on (%s:%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str());
-      LinkPtr connection(new udp::Link(callback_, io_service_,
-					 resolve(what[1], what[2])) );
-      inbound_connection_list_.insert( InboundConnectionListType::value_type(connection->getInboundID(), connection) );
-      last_inbound_ = connection;
-      return connection->getInboundID();
-    }
-    else
-    {
-      std::cout << "Invalid URL: " << url << std::endl;
-    }
-    return ID::null();
-  }
+  const ID& accept(const std::string& url);
+  const ID& connect(const std::string& url);
 
-  const ID& connect( const std::string& url )
-  {
-    boost::smatch what;
-    if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) )
-    {
-      if( last_inbound_.get() == 0 )
-      {
-	createDefaultAcceptor();
-      }
-      // Allocate a connection ID
-      const ID& outbound_id = last_inbound_->addOutboundConnection(resolve(what[1], what[2]) );
-      outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, last_inbound_) );
-      DARC_INFO("Connecting to UDP (%s:%s) (%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str(), outbound_id.short_string().c_str());
-      last_inbound_->sendDiscover(outbound_id);
-      return outbound_id;
-    }
-    else
-    {
-      DARC_ERROR("Invalid UDP URL: %s", url.c_str());
-      return ID::null();
-    }
-  }
+private:
+  const ID& accept_(boost::asio::ip::address &host, uint16_t port_begin, uint16_t port_end);
+  boost::asio::ip::udp::endpoint resolve(const std::string& host, const std::string& port);
+  void createDefaultAcceptor();
 
 };
 

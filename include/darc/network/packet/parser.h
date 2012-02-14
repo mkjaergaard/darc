@@ -36,6 +36,7 @@
 #ifndef __DARC_PACKET_PARSER_H_INCLUDED__
 #define __DARC_PACKET_PARSER_H_INCLUDED__
 
+#include <string.h>
 #include <darc/id.h>
 
 namespace darc

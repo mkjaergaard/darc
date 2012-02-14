@@ -28,51 +28,47 @@
  */
 
 /**
- * DARC SharedBuffer class
+ * DARC Exception class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_SHARED_BUFFER_H_INCLUDED__
-#define __DARC_SHARED_BUFFER_H_INCLUDED__
+#ifndef __DARC_EXCEPTION_H_INCLUDED__
+#define __DARC_EXCEPTION_H_INCLUDED__
 
-#include <stdint.h>
-#include <boost/shared_array.hpp>
+#include <exception>
 
-class SharedBuffer : private boost::shared_array<uint8_t>
+namespace darc
 {
-private:
-  size_t size_;
-  size_t start_offset_;
 
-  SharedBuffer( size_t size ) :
-    boost::shared_array<uint8_t>( new uint8_t[size] ),
-    size_(size),
-    start_offset_(0)
-  {
-  }
+class Exception : public std::exception
+{
+protected:
+  std::string message_;
 
 public:
-  uint8_t * data() const
+  Exception(const std::string& message):
+    message_(message)
   {
-    return boost::shared_array<uint8_t>::get() + start_offset_;
   }
 
-  size_t size() const
+  virtual ~Exception() throw()
   {
-    return size_ - start_offset_;
   }
 
-  void addOffset(size_t offset)
+  Exception(const char * message1, const std::string& message2):
+    message_(message1)
   {
-    start_offset_ += offset;
+    message_.append(message2);
   }
 
-  static SharedBuffer create( size_t size )
+  virtual const char* what() const throw()
   {
-    return SharedBuffer( size );
+    return message_.c_str();
   }
 
 };
+
+} // namespace darc
 
 #endif

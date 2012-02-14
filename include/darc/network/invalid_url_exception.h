@@ -28,51 +28,32 @@
  */
 
 /**
- * DARC SharedBuffer class
+ * DARC Invalid Url Exception class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_SHARED_BUFFER_H_INCLUDED__
-#define __DARC_SHARED_BUFFER_H_INCLUDED__
+#ifndef __DARC_NETWORK_INVALID_URL_EXCEPTION_H_INCLUDED__
+#define __DARC_NETWORK_INVALID_URL_EXCEPTION_H_INCLUDED__
 
-#include <stdint.h>
-#include <boost/shared_array.hpp>
+#include <darc/exception.h>
 
-class SharedBuffer : private boost::shared_array<uint8_t>
+namespace darc
 {
-private:
-  size_t size_;
-  size_t start_offset_;
+namespace network
+{
 
-  SharedBuffer( size_t size ) :
-    boost::shared_array<uint8_t>( new uint8_t[size] ),
-    size_(size),
-    start_offset_(0)
-  {
-  }
+class InvalidUrlException : darc::Exception
+{
 
 public:
-  uint8_t * data() const
+  InvalidUrlException(const std::string& url) :
+    darc::Exception("Invalid URL Specified: ", url)
   {
-    return boost::shared_array<uint8_t>::get() + start_offset_;
   }
-
-  size_t size() const
-  {
-    return size_ - start_offset_;
-  }
-
-  void addOffset(size_t offset)
-  {
-    start_offset_ += offset;
-  }
-
-  static SharedBuffer create( size_t size )
-  {
-    return SharedBuffer( size );
-  }
-
 };
+
+} // namespace network
+} // namespace darc
 
 #endif

@@ -37,6 +37,7 @@
 #define __DARC_NETWORK_UDP_LINK_H_INCLUDED__
 
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <darc/log.h>
 #include <darc/id.h>
 #include <darc/shared_buffer.h>
@@ -59,6 +60,7 @@ private:
 
   boost::asio::ip::udp::socket socket_;
   boost::asio::ip::udp::endpoint received_from_endpoint_;
+  bool opened_;
 
   ID inbound_id_;
 
@@ -66,20 +68,31 @@ private:
   OutboundConnectionListType outbound_connection_list_;
 
 public:
-  Link(network::LinkManagerCallbackIF * callback, boost::asio::io_service * io_service, const boost::asio::ip::udp::endpoint& local_endpoint):
+  Link(network::LinkManagerCallbackIF * callback, boost::asio::io_service * io_service):
     LinkBase(callback),
     io_service_(io_service),
     socket_(*io_service),
+    opened_(false),
     inbound_id_(ID::create())
   {
-    socket_.open(boost::asio::ip::udp::v4());
+    socket_.open(boost::asio::ip::udp::v4()); //throws boost::system::system_error
 
-    boost::asio::socket_base::reuse_address option(true);
-    socket_.set_option(option);
+    //boost::asio::socket_base::reuse_address option(true); // stuff for multicasting
+    //socket_.set_option(option);
+  }
 
-    socket_.set_option(option);
-    socket_.bind(local_endpoint);
-    startReceive();
+  bool bind(const boost::asio::ip::udp::endpoint& local_endpoint)
+  {
+    boost::system::error_code ec;
+    socket_.bind(local_endpoint, ec);
+    DARC_INFO("Bind returned %s", ec.message().c_str() );
+    if(!ec)
+    {
+      opened_ = true;
+      startReceive();
+      return true;
+    }
+    return false;
   }
 
   const ID& getInboundID()
@@ -138,6 +151,7 @@ public:
     ID outbound_id = ID::create();
     OutboundConnectionListType::iterator elem =
       outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, remote_endpoint) ).first;
+
     return elem->first;
   }
 

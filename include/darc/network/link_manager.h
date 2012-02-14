@@ -103,22 +103,29 @@ public:
 
   void accept(const std::string& url)
   {
-    boost::smatch what;
-    if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
+    try
     {
-      ProtocolManagerBase * mngr = getManager(what[1]);
-      if( mngr )
+      boost::smatch what;
+      if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
       {
-	mngr->accept(what[2]);
+	ProtocolManagerBase * mngr = getManager(what[1]);
+	if( mngr )
+	{
+	  mngr->accept(what[2]);
+	}
+	else
+	{
+	  DARC_ERROR("Unsupported Protocol: %s in %s", std::string(what[1]).c_str(), url.c_str());
+	}
       }
       else
       {
-	DARC_ERROR("Unsupported Protocol: %s in %s", std::string(what[1]).c_str(), url.c_str());
+	DARC_ERROR("Invalid URL: %s", url.c_str());
       }
     }
-    else
+    catch(std::exception& e)
     {
-      DARC_ERROR("Invalid URL: %s", url.c_str());
+      std::cout << e.what() << std::endl;
     }
   }
 
