@@ -59,7 +59,7 @@ public:
   virtual ~ProtocolManagerBase() {}
 
   virtual const ID& accept( const std::string& url ) = 0;
-  virtual const ID& connect( const std::string& url ) = 0;
+  virtual void connect( const std::string& url ) = 0;
 
 };
 

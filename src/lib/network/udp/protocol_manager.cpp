@@ -100,21 +100,21 @@ const ID& ProtocolManager::accept( const std::string& url )
   }
 }
 
-const ID& ProtocolManager::connect( const std::string& url )
+void ProtocolManager::connect(const std::string& url)
 {
   boost::smatch what;
-  if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) )
+  if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) ) //single port
   {
-    if( last_inbound_.get() == 0 )
-    {
-      createDefaultAcceptor();
-    }
-    // Allocate a connection ID
-    const ID& outbound_id = last_inbound_->addOutboundConnection(resolve(what[1], what[2]) );
-    outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, last_inbound_) );
-    DARC_INFO("Connecting to UDP (%s:%s) (%s) ", std::string(what[1]).c_str(), std::string(what[2]).c_str(), outbound_id.short_string().c_str());
-    last_inbound_->sendDiscover(outbound_id);
-    return outbound_id;
+    ip::address host = ip::address::from_string(what[1]); //throws boost::system::system_error
+    unsigned int port = boost::lexical_cast<unsigned int>(what[2]); //throws boost::bad_lexical_cast
+    return connect_(host, port, port);
+  }
+  else if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)-(\\d+)$") ) ) //port range
+  {
+    ip::address host = ip::address::from_string(what[1]); //throws boost::system::system_error
+    unsigned int port_begin = boost::lexical_cast<unsigned int>(what[2]); //throws boost::bad_lexical_cast
+    unsigned int port_end = boost::lexical_cast<unsigned int>(what[3]); //throws boost::bad_lexical_cast
+    return connect_(host, port_begin, port_end);
   }
   else
   {
@@ -122,10 +122,26 @@ const ID& ProtocolManager::connect( const std::string& url )
   }
 }
 
+void ProtocolManager::connect_(ip::address &host, uint16_t port_begin, uint16_t port_end)
+{
+  if( last_inbound_.get() == 0 )
+  {
+    createDefaultAcceptor();
+  }
+  // Allocate a connection ID
+  for( uint16_t port = port_begin; port <= port_end; port++ )
+  {
+    const ID& outbound_id = last_inbound_->addOutboundConnection(ip::udp::endpoint(host, port));
+    outbound_connection_list_.insert( OutboundConnectionListType::value_type(outbound_id, last_inbound_) );
+    DARC_INFO("Connecting to UDP (%s:%s) (%s) ", host.to_string().c_str(), boost::lexical_cast<std::string>(port).c_str(), outbound_id.short_string().c_str() );
+    last_inbound_->sendDiscover(outbound_id);
+  }
+}
+
 const ID& ProtocolManager::accept_(ip::address &host, uint16_t port_begin, uint16_t port_end)
 {
   LinkPtr connection = boost::make_shared<udp::Link>(callback_, io_service_);
-  for(unsigned int port = port_begin; port != port_end; port++)
+  for(unsigned int port = port_begin; port <= port_end; port++)
   {
     if(connection->bind(ip::udp::endpoint(host, port)))
     {

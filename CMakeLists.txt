@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(darc)
 
+SET(CMAKE_BUILD_TYPE Debug)
+
 set(CMAKE_PREFIX_PATH /opt/ros/fuerte)
 
 find_package(catkin)
@@ -17,17 +19,19 @@ set(CMAKE_CXX_FLAGS "-Wall -g")
 add_library(darc SHARED
   src/lib/node.cpp
   src/lib/registry.cpp
-  src/lib/pubsub/manager.cpp
-  src/lib/parameter/manager.cpp
-  src/lib/parameter/parameter_abstract.cpp
   src/lib/owner.cpp
   src/lib/id.cpp
   src/lib/log.cpp
   src/lib/subcomponent_list.cpp
+  src/lib/network/udp/protocol_manager.cpp
+  src/lib/pubsub/manager.cpp
+  src/lib/parameter/manager.cpp
+  src/lib/parameter/parameter_abstract.cpp
   src/lib/parameter/server_component.cpp
 )
 
-target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES} -ldl)
+target_link_libraries(darc ${Boost_SYSTEM_LIBRARY_DEBUG} ${Boost_THREAD_LIBRARY_DEBUG} ${Boost_REGEX_LIBRARY_DEBUG}  ${ROS_LIBRARIES} -ldl)
+message(INFO {Boost_SYSTEM_LIBRARY_DEBUG})
 
 catkin_project(darc
   VERSION 0.0.1

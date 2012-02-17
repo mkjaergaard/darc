@@ -69,10 +69,12 @@ public:
 		  SharedBuffer buffer, std::size_t data_len );
 
   const ID& accept(const std::string& url);
-  const ID& connect(const std::string& url);
+  void connect(const std::string& url);
 
 private:
   const ID& accept_(boost::asio::ip::address &host, uint16_t port_begin, uint16_t port_end);
+  void connect_(boost::asio::ip::address &host, uint16_t port_begin, uint16_t port_end);
+
   boost::asio::ip::udp::endpoint resolve(const std::string& host, const std::string& port);
   void createDefaultAcceptor();
 
