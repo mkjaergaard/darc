@@ -57,16 +57,14 @@ private:
 public:
   static LevelType getLevel();
   static void setLevel(LevelType);
-  static void report(LevelType level, const char * msg);
-
-  static void report2(LevelType level, const char * msg, ...);
+  static void report(LevelType level, const char * msg, ...);
 
 };
 
 }
 
 #define DARC_AUTOTRACE() darc::Log::report(darc::Log::LOG_TRACE, __PRETTY_FUNCTION__)
-#define DARC_INFO(...) darc::Log::report2(darc::Log::LOG_INFO, __VA_ARGS__)
-#define DARC_WARNING(arg) darc::Log::report(darc::Log::LOG_WARNING, arg)
-#define DARC_ERROR(...) darc::Log::report2(darc::Log::LOG_ERROR, __VA_ARGS__)
-#define DARC_FATAL(arg) darc::Log::report(darc::Log::LOG_FATAL, arg); exit(1)
+#define DARC_INFO(...) darc::Log::report(darc::Log::LOG_INFO, __VA_ARGS__)
+#define DARC_WARNING(...) darc::Log::report(darc::Log::LOG_WARNING, __VA_ARGS__)
+#define DARC_ERROR(...) darc::Log::report(darc::Log::LOG_ERROR, __VA_ARGS__)
+#define DARC_FATAL(...) darc::Log::report(darc::Log::LOG_FATAL, __VA_ARGS__); exit(1)

@@ -58,22 +58,16 @@ void Log::setLevel(Log::LevelType new_level)
   current_level_ = new_level;
 }
 
-void Log::report(Log::LevelType level, const char * msg)
+void Log::report(Log::LevelType level, const char * msg, ...)
 {
   if(level >= current_level_)
   {
-    std::cout << "[" << level_names_[level] << " " << bt::to_simple_string(bt::microsec_clock::universal_time().time_of_day()) << "] " << msg << std::endl;
-  }
-}
+    char buffer[512];
+    sprintf(buffer, "[%s %s] %s", level_names_[level], bt::to_simple_string(bt::microsec_clock::universal_time().time_of_day()).c_str(), msg );
 
-void Log::report2(Log::LevelType level, const char * msg, ...)
-{
-  if(level >= current_level_)
-  {
     va_list args;
     va_start(args, msg);
-    std::cout << "[" << level_names_[level] << " " << bt::to_simple_string(bt::microsec_clock::universal_time().time_of_day()) << "] ";
-    vprintf(msg, args);
+    vprintf(buffer, args);
     va_end(args);
     std::cout << std::endl;
   }
