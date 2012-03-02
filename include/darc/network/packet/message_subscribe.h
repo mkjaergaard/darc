@@ -28,15 +28,15 @@
  */
 
 /**
- * DARC Header class
+ * DARC Message class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PACKET_HEADER_H_INCLUDED__
-#define __DARC_PACKET_HEADER_H_INCLUDED__
+#ifndef __DARC_NETWORK_PACKET_MESSAGE_SUBSCRIBE_H_INCLUDED__
+#define __DARC_NETWORK_PACKET_MESSAGE_SUBSCRIBE_H_INCLUDED__
 
-#include <darc/id.h>
+#include <darc/network/packet/header.h>
 #include <darc/network/packet/parser.h>
 
 namespace darc
@@ -46,59 +46,35 @@ namespace network
 namespace packet
 {
 
-struct Header
+struct MessageSubscribe
 {
-  typedef enum {NONE = 0x00,
-		DISCOVER_PACKET = 0x01,
-		DISCOVER_REPLY_PACKET = 0x02,
-		MSG_PACKET = 0x10,
-		MSG_SUBSCRIBE = 0x011,
-		PROCEDURE_CALL_PACKET = 0x20,
-		PROCEDURE_STATUS_PACKET = 0x21,
-		PROCEDURE_RETURN_PACKET = 0x22
-  } PayloadType;
+  std::string topic;
 
-  ID sender_node_id;
-  ID recv_node_id;
-  PayloadType payload_type; //store as uint8
+  typedef enum {
+    SUBSCRIBE = 0x00,
+    UNSUBSCRIBE = 0x01
+  } RequestType;
+  RequestType request;
 
-  Header(const ID& sender_node_id, const ID& recv_node_id, PayloadType payload_type):
-    sender_node_id(sender_node_id),
-    recv_node_id(recv_node_id),
-    payload_type(payload_type)
+  MessageSubscribe()
   {
   }
 
-  Header( const ID& sender_node_id, PayloadType payload_type):
-    sender_node_id(sender_node_id),
-    payload_type(payload_type)
+  MessageSubscribe(const std::string& topic) :
+    topic(topic)
   {
   }
 
-  Header():
-    payload_type(NONE)
+  size_t read( const uint8_t * data, size_t data_len )
   {
+    size_t count = Parser::readString(topic, data, data_len);
+    return count + Parser::readUint8(request, data + count, data_len - count);
   }
 
-  size_t read( const uint8_t * data, size_t len )
+  size_t write( uint8_t * data, size_t size )
   {
-    size_t idx = Parser::readID(sender_node_id, data, len);
-    idx += Parser::readID(recv_node_id, data+idx, len-idx);
-    payload_type = (PayloadType)data[idx];
-    return size();
-  }
-
-  size_t write( uint8_t * data, size_t len )
-  {
-    size_t idx = Parser::writeID(sender_node_id, data, len);
-    idx += Parser::writeID(recv_node_id, data+idx, len-idx);
-    data[idx] = (uint8_t) payload_type;
-    return size();
-  }
-
-  static size_t size()
-  {
-    return ID::static_size()*2+1;
+    size_t count = Parser::writeString(topic.c_str(), data, size);
+    return count + Parser::writeUint8(request, data + count, size - count);
   }
 
 };

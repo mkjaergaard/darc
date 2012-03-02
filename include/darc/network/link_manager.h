@@ -65,8 +65,13 @@ private:
   NeighbourNodesType neighbour_nodes_;
 
   // Callbacks to handlers of certain packet types
-  typedef boost::function< void(SharedBuffer, std::size_t) > PacketReceivedHandlerType;
+  typedef boost::function< void(const packet::Header&, SharedBuffer, std::size_t) > PacketReceivedHandlerType;
   std::map< packet::Header::PayloadType, PacketReceivedHandlerType > packet_received_handlers_;
+
+  // Event Callbacks
+  typedef boost::function< void(const ID&) > NewRemoteNodeListenerType;
+  typedef std::vector< NewRemoteNodeListenerType > NewRemoteNodeListenerListType;
+  NewRemoteNodeListenerListType new_remote_node_listeners_;
 
 public:
   LinkManager( boost::asio::io_service * io_service, ID& node_id ) :
@@ -75,6 +80,12 @@ public:
   {
     // Link protocol names and protocol managers
     manager_map_["udp"] = &udp_manager_;
+  }
+
+  void addNewRemoteNodeListener(NewRemoteNodeListenerType listener)
+  {
+    DARC_AUTOTRACE();
+    new_remote_node_listeners_.push_back(listener);
   }
 
   // Impl of CallbackIF
@@ -93,7 +104,18 @@ public:
 	udp_manager_.sendPacket(it->second, type, it->first, buffer, data_len );
       }
     }
-    // else
+    else
+    {
+      NeighbourNodesType::iterator item = neighbour_nodes_.find(recv_node_id);
+      if(item != neighbour_nodes_.end())
+      {
+	udp_manager_.sendPacket(item->second, type, item->first, buffer, data_len );
+      }
+      else
+      {
+	DARC_WARNING("Trying to send packet to unknown node: %s", recv_node_id.short_string().c_str());
+      }
+    }
   }
 
   void registerPacketReceivedHandler( packet::Header::PayloadType type, PacketReceivedHandlerType handler )
@@ -177,6 +199,14 @@ private:
     discover_reply.read(buffer.data(), data_len);
     DARC_INFO("Found Node %s on outbound connection %s", sender_node_id.short_string().c_str(), discover_reply.link_id.short_string().c_str() );
     neighbour_nodes_.insert(NeighbourNodesType::value_type(sender_node_id, discover_reply.link_id));
+    // Notify
+    for(NewRemoteNodeListenerListType::iterator it = new_remote_node_listeners_.begin();
+	it != new_remote_node_listeners_.end();
+	it++)
+    {
+      (*it)(sender_node_id);
+    }
+
   }
 
   void receiveHandler( const ID& inbound_id, LinkBase * source_link, SharedBuffer buffer, std::size_t data_len )
@@ -196,9 +226,11 @@ private:
     // Switch on packet type
     switch(header.payload_type)
     {
+      case packet::Header::MSG_SUBSCRIBE:
+	DARC_INFO("MSG_SUBSCRIBE");
       case packet::Header::MSG_PACKET:
       {
-	packet_received_handlers_[packet::Header::MSG_PACKET]( buffer, data_len );
+	packet_received_handlers_[header.payload_type]( header, buffer, data_len );
 	break;
       }
       case packet::Header::DISCOVER_PACKET:

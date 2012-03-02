@@ -64,28 +64,24 @@ public:
 
   void startPrimitives()
   {
-    std::cout << "startPrimitives called in owner.h" << std::endl;
     all_list_.startAll();
     subcomponent_list_.startAll();
   }
 
   void stopPrimitives()
   {
-    std::cout << "stopPrimitives called in owner.h" << std::endl;
     all_list_.stopAll();
     subcomponent_list_.stopAll();
   }
 
   void pausePrimitives()
   {
-    std::cout << "pausePrimitives called in owner.h" << std::endl;
     all_list_.pauseAll();
     subcomponent_list_.pauseAll();
   }
 
   void unpausePrimitives()
   {
-    std::cout << "unpausePrimitives called in owner.h" << std::endl;
     all_list_.unpauseAll();
     subcomponent_list_.unpauseAll();
   }

@@ -60,16 +60,27 @@ private:
   typedef std::map<ID, boost::weak_ptr<Subscriber<T> > > SubscriberListType; // <-- weak_ptr! dont keep alive
   SubscriberListType subscriber_list_;
 
+  size_t publisher_count_;
+
 public:
   LocalDispatcher( const std::string& topic, IManagerCallback * manager_callback ) :
     topic_(topic),
-    manager_callback_( manager_callback )
+    manager_callback_( manager_callback ),
+    publisher_count_(0)
   {
+  }
+
+  ~LocalDispatcher()
+  {
+    // todo: check for outliving subscribers/publishers
   }
 
   void registerSubscriber( Subscriber<T> * sub )
   {
-    // todo: higher level remote subscribe
+    if( subscriber_list_.empty() )
+    {
+      manager_callback_->getRemoteDispatcher().registerSubscription(topic_);
+    }
     subscriber_list_[sub->getID()] = sub->getWeakPtr();
   }
 
@@ -77,6 +88,20 @@ public:
   {
     // todo: higher level remote subscribe
     subscriber_list_.erase(sub->getID());
+    if( subscriber_list_.empty() )
+    {
+      //manager_callback_->getRemoteDispatcher().unregisterSubscription(topic_):
+    }
+  }
+
+  void registerPublisher()
+  {
+    publisher_count_++;
+  }
+
+  void unregisterPublisher()
+  {
+    publisher_count_--;
   }
 
   // Called by the local publishers

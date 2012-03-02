@@ -37,11 +37,14 @@
 #define __DARC_PUBLISH_REMOTE_DISPATCH_HANDLER_H_INCLUDED__
 
 #include <map>
+#include <set>
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
 #include <darc/serialization.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/message.h>
+#include <darc/network/packet/message_subscribe.h>
+#include <darc/log.h>
 
 namespace darc
 {
@@ -61,13 +64,23 @@ private:
   typedef boost::function<void (network::packet::Header::PayloadType, const ID&, SharedBuffer, std::size_t )> SendToNodeFunctionType;
   SendToNodeFunctionType send_to_node_function_;
 
+  // Topics we subscribe to
+  typedef std::set<std::string> SubscribedTopicsType;
+  SubscribedTopicsType subscribed_topics_;
+
+  // Topics other subscribe to
+  typedef std::multimap<std::string, ID> RemoteSubscribersType;
+  typedef std::pair<RemoteSubscribersType::iterator, RemoteSubscribersType::iterator> RemoteSubscribersRangeType;
+  RemoteSubscribersType remote_subscribers_;
+
+
 public:
   RemoteDispatcher( boost::asio::io_service * io_service ) :
     io_service_( io_service )
   {
   }
 
-  void packetReceiveHandler( SharedBuffer buffer, std::size_t data_len )
+  void messageReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len )
   {
     // Parse Msg Packet
     network::packet::Message msg_packet;
@@ -78,9 +91,55 @@ public:
     local_dispatch_function_( msg_packet.topic, buffer );
   }
 
+  void subscriptionReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len )
+  {
+    // Parse Packet
+    network::packet::MessageSubscribe packet;
+    packet.read( buffer.data(), data_len );
+
+    DARC_INFO("-- Subscription for topic: %s %s", packet.topic.c_str(), header.sender_node_id.short_string().c_str());
+    remote_subscribers_.insert(RemoteSubscribersType::value_type(packet.topic, header.sender_node_id));
+  }
+
   void setLocalDispatchFunction( LocalDispatchFunctionType local_dispatch_function )
   {
     local_dispatch_function_ = local_dispatch_function;
+  }
+
+  void newRemoteNodeHandler(const ID& remote_node_id)
+  {
+    DARC_AUTOTRACE();
+    for(SubscribedTopicsType::iterator it = subscribed_topics_.begin();
+	it != subscribed_topics_.end();
+	it++)
+    {
+      sendSubscription(*it, remote_node_id);
+    }
+  }
+
+  void registerSubscription(const std::string& topic)
+  {
+    DARC_AUTOTRACE();
+
+    subscribed_topics_.insert(topic);
+    sendSubscription(topic, ID::null());
+  }
+
+  void sendSubscription(const std::string& topic, const ID& remote_node_id)
+  {
+    DARC_INFO("Sending subscription to %s for topic: %s", remote_node_id.short_string().c_str(), topic.c_str());
+
+    // Allocate buffer. todo: derive required size?
+    std::size_t data_len = 1024;
+    SharedBuffer buffer = SharedBuffer::create(data_len);
+
+    // Message Subscription Packet
+    network::packet::MessageSubscribe packet;
+    packet.topic = topic;
+    packet.write(buffer.data(), buffer.size());
+
+    assert( send_to_node_function_ );
+    send_to_node_function_( network::packet::Header::MSG_SUBSCRIBE, remote_node_id, buffer, data_len );
   }
 
   void setSendToNodeFunction( SendToNodeFunctionType send_to_node_function )
@@ -112,15 +171,23 @@ public:
     ros::serialization::serialize( ostream, *(msg.get()) );
 
     assert( send_to_node_function_ );
-    send_to_node_function_( network::packet::Header::MSG_PACKET, ID::null(), buffer, data_len );
+
+    // Find the subscribers
+    RemoteSubscribersRangeType subscribers = remote_subscribers_.equal_range(topic);
+    for(RemoteSubscribersType::iterator it = subscribers.first; it != subscribers.second; it++)
+    {
+      send_to_node_function_( network::packet::Header::MSG_PACKET, it->second, buffer, data_len );
+    }
   }
 
   // Called by LocalDispatcher
   template<typename T>
   void postRemoteDispatch( const std::string& topic, const boost::shared_ptr<const T> msg )
   {
-    // if( remote subscribers )
-    io_service_->post( boost::bind(&RemoteDispatcher::serializeAndDispatch<T>, this, topic, msg) );
+    if(remote_subscribers_.count(topic) != 0)
+    {
+      io_service_->post( boost::bind(&RemoteDispatcher::serializeAndDispatch<T>, this, topic, msg) );
+    }
   }
 
 };

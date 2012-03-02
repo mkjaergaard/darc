@@ -79,6 +79,20 @@ public:
     return 4;
   }
 
+  template<typename T>
+  static size_t readUint8(T& result, const uint8_t * data, size_t len)
+  {
+    result = (T)data[0];
+    return 1;
+  }
+
+  template<typename T>
+  static size_t writeUint8(const T& value, uint8_t * data, size_t len)
+  {
+    data[0] =  value;
+    return 1;
+  }
+
   static size_t readUint64(uint64_t& result, const uint8_t * data, size_t len)
   {
     result = ((uint64_t)data[0]) +
