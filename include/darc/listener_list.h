@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,62 +28,46 @@
  */
 
 /**
- * DARC Publisher class
+ * DARC Listener List class
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <boost/smart_ptr.hpp>
-#include <darc/node.h>
-#include <darc/primitive.h>
-#include <darc/pubsub/manager.h>
-#include <darc/enable_weak_from_static.h>
-#include <darc/owner.h>
+#include <vector>
+#include <boost/function.hpp>
 
 namespace darc
 {
-namespace pubsub
-{
 
 template<typename T>
-class Publisher : public darc::Primitive, public darc::EnableWeakFromStatic<Publisher<T> >
+class ListenerList
 {
-protected:
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
-  darc::Owner * owner_;
-  std::string topic_;
-
 public:
-  Publisher(darc::Owner* owner, const std::string& topic) :
-    owner_(owner),
-    topic_(topic)
+  typedef boost::function<T> CallbackType;
+
+protected:
+  typedef std::vector<CallbackType> ListType;
+  ListType list_;
+
+  void addListener(CallbackType callback)
   {
-    owner->addPrimitive(this->getWeakPtr());
+    list_.push_back(callback);
   }
 
-  void publish(boost::shared_ptr<const T> msg)
+  template<typename T1>
+  void notify(const T1& param1)
   {
-    if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
+    for(ListType::iterator it = list_.begin();
+	it != list_.end();
+	it++)
     {
-      ID someid = owner_->getComponentID();;
-      dispatcher_sp->dispatchMessage(msg, someid);
+      (*it)(param1);
     }
   }
 
-  void onStart()
-  {
-    dispatcher_ = owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_);
-    //todo: register
-  }
-
-  void onStop()
-  {
-    //todo: unregister
-  }
 
 };
 
-}
 }

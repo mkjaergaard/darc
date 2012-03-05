@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,17 +28,16 @@
  */
 
 /**
- * DARC Publisher class
+ * DARC Event Listener class
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <boost/smart_ptr.hpp>
-#include <darc/node.h>
+#include <boost/function.hpp>
+#include <boost/signals.hpp>
 #include <darc/primitive.h>
-#include <darc/pubsub/manager.h>
 #include <darc/enable_weak_from_static.h>
 #include <darc/owner.h>
 
@@ -47,41 +46,22 @@ namespace darc
 namespace pubsub
 {
 
-template<typename T>
-class Publisher : public darc::Primitive, public darc::EnableWeakFromStatic<Publisher<T> >
+class EventListener : public darc::Primitive, public darc::EnableWeakFromStatic<EventListener>
 {
+public:
+  typedef boost::function<void(const std::string, const std::string, size_t)> RemoteSubscriberChangesCallbackType;
+  RemoteSubscriberChangesCallbackType remote_subscriber_changes_callback_;
+
 protected:
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
   darc::Owner * owner_;
-  std::string topic_;
+  boost::signals::connection conn_;
 
 public:
-  Publisher(darc::Owner* owner, const std::string& topic) :
-    owner_(owner),
-    topic_(topic)
-  {
-    owner->addPrimitive(this->getWeakPtr());
-  }
+  EventListener(darc::Owner* owner);
 
-  void publish(boost::shared_ptr<const T> msg)
-  {
-    if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
-    {
-      ID someid = owner_->getComponentID();;
-      dispatcher_sp->dispatchMessage(msg, someid);
-    }
-  }
-
-  void onStart()
-  {
-    dispatcher_ = owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_);
-    //todo: register
-  }
-
-  void onStop()
-  {
-    //todo: unregister
-  }
+  void remoteSubscriberChangesListen(RemoteSubscriberChangesCallbackType callback);
+  void postRemoteSubscriberChanges(const std::string& topic, const std::string& type_name, size_t remote_subscribers);
+  void triggerRemoteSubscriberChanges(const std::string topic, const std::string& type_name, size_t remote_subscribers);
 
 };
 

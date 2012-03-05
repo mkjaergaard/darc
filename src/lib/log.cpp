@@ -63,13 +63,12 @@ void Log::report(Log::LevelType level, const char * msg, ...)
   if(level >= current_level_)
   {
     char buffer[512];
-    sprintf(buffer, "[%s %s] %s", level_names_[level], bt::to_simple_string(bt::microsec_clock::universal_time().time_of_day()).c_str(), msg );
+    sprintf(buffer, "[%s %s] %s\n", level_names_[level], bt::to_simple_string(bt::microsec_clock::universal_time().time_of_day()).c_str(), msg );
 
     va_list args;
     va_start(args, msg);
     vprintf(buffer, args);
     va_end(args);
-    std::cout << std::endl;
   }
 }
 

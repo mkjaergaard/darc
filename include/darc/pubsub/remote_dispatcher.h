@@ -40,6 +40,7 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
+#include <boost/signal.hpp>
 #include <darc/serialization.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/message.h>
@@ -54,6 +55,24 @@ namespace pubsub
 class RemoteDispatcher
 {
 private:
+  struct SubscribedTopicInfo
+  {
+    std::string topic;
+    std::string type_name;
+
+    bool operator<(const SubscribedTopicInfo& other) const
+    {
+      return topic < other.topic;
+    }
+
+    SubscribedTopicInfo(const std::string& topic, const std::string& type_name) :
+      topic(topic),
+      type_name(type_name)
+    {
+    }
+  };
+
+private:
   boost::asio::io_service * io_service_;
 
   // Function to dispatch locally
@@ -65,7 +84,7 @@ private:
   SendToNodeFunctionType send_to_node_function_;
 
   // Topics we subscribe to
-  typedef std::set<std::string> SubscribedTopicsType;
+  typedef std::set<SubscribedTopicInfo> SubscribedTopicsType;
   SubscribedTopicsType subscribed_topics_;
 
   // Topics other subscribe to
@@ -73,11 +92,18 @@ private:
   typedef std::pair<RemoteSubscribersType::iterator, RemoteSubscribersType::iterator> RemoteSubscribersRangeType;
   RemoteSubscribersType remote_subscribers_;
 
+  // Signals
+  boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_subscriber_change_;
 
 public:
   RemoteDispatcher( boost::asio::io_service * io_service ) :
     io_service_( io_service )
   {
+  }
+
+  boost::signal<void (const std::string&, const std::string&, size_t)>& remoteSubscriberChangeSignal()
+  {
+    return signal_remote_subscriber_change_;
   }
 
   void messageReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len )
@@ -97,8 +123,12 @@ public:
     network::packet::MessageSubscribe packet;
     packet.read( buffer.data(), data_len );
 
-    DARC_INFO("-- Subscription for topic: %s %s", packet.topic.c_str(), header.sender_node_id.short_string().c_str());
+    // Todo check the correct type
+    DARC_INFO("-- Subscription for topic: %s %s %s", packet.topic.c_str(), packet.type_name.c_str(), header.sender_node_id.short_string().c_str());
     remote_subscribers_.insert(RemoteSubscribersType::value_type(packet.topic, header.sender_node_id));
+
+    // Trigger Signal
+    signal_remote_subscriber_change_(packet.topic, packet.type_name, remote_subscribers_.count(packet.topic));
   }
 
   void setLocalDispatchFunction( LocalDispatchFunctionType local_dispatch_function )
@@ -108,24 +138,23 @@ public:
 
   void newRemoteNodeHandler(const ID& remote_node_id)
   {
-    DARC_AUTOTRACE();
     for(SubscribedTopicsType::iterator it = subscribed_topics_.begin();
 	it != subscribed_topics_.end();
 	it++)
     {
-      sendSubscription(*it, remote_node_id);
+      sendSubscription(it->topic, it->type_name, remote_node_id);
     }
   }
 
-  void registerSubscription(const std::string& topic)
+  void registerSubscription(const std::string& topic, const std::string& type_name)
   {
-    DARC_AUTOTRACE();
-
-    subscribed_topics_.insert(topic);
-    sendSubscription(topic, ID::null());
+    // check that type is correct
+    SubscribedTopicInfo item(topic, type_name);
+    subscribed_topics_.insert(item);
+    sendSubscription(topic, type_name, ID::null());
   }
 
-  void sendSubscription(const std::string& topic, const ID& remote_node_id)
+  void sendSubscription(const std::string& topic, const std::string& type_name, const ID& remote_node_id)
   {
     DARC_INFO("Sending subscription to %s for topic: %s", remote_node_id.short_string().c_str(), topic.c_str());
 
@@ -136,6 +165,7 @@ public:
     // Message Subscription Packet
     network::packet::MessageSubscribe packet;
     packet.topic = topic;
+    packet.type_name = type_name;
     packet.write(buffer.data(), buffer.size());
 
     assert( send_to_node_function_ );

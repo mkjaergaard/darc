@@ -49,6 +49,7 @@ namespace packet
 struct MessageSubscribe
 {
   std::string topic;
+  std::string type_name;
 
   typedef enum {
     SUBSCRIBE = 0x00,
@@ -60,20 +61,23 @@ struct MessageSubscribe
   {
   }
 
-  MessageSubscribe(const std::string& topic) :
-    topic(topic)
+  MessageSubscribe(const std::string& topic, const std::string& type_name) :
+    topic(topic),
+    type_name(type_name)
   {
   }
 
   size_t read( const uint8_t * data, size_t data_len )
   {
     size_t count = Parser::readString(topic, data, data_len);
+    count += Parser::readString(type_name, data + count, data_len - count);
     return count + Parser::readUint8(request, data + count, data_len - count);
   }
 
   size_t write( uint8_t * data, size_t size )
   {
     size_t count = Parser::writeString(topic.c_str(), data, size);
+    count += Parser::writeString(type_name.c_str(), data + count, size - count);
     return count + Parser::writeUint8(request, data + count, size - count);
   }
 

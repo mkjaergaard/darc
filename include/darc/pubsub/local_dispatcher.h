@@ -79,7 +79,7 @@ public:
   {
     if( subscriber_list_.empty() )
     {
-      manager_callback_->getRemoteDispatcher().registerSubscription(topic_);
+      manager_callback_->getRemoteDispatcher().registerSubscription(topic_, ros::message_traits::DataType<T>::value());
     }
     subscriber_list_[sub->getID()] = sub->getWeakPtr();
   }

@@ -45,6 +45,7 @@
 #include <darc/pubsub/i_manager_callback.h>
 #include <darc/pubsub/local_dispatcher.h>
 #include <darc/pubsub/remote_dispatcher.h>
+#include <darc/pubsub/event_listener.h>
 #include <darc/network/link_manager_fwd.h>
 
 namespace darc
@@ -57,6 +58,7 @@ class Manager : public IManagerCallback
 {
   typedef std::map<const std::string, LocalDispatcherAbstractPtr > LocalDispatcherListType;
   LocalDispatcherListType local_dispatcher_list_;
+
 
 public:
   // link stuff

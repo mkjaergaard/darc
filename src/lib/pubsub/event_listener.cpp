@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,62 +28,48 @@
  */
 
 /**
- * DARC Publisher class
+ * DARC Event Listener class
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
+#include <darc/pubsub/event_listener.h>
 
-#include <boost/smart_ptr.hpp>
 #include <darc/node.h>
-#include <darc/primitive.h>
 #include <darc/pubsub/manager.h>
-#include <darc/enable_weak_from_static.h>
-#include <darc/owner.h>
 
 namespace darc
 {
 namespace pubsub
 {
 
-template<typename T>
-class Publisher : public darc::Primitive, public darc::EnableWeakFromStatic<Publisher<T> >
+EventListener::EventListener(darc::Owner* owner) :
+  owner_(owner)
 {
-protected:
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
-  darc::Owner * owner_;
-  std::string topic_;
+  owner->addPrimitive(this->getWeakPtr());
+  conn_ = owner_->getNode()->getPublisherManager().getRemoteDispatcher().remoteSubscriberChangeSignal().
+    connect(boost::bind(&EventListener::postRemoteSubscriberChanges,
+			this, _1, _2, _3));
+}
 
-public:
-  Publisher(darc::Owner* owner, const std::string& topic) :
-    owner_(owner),
-    topic_(topic)
-  {
-    owner->addPrimitive(this->getWeakPtr());
-  }
+// ******************
+// SubscriberChanges
+// ******************
+void EventListener::remoteSubscriberChangesListen(RemoteSubscriberChangesCallbackType callback)
+{
+  remote_subscriber_changes_callback_ = callback;
+}
 
-  void publish(boost::shared_ptr<const T> msg)
-  {
-    if(boost::shared_ptr<LocalDispatcher<T> > dispatcher_sp = dispatcher_.lock())
-    {
-      ID someid = owner_->getComponentID();;
-      dispatcher_sp->dispatchMessage(msg, someid);
-    }
-  }
+void EventListener::postRemoteSubscriberChanges(const std::string& topic, const std::string& type_name, size_t remote_subscribers)
+{
+  owner_->getIOService()->post( boost::bind(&EventListener::triggerRemoteSubscriberChanges, this, topic, type_name, remote_subscribers) );
+}
 
-  void onStart()
-  {
-    dispatcher_ = owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_);
-    //todo: register
-  }
+void EventListener::triggerRemoteSubscriberChanges(const std::string topic, const std::string& type_name, size_t remote_subscribers)
+{
+  remote_subscriber_changes_callback_(topic, type_name, remote_subscribers);
+}
 
-  void onStop()
-  {
-    //todo: unregister
-  }
-
-};
 
 }
 }
