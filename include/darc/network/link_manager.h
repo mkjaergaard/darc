@@ -227,7 +227,7 @@ private:
     switch(header.payload_type)
     {
       case packet::Header::MSG_SUBSCRIBE:
-	DARC_INFO("MSG_SUBSCRIBE");
+      case packet::Header::MSG_PUBLISH_INFO:
       case packet::Header::MSG_PACKET:
       {
 	packet_received_handlers_[header.payload_type]( header, buffer, data_len );

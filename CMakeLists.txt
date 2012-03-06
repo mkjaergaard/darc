@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(darc)
 
+catkin_stack()
+
 SET(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_PREFIX_PATH /opt/ros/fuerte)
@@ -35,11 +37,10 @@ target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES})
 message(INFO {Boost_SYSTEM_LIBRARY_DEBUG})
 
 catkin_project(darc
-  VERSION 0.0.1
   INCLUDE_DIRS include
   LIBRARIES darc
   CFG_EXTRAS darc-macros.cmake)
 
 #add_subdirectory(src/pybindings)
 
-sphinx(${CMAKE_CURRENT_SOURCE_DIR}/doc ${CMAKE_CURRENT_BINARY_DIR}/doc)
+#sphinx(${CMAKE_CURRENT_SOURCE_DIR}/doc ${CMAKE_CURRENT_BINARY_DIR}/doc)

@@ -140,7 +140,6 @@ public:
     packet.read( buffer.data(), data_len );
 
     // Todo check the correct type
-    DARC_INFO("-- Subscription for topic: %s %s %s", packet.topic.c_str(), packet.type_name.c_str(), header.sender_node_id.short_string().c_str());
     remote_subscribers_.insert(RemoteSubscribersType::value_type(packet.topic, header.sender_node_id));
 
     // Trigger Signal
@@ -154,7 +153,6 @@ public:
     packet.read( buffer.data(), data_len );
 
     // Todo check the correct type
-    DARC_INFO("-- Publish Info for topic: %s %s %s", packet.topic.c_str(), packet.type_name.c_str(), header.sender_node_id.short_string().c_str());
     remote_publishers_.insert(RemoteSubscribersType::value_type(packet.topic, header.sender_node_id));
 
     // Trigger Signal

@@ -75,7 +75,7 @@ public:
   void onStart()
   {
     dispatcher_ = owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_);
-    //todo: register
+    dispatcher_.lock()->registerPublisher();
   }
 
   void onStop()

@@ -96,6 +96,10 @@ public:
 
   void registerPublisher()
   {
+    if(publisher_count_ == 0)
+    {
+      manager_callback_->getRemoteDispatcher().registerPublisher(topic_, ros::message_traits::DataType<T>::value());
+    }
     publisher_count_++;
   }
 

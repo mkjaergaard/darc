@@ -57,7 +57,8 @@ public:
 
 protected:
   darc::Owner * owner_;
-  boost::signals::connection conn_;
+  boost::signals::connection conn1_;
+  boost::signals::connection conn2_;
 
 public:
   EventListener(darc::Owner* owner);
