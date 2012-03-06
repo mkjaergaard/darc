@@ -37,3 +37,6 @@
 
 #include <darc/component.h>
 #include <darc/node.h>
+#include <darc/pubsub/publisher.h>
+#include <darc/pubsub/subscriber.h>
+#include <darc/timer/periodic_timer.h>
