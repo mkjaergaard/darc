@@ -45,6 +45,7 @@
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/message.h>
 #include <darc/network/packet/message_subscribe.h>
+#include <darc/network/packet/message_publish_info.h>
 #include <darc/log.h>
 
 namespace darc
@@ -87,13 +88,23 @@ private:
   typedef std::set<SubscribedTopicInfo> SubscribedTopicsType;
   SubscribedTopicsType subscribed_topics_;
 
+  // Topics we publish (todo: tmp hack, not really required by the msg system, should be handled differently)
+  typedef std::set<SubscribedTopicInfo> PublishedTopicsType;
+  PublishedTopicsType published_topics_;
+
   // Topics other subscribe to
   typedef std::multimap<std::string, ID> RemoteSubscribersType;
   typedef std::pair<RemoteSubscribersType::iterator, RemoteSubscribersType::iterator> RemoteSubscribersRangeType;
   RemoteSubscribersType remote_subscribers_;
 
+  // Topics other publishes to (todo: tmp hack, also handle differnetly)
+  typedef std::multimap<std::string, ID> RemotePublishersType;
+  typedef std::pair<RemotePublishersType::iterator, RemotePublishersType::iterator> RemotePublishersRangeType;
+  RemotePublishersType remote_publishers_;
+
   // Signals
   boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_subscriber_change_;
+  boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_publisher_change_;
 
 public:
   RemoteDispatcher( boost::asio::io_service * io_service ) :
@@ -104,6 +115,11 @@ public:
   boost::signal<void (const std::string&, const std::string&, size_t)>& remoteSubscriberChangeSignal()
   {
     return signal_remote_subscriber_change_;
+  }
+
+  boost::signal<void (const std::string&, const std::string&, size_t)>& remotePublisherChangeSignal()
+  {
+    return signal_remote_publisher_change_;
   }
 
   void messageReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len )
@@ -131,6 +147,20 @@ public:
     signal_remote_subscriber_change_(packet.topic, packet.type_name, remote_subscribers_.count(packet.topic));
   }
 
+  void publishInfoReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len )
+  {
+    // Parse Packet
+    network::packet::MessagePublishInfo packet;
+    packet.read( buffer.data(), data_len );
+
+    // Todo check the correct type
+    DARC_INFO("-- Publish Info for topic: %s %s %s", packet.topic.c_str(), packet.type_name.c_str(), header.sender_node_id.short_string().c_str());
+    remote_publishers_.insert(RemoteSubscribersType::value_type(packet.topic, header.sender_node_id));
+
+    // Trigger Signal
+    signal_remote_publisher_change_(packet.topic, packet.type_name, remote_publishers_.count(packet.topic));
+  }
+
   void setLocalDispatchFunction( LocalDispatchFunctionType local_dispatch_function )
   {
     local_dispatch_function_ = local_dispatch_function;
@@ -144,6 +174,12 @@ public:
     {
       sendSubscription(it->topic, it->type_name, remote_node_id);
     }
+    for(SubscribedTopicsType::iterator it = published_topics_.begin();
+	it != published_topics_.end();
+	it++)
+    {
+      sendPublish(it->topic, it->type_name, remote_node_id);
+    }
   }
 
   void registerSubscription(const std::string& topic, const std::string& type_name)
@@ -152,6 +188,14 @@ public:
     SubscribedTopicInfo item(topic, type_name);
     subscribed_topics_.insert(item);
     sendSubscription(topic, type_name, ID::null());
+  }
+
+  void registerPublisher(const std::string& topic, const std::string& type_name)
+  {
+    // check that type is correct
+    SubscribedTopicInfo item(topic, type_name);
+    published_topics_.insert(item);
+    sendPublish(topic, type_name, ID::null());
   }
 
   void sendSubscription(const std::string& topic, const std::string& type_name, const ID& remote_node_id)
@@ -170,6 +214,24 @@ public:
 
     assert( send_to_node_function_ );
     send_to_node_function_( network::packet::Header::MSG_SUBSCRIBE, remote_node_id, buffer, data_len );
+  }
+
+  void sendPublish(const std::string& topic, const std::string& type_name, const ID& remote_node_id)
+  {
+    DARC_INFO("Sending publish info to %s for topic: %s", remote_node_id.short_string().c_str(), topic.c_str());
+
+    // Allocate buffer. todo: derive required size?
+    std::size_t data_len = 1024;
+    SharedBuffer buffer = SharedBuffer::create(data_len);
+
+    // Message Subscription Packet
+    network::packet::MessagePublishInfo packet;
+    packet.topic = topic;
+    packet.type_name = type_name;
+    packet.write(buffer.data(), buffer.size());
+
+    assert( send_to_node_function_ );
+    send_to_node_function_( network::packet::Header::MSG_PUBLISH_INFO, remote_node_id, buffer, data_len );
   }
 
   void setSendToNodeFunction( SendToNodeFunctionType send_to_node_function )

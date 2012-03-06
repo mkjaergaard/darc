@@ -70,6 +70,23 @@ void EventListener::triggerRemoteSubscriberChanges(const std::string topic, cons
   remote_subscriber_changes_callback_(topic, type_name, remote_subscribers);
 }
 
+// ******************
+// PublisherChanges
+// ******************
+void EventListener::remotePublisherChangesListen(RemotePublisherChangesCallbackType callback)
+{
+  remote_publisher_changes_callback_ = callback;
+}
+
+void EventListener::postRemotePublisherChanges(const std::string& topic, const std::string& type_name, size_t remote_publishers)
+{
+  owner_->getIOService()->post( boost::bind(&EventListener::triggerRemotePublisherChanges, this, topic, type_name, remote_publishers) );
+}
+
+void EventListener::triggerRemotePublisherChanges(const std::string topic, const std::string& type_name, size_t remote_publishers)
+{
+  remote_subscriber_changes_callback_(topic, type_name, remote_publishers);
+}
 
 }
 }

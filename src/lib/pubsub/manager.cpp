@@ -59,6 +59,9 @@ Manager::Manager( boost::asio::io_service * io_service, network::LinkManager * n
   node_link_manager->registerPacketReceivedHandler( network::packet::Header::MSG_SUBSCRIBE,
 						    boost::bind( &RemoteDispatcher::subscriptionReceiveHandler,
 								 &remote_dispatcher_, _1, _2, _3 ) );
+  node_link_manager->registerPacketReceivedHandler( network::packet::Header::MSG_PUBLISH_INFO,
+						    boost::bind( &RemoteDispatcher::publishInfoReceiveHandler,
+								 &remote_dispatcher_, _1, _2, _3 ) );
   remote_dispatcher_.setSendToNodeFunction( boost::bind( &network::LinkManager::sendPacket,
 							 node_link_manager, _1, _2, _3, _4 ) );
   node_link_manager->addNewRemoteNodeListener(boost::bind(&RemoteDispatcher::newRemoteNodeHandler,

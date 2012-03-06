@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Prevas A/S
+ * Copyright (c) 2011, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,49 +28,63 @@
  */
 
 /**
- * DARC Event Listener class
+ * DARC Message class
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
+#ifndef __DARC_NETWORK_PACKET_MESSAGE_PUBLISH_INFO_H_INCLUDED__
+#define __DARC_NETWORK_PACKET_MESSAGE_PUBLISH_INFO_H_INCLUDED__
 
-#include <boost/function.hpp>
-#include <boost/signals.hpp>
-#include <darc/primitive.h>
-#include <darc/enable_weak_from_static.h>
-#include <darc/owner.h>
+#include <darc/network/packet/header.h>
+#include <darc/network/packet/parser.h>
 
 namespace darc
 {
-namespace pubsub
+namespace network
+{
+namespace packet
 {
 
-class EventListener : public darc::Primitive, public darc::EnableWeakFromStatic<EventListener>
+struct MessagePublishInfo
 {
-public:
-  typedef boost::function<void(const std::string, const std::string, size_t)> RemoteSubscriberChangesCallbackType;
-  RemoteSubscriberChangesCallbackType remote_subscriber_changes_callback_;
+  std::string topic;
+  std::string type_name;
 
-  typedef boost::function<void(const std::string, const std::string, size_t)> RemotePublisherChangesCallbackType;
-  RemotePublisherChangesCallbackType remote_publisher_changes_callback_;
+  typedef enum {
+    SUBSCRIBE = 0x00,
+    UNSUBSCRIBE = 0x01
+  } RequestType;
+  RequestType request;
 
-protected:
-  darc::Owner * owner_;
-  boost::signals::connection conn_;
+  MessagePublishInfo()
+  {
+  }
 
-public:
-  EventListener(darc::Owner* owner);
+  MessagePublishInfo(const std::string& topic, const std::string& type_name) :
+    topic(topic),
+    type_name(type_name)
+  {
+  }
 
-  void remoteSubscriberChangesListen(RemoteSubscriberChangesCallbackType callback);
-  void postRemoteSubscriberChanges(const std::string& topic, const std::string& type_name, size_t remote_subscribers);
-  void triggerRemoteSubscriberChanges(const std::string topic, const std::string& type_name, size_t remote_subscribers);
+  size_t read( const uint8_t * data, size_t data_len )
+  {
+    size_t count = Parser::readString(topic, data, data_len);
+    count += Parser::readString(type_name, data + count, data_len - count);
+    return count + Parser::readUint8(request, data + count, data_len - count);
+  }
 
-  void remotePublisherChangesListen(RemoteSubscriberChangesCallbackType callback);
-  void postRemotePublisherChanges(const std::string& topic, const std::string& type_name, size_t remote_publishers);
-  void triggerRemotePublisherChanges(const std::string topic, const std::string& type_name, size_t remote_publisher);
+  size_t write( uint8_t * data, size_t size )
+  {
+    size_t count = Parser::writeString(topic.c_str(), data, size);
+    count += Parser::writeString(type_name.c_str(), data + count, size - count);
+    return count + Parser::writeUint8(request, data + count, size - count);
+  }
 
 };
 
-}
-}
+} // namespace packet
+} // namespace network
+} // namespace darc
+
+#endif
