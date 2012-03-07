@@ -41,6 +41,7 @@
 #include <darc/primitive.h>
 #include <darc/enable_weak_from_static.h>
 #include <darc/procedure/local_dispatcher_fwd.h>
+#include <darc/procedure/id_types.h>
 
 namespace darc
 {
@@ -51,7 +52,7 @@ template<typename T_Arg, typename T_Result, typename T_Feedback>
 class Server : public darc::Primitive, public darc::EnableWeakFromStatic<Server<T_Arg, T_Result, T_Feedback> >
 {
 public:
-  typedef boost::function<void( boost::shared_ptr<T_Arg>& )> MethodType;
+  typedef boost::function<void(const CallID&, boost::shared_ptr<T_Arg>&)> MethodType;
 
 protected:
   boost::asio::io_service * io_service_;
@@ -72,9 +73,9 @@ public:
   }
 
   // Called by darc::procedure::Dispatcher
-  void postCall( boost::shared_ptr<T_Arg>& argument )
+  void postCall(const CallID& call_id, boost::shared_ptr<T_Arg>& argument)
   {
-    io_service_->post( boost::bind( &Server::call, this, argument) );
+    io_service_->post( boost::bind(&Server::call, this, call_id, argument) );
   }
 
   // Called by components
@@ -85,14 +86,14 @@ public:
 
   void onStart();
   void onStop();
-  void result( boost::shared_ptr<T_Result>& msg );
-  void feedback( boost::shared_ptr<T_Feedback>& msg );
+  void result(const CallID&, boost::shared_ptr<T_Result>& msg);
+  void feedback(const CallID&, boost::shared_ptr<T_Feedback>& msg);
 
 private:
-  void call( boost::shared_ptr<T_Arg> argument )
+  void call(const CallID& call_id,  boost::shared_ptr<T_Arg> argument)
   {
     assert(method_);
-    method_( argument );
+    method_(call_id,  argument);
   }
 
 };

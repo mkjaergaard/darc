@@ -40,6 +40,7 @@
 #include <boost/function.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <darc/procedure/id_types.h>
 #include <darc/procedure/local_dispatcher_fwd.h>
 #include <darc/owner.h>
 #include <darc/primitive.h>
@@ -54,8 +55,8 @@ template<typename T_Arg, typename T_Result, typename T_Feedback>
 class Client : public darc::Primitive, public::darc::EnableWeakFromStatic<Client<T_Arg, T_Result, T_Feedback> >
 {
 public:
-  typedef boost::function<void( boost::shared_ptr<T_Result>& )> ResultHandlerType;
-  typedef boost::function<void( boost::shared_ptr<T_Feedback>& )> FeedbackHandlerType;
+  typedef boost::function<void( const CallID&, boost::shared_ptr<T_Result>& )> ResultHandlerType;
+  typedef boost::function<void( const CallID&, boost::shared_ptr<T_Feedback>& )> FeedbackHandlerType;
 
 protected:
   boost::asio::io_service * io_service_;
@@ -78,36 +79,42 @@ public:
   }
 
   // Called by darc::procedure::LocalDispatcher
-  void postFeedback( boost::shared_ptr<T_Feedback>& msg )
+  void postFeedback(const CallID& call_id,  boost::shared_ptr<T_Feedback>& msg)
   {
-    io_service_->post( boost::bind( &Client::triggerFeedbackHandler, this, msg ) );
+    if(feedback_handler_)
+    {
+      io_service_->post( boost::bind( &Client::triggerFeedbackHandler, this, call_id, msg ) );
+    }
   }
 
   // Called by darc::procedure::LocalDispatcher
-  void postResult( boost::shared_ptr<T_Result>& msg )
+  void postResult(const CallID& call_id,  boost::shared_ptr<T_Result>& msg)
   {
-    io_service_->post( boost::bind( &Client::triggerResultHandler, this, msg ) );
+    if(result_handler_)
+    {
+      io_service_->post( boost::bind( &Client::triggerResultHandler, this, call_id, msg ) );
+    }
   }
 
-  void call( boost::shared_ptr<T_Arg>& argument );
+  const CallID& call( boost::shared_ptr<T_Arg>& argument );
 
 protected:
   void onStart();
   void onStop();
 
-  void triggerFeedbackHandler( boost::shared_ptr<T_Feedback> msg )
+  void triggerFeedbackHandler(const CallID call_id,  boost::shared_ptr<T_Feedback> msg)
   {
     if(feedback_handler_)
     {
-      feedback_handler_(msg);
+      feedback_handler_(call_id, msg);
     }
   }
 
-  void triggerResultHandler( boost::shared_ptr<T_Result> msg )
+  void triggerResultHandler(const CallID call_id,  boost::shared_ptr<T_Result> msg)
   {
     if(result_handler_)
     {
-      result_handler_(msg);
+      result_handler_(call_id, msg);
     }
   }
 

@@ -60,15 +60,15 @@ void Server<T_Arg, T_Result, T_Feedback>::onStop()
 }
 
 template<typename T_Arg, typename T_Result, typename T_Feedback>
-void Server<T_Arg, T_Result, T_Feedback>::result( boost::shared_ptr<T_Result>& msg )
+void Server<T_Arg, T_Result, T_Feedback>::result(const CallID& call_id, boost::shared_ptr<T_Result>& msg)
 {
-  dispatcher_.lock()->dispatchReturn(msg);
+  dispatcher_.lock()->returnResult(call_id, msg);
 }
 
 template<typename T_Arg, typename T_Result, typename T_Feedback>
-void Server<T_Arg, T_Result, T_Feedback>::feedback( boost::shared_ptr<T_Feedback>& msg )
+void Server<T_Arg, T_Result, T_Feedback>::feedback(const CallID& call_id, boost::shared_ptr<T_Feedback>& msg)
 {
-  dispatcher_.lock()->dispatchStatus(msg);
+  dispatcher_.lock()->returnFeedback(call_id, msg);
 }
 
 }

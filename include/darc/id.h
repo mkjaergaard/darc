@@ -53,4 +53,6 @@ public:
 
 };
 
+typedef ID NodeID;
+
 }

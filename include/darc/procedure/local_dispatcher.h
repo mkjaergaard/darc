@@ -36,6 +36,8 @@
 #pragma once
 
 #include <vector>
+#include <set>
+#include <map>
 #include <darc/procedure/client_decl.h>
 #include <darc/procedure/server_decl.h>
 #include <darc/procedure/local_dispatcher_abstract.h>
@@ -48,69 +50,124 @@ namespace procedure
 template<typename T_Arg, typename T_Result, typename T_Feedback>
 class LocalDispatcher : public LocalDispatcherAbstract
 {
-private:
+protected:
+  typedef Client<T_Arg, T_Result, T_Feedback> ClientType;
+  typedef Server<T_Arg, T_Result, T_Feedback> ServerType;
+  typedef std::map<ClientID, boost::weak_ptr<ClientType> > ClientListType;
+
+  typedef std::map<CallID, NodeID> ActiveServerCallsType;
+
+  typedef std::map<CallID, ClientID> ActiveClientCallsType;
+
+protected:
   std::string name_;
 
-  typedef std::map<ID, boost::weak_ptr<Client<T_Arg, T_Result, T_Feedback> > > ClientListType;
-
-  boost::weak_ptr<Server<T_Arg, T_Result, T_Feedback> > server_;
+  boost::weak_ptr<ServerType> server_;
   ClientListType client_list_;
 
+  // Structure to hold procedure calls we have received
+  ActiveServerCallsType active_server_calls_;
+
+  // Structure to hold procedure calls we have made
+  ActiveClientCallsType active_client_calls_;
+
 public:
-  void dispatchCall( boost::shared_ptr< T_Arg >& arg )
+  // Called by Clients
+  const CallID& performCall(const ClientID& client_id, boost::shared_ptr< T_Arg >& arg)
   {
-    dispatchCallLocally(arg);
+    // Check if server is available
+    if(server_.use_count() != 0)
+    {
+      // Create CallID
+      CallID call_id = CallID::create();
+      std::pair<ActiveClientCallsType::iterator, bool> element = active_client_calls_.insert(ActiveClientCallsType::value_type(call_id, client_id) );
+      // Call
+      dispatchCallLocally(call_id, CallID::null(), arg);
+      return element.first->first;
+    }
+    // else if( remote
+    else
+    {
+      return CallID::null();
+    }
   }
 
-  void dispatchFeedback( boost::shared_ptr< T_Feedback >& msg )
+  // Called by Servers
+  void returnFeedback(const CallID& call_id, boost::shared_ptr< T_Feedback >& msg)
   {
-    dispatchFeedbackLocally(msg);
+    // Todo: do this a bit more efficient so local calls are faster
+    ActiveServerCallsType::iterator server_call_entry = active_server_calls_.find(call_id);
+    if(server_call_entry != active_server_calls_.end())
+    {
+      if(server_call_entry->second == NodeID::null()) //local
+      {
+	dispatchFeedbackLocally(call_id, msg);
+      }
+    }
   }
 
-  void dispatchResult( boost::shared_ptr< T_Result >& msg )
+  // Called by Servers
+  void returnResult(const CallID& call_id,  boost::shared_ptr< T_Result >& msg)
   {
-    dispatchResultLocally(msg);
+    // Todo: do this a bit more efficient so local calls are faster
+    ActiveServerCallsType::iterator server_call_entry = active_server_calls_.find(call_id);
+    if(server_call_entry != active_server_calls_.end())
+    {
+      if(server_call_entry->second == NodeID::null()) //local
+      {
+	active_server_calls_.erase(server_call_entry);
+	dispatchResultLocally(call_id, msg);
+      }
+    }
   }
 
-  void registerClient( Client<T_Arg, T_Result, T_Feedback> * client )
+  // Called by Clients
+  void registerClient( ClientType * client )
   {
     client_list_[client->getID()] = client->getWeakPtr();
   }
 
-  void registerServer( Server<T_Arg, T_Result, T_Feedback> * server )
+  // Called by Servers
+  void registerServer( ServerType * server )
   {
     assert(server_.use_count() == 0);
     server_ = server->getWeakPtr();
   }
 
 private:
-  void dispatchCallLocally( boost::shared_ptr<T_Feedback>& arg )
+  void dispatchCallLocally(const CallID& call_id, const NodeID& calling_node, boost::shared_ptr<T_Feedback>& arg)
   {
-    if( server_.use_count() != 0 )
+    if(server_.use_count() != 0)
     {
-      server_.lock()->postCall(arg);
+      active_server_calls_.insert(ActiveServerCallsType::value_type(call_id, calling_node));
+      server_.lock()->postCall(call_id, arg);
     }
   }
 
-  void dispatchFeedbackLocally( boost::shared_ptr<T_Feedback>& msg )
+  void dispatchFeedbackLocally(const CallID& call_id,  boost::shared_ptr<T_Feedback>& msg)
   {
-    // todo: only dispatch to the actual caller
-    for( typename ClientListType::iterator it = client_list_.begin();
-	 it != client_list_.end();
-	 it++)
+    ActiveClientCallsType::iterator client_call_entry = active_client_calls_.find(call_id);
+    if(client_call_entry != active_client_calls_.end())
     {
-      it->second.lock()->postFeedback(msg);
+      typename ClientListType::iterator client_entry = client_list_.find(client_call_entry->second);
+      if(client_entry != client_list_.end())
+      {
+	client_entry->second.lock()->postFeedback(call_id, msg);
+      }
     }
   }
 
-  void dispatchResultLocally( boost::shared_ptr<T_Feedback>& msg )
+  void dispatchResultLocally(const CallID& call_id, boost::shared_ptr<T_Feedback>& msg)
   {
-    // todo: only dispatch to the actual caller
-    for( typename ClientListType::iterator it = client_list_.begin();
-	 it != client_list_.end();
-	 it++)
+    ActiveClientCallsType::iterator client_call_entry = active_client_calls_.find(call_id);
+    if(client_call_entry != active_client_calls_.end())
     {
-      it->second.lock()->postResult(msg);
+      typename ClientListType::iterator client_entry = client_list_.find(client_call_entry->second);
+      active_client_calls_.erase(client_call_entry);
+      if(client_entry != client_list_.end())
+      {
+	client_entry->second.lock()->postResult(call_id, msg);
+      }
     }
   }
 

@@ -28,41 +28,23 @@
  */
 
 /**
- * DARC Client class
+ * DARC Procedure CallID definition
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <darc/procedure/client_decl.h>
-#include <darc/procedure/manager.h>
-#include <darc/procedure/local_dispatcher.h>
+#include <darc/id.h>
 
 namespace darc
 {
 namespace procedure
 {
 
-template<typename T_Arg, typename T_Result, typename T_Feedback>
-void Client<T_Arg, T_Result, T_Feedback>::onStart()
-{
-  boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher = owner_->getNode()->getProcedureManager().getLocalDispatcher<T_Arg, T_Result, T_Feedback>(name_);
-  dispatcher->registerClient(this);
-  dispatcher_ = dispatcher;
-}
-
-template<typename T_Arg, typename T_Result, typename T_Feedback>
-void Client<T_Arg, T_Result, T_Feedback>::onStop()
-{
-  assert(false);
-}
-
-template<typename T_Arg, typename T_Result, typename T_Feedback>
-const CallID& Client<T_Arg, T_Result, T_Feedback>::call( boost::shared_ptr<T_Arg>& argument )
-{
-  return dispatcher_.lock()->performCall(getID(), argument);
-}
+typedef darc::ID CallID;
+typedef darc::ID ClientID;
+typedef darc::ID ServerID;
 
 }
 }
