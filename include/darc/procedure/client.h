@@ -44,22 +44,22 @@ namespace darc
 namespace procedure
 {
 
-template<typename T_Arg, typename T_Ret, typename T_Sta>
-void Client<T_Arg, T_Ret, T_Sta>::onStart()
+template<typename T_Arg, typename T_Result, typename T_Feedback>
+void Client<T_Arg, T_Result, T_Feedback>::onStart()
 {
-  boost::shared_ptr<LocalDispatcher<T_Arg, T_Ret, T_Sta> > dispatcher = owner_->getNode()->getProcedureManager().getLocalDispatcher<T_Arg, T_Ret, T_Sta>(name_);
+  boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher = owner_->getNode()->getProcedureManager().getLocalDispatcher<T_Arg, T_Result, T_Feedback>(name_);
   dispatcher->registerClient(this);
   dispatcher_ = dispatcher;
 }
 
-template<typename T_Arg, typename T_Ret, typename T_Sta>
-void Client<T_Arg, T_Ret, T_Sta>::onStop()
+template<typename T_Arg, typename T_Result, typename T_Feedback>
+void Client<T_Arg, T_Result, T_Feedback>::onStop()
 {
   assert(false);
 }
 
-template<typename T_Arg, typename T_Ret, typename T_Sta>
-void Client<T_Arg, T_Ret, T_Sta>::call( boost::shared_ptr<T_Arg>& argument )
+template<typename T_Arg, typename T_Result, typename T_Feedback>
+void Client<T_Arg, T_Result, T_Feedback>::call( boost::shared_ptr<T_Arg>& argument )
 {
   dispatcher_.lock()->dispatchCall(argument);
 }

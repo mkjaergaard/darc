@@ -45,18 +45,15 @@ namespace darc
 namespace procedure
 {
 
-template<typename T_Arg, typename T_Ret, typename T_Sta>
+template<typename T_Arg, typename T_Result, typename T_Feedback>
 class LocalDispatcher : public LocalDispatcherAbstract
 {
-protected:
-  typedef boost::shared_ptr< LocalDispatcher<T_Arg, T_Ret, T_Sta> > Ptr;
-
 private:
   std::string name_;
 
-  typedef std::map<ID, boost::weak_ptr<Client<T_Arg, T_Ret, T_Sta> > > ClientListType;
+  typedef std::map<ID, boost::weak_ptr<Client<T_Arg, T_Result, T_Feedback> > > ClientListType;
 
-  boost::weak_ptr<Server<T_Arg, T_Ret, T_Sta> > server_;
+  boost::weak_ptr<Server<T_Arg, T_Result, T_Feedback> > server_;
   ClientListType client_list_;
 
 public:
@@ -65,29 +62,29 @@ public:
     dispatchCallLocally(arg);
   }
 
-  void dispatchStatus( boost::shared_ptr< T_Sta >& msg )
+  void dispatchFeedback( boost::shared_ptr< T_Feedback >& msg )
   {
-    dispatchStatusLocally(msg);
+    dispatchFeedbackLocally(msg);
   }
 
-  void dispatchReturn( boost::shared_ptr< T_Ret >& msg )
+  void dispatchResult( boost::shared_ptr< T_Result >& msg )
   {
-    dispatchReturnLocally(msg);
+    dispatchResultLocally(msg);
   }
 
-  void registerClient( Client<T_Arg, T_Ret, T_Sta> * client )
+  void registerClient( Client<T_Arg, T_Result, T_Feedback> * client )
   {
     client_list_[client->getID()] = client->getWeakPtr();
   }
 
-  void registerServer( Server<T_Arg, T_Ret, T_Sta> * server )
+  void registerServer( Server<T_Arg, T_Result, T_Feedback> * server )
   {
     assert(server_.use_count() == 0);
     server_ = server->getWeakPtr();
   }
 
 private:
-  void dispatchCallLocally( boost::shared_ptr<T_Sta>& arg )
+  void dispatchCallLocally( boost::shared_ptr<T_Feedback>& arg )
   {
     if( server_.use_count() != 0 )
     {
@@ -95,25 +92,25 @@ private:
     }
   }
 
-  void dispatchStatusLocally( boost::shared_ptr<T_Sta>& msg )
+  void dispatchFeedbackLocally( boost::shared_ptr<T_Feedback>& msg )
   {
     // todo: only dispatch to the actual caller
     for( typename ClientListType::iterator it = client_list_.begin();
 	 it != client_list_.end();
 	 it++)
     {
-      it->second.lock()->postStatus(msg);
+      it->second.lock()->postFeedback(msg);
     }
   }
 
-  void dispatchReturnLocally( boost::shared_ptr<T_Sta>& msg )
+  void dispatchResultLocally( boost::shared_ptr<T_Feedback>& msg )
   {
     // todo: only dispatch to the actual caller
     for( typename ClientListType::iterator it = client_list_.begin();
 	 it != client_list_.end();
 	 it++)
     {
-      it->second.lock()->postReturn(msg);
+      it->second.lock()->postResult(msg);
     }
   }
 

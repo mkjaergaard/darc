@@ -55,13 +55,13 @@ private:
   DispatcherListType dispatcher_list_;
 
 public:
-  template<typename T_Arg, typename T_Ret, typename T_Sta>
-  boost::shared_ptr<LocalDispatcher<T_Arg, T_Ret, T_Sta> > getLocalDispatcher( const std::string& name )
+  template<typename T_Arg, typename T_Result, typename T_Feedback>
+  boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > getLocalDispatcher( const std::string& name )
   {
     DispatcherListType::iterator elem = dispatcher_list_.find(name);
     if( elem == dispatcher_list_.end() )
     {
-      boost::shared_ptr<LocalDispatcher<T_Arg, T_Ret, T_Sta> > dispatcher( new LocalDispatcher<T_Arg, T_Ret, T_Sta>() );
+      boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher( new LocalDispatcher<T_Arg, T_Result, T_Feedback>() );
       dispatcher_list_[ name ] = dispatcher;
       return dispatcher;
     }
@@ -69,7 +69,7 @@ public:
     {
       LocalDispatcherAbstract::Ptr &dispatcher_a = elem->second;
       // todo, try
-      boost::shared_ptr<LocalDispatcher<T_Arg, T_Ret, T_Sta> > dispatcher = boost::dynamic_pointer_cast<LocalDispatcher<T_Arg, T_Ret, T_Sta> >(dispatcher_a);
+      boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher = boost::dynamic_pointer_cast<LocalDispatcher<T_Arg, T_Result, T_Feedback> >(dispatcher_a);
       return dispatcher;
     }
   }

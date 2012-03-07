@@ -44,28 +44,29 @@ namespace darc
 namespace procedure
 {
 
-template<typename T_Arg, typename T_Ret, typename T_Sta>
-void Server<T_Arg, T_Ret, T_Sta>::onStart()
+template<typename T_Arg, typename T_Result, typename T_Feedback>
+void Server<T_Arg, T_Result, T_Feedback>::onStart()
 {
-  boost::shared_ptr<LocalDispatcher<T_Arg, T_Ret, T_Sta> > dispatcher = owner_->getNode()->getProcedureManager().getLocalDispatcher<T_Arg, T_Ret, T_Sta>(name_);
+  boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher =
+    owner_->getNode()->getProcedureManager().getLocalDispatcher<T_Arg, T_Result, T_Feedback>(name_);
   dispatcher->registerServer(this);
   dispatcher_ = dispatcher;
 }
 
-template<typename T_Arg, typename T_Ret, typename T_Sta>
-void Server<T_Arg, T_Ret, T_Sta>::onStop()
+template<typename T_Arg, typename T_Result, typename T_Feedback>
+void Server<T_Arg, T_Result, T_Feedback>::onStop()
 {
   assert(false);
 }
 
-template<typename T_Arg, typename T_Ret, typename T_Sta>
-void Server<T_Arg, T_Ret, T_Sta>::reply( boost::shared_ptr<T_Ret>& msg )
+template<typename T_Arg, typename T_Result, typename T_Feedback>
+void Server<T_Arg, T_Result, T_Feedback>::result( boost::shared_ptr<T_Result>& msg )
 {
   dispatcher_.lock()->dispatchReturn(msg);
 }
 
-template<typename T_Arg, typename T_Ret, typename T_Sta>
-void Server<T_Arg, T_Ret, T_Sta>::status( boost::shared_ptr<T_Ret>& msg )
+template<typename T_Arg, typename T_Result, typename T_Feedback>
+void Server<T_Arg, T_Result, T_Feedback>::feedback( boost::shared_ptr<T_Feedback>& msg )
 {
   dispatcher_.lock()->dispatchStatus(msg);
 }

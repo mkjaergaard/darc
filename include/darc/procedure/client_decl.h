@@ -50,63 +50,64 @@ namespace darc
 namespace procedure
 {
 
-template<typename T_Arg, typename T_Ret, typename T_Sta>
-class Client : public darc::Primitive, public::darc::EnableWeakFromStatic<Client<T_Arg, T_Ret, T_Sta> >
+template<typename T_Arg, typename T_Result, typename T_Feedback>
+class Client : public darc::Primitive, public::darc::EnableWeakFromStatic<Client<T_Arg, T_Result, T_Feedback> >
 {
 public:
-  typedef boost::function<void( boost::shared_ptr<T_Ret>& )> ReturnHandlerType;
-  typedef boost::function<void( boost::shared_ptr<T_Sta>& )> StatusHandlerType;
+  typedef boost::function<void( boost::shared_ptr<T_Result>& )> ResultHandlerType;
+  typedef boost::function<void( boost::shared_ptr<T_Feedback>& )> FeedbackHandlerType;
 
 protected:
   boost::asio::io_service * io_service_;
   darc::Owner * owner_;
   std::string name_;
-  ReturnHandlerType return_handler_;
-  StatusHandlerType status_handler_;
+  ResultHandlerType result_handler_;
+  FeedbackHandlerType feedback_handler_;
 
-  boost::weak_ptr<LocalDispatcher<T_Arg, T_Ret, T_Sta> > dispatcher_;
+  boost::weak_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher_;
 
 public:
-  Client(darc::Owner* owner, const std::string& name, ReturnHandlerType return_handler, StatusHandlerType status_handler ) :
+  Client(darc::Owner* owner, const std::string& name, ResultHandlerType result_handler, FeedbackHandlerType feedback_handler) :
     io_service_(owner->getIOService()),
     owner_(owner),
     name_(name),
-    return_handler_(return_handler),
-    status_handler_(status_handler)
+    result_handler_(result_handler),
+    feedback_handler_(feedback_handler)
   {
     owner->addPrimitive(this->getWeakPtr());
   }
 
   // Called by darc::procedure::LocalDispatcher
-  void postStatus( boost::shared_ptr<T_Sta>& msg )
+  void postFeedback( boost::shared_ptr<T_Feedback>& msg )
   {
-    io_service_->post( boost::bind( &Client::statusReceived, this, msg ) );
+    io_service_->post( boost::bind( &Client::triggerFeedbackHandler, this, msg ) );
   }
 
   // Called by darc::procedure::LocalDispatcher
-  void postReturn( boost::shared_ptr<T_Sta>& msg )
+  void postResult( boost::shared_ptr<T_Result>& msg )
   {
-    io_service_->post( boost::bind( &Client::returnReceived, this, msg ) );
+    io_service_->post( boost::bind( &Client::triggerResultHandler, this, msg ) );
   }
 
   void call( boost::shared_ptr<T_Arg>& argument );
+
+protected:
   void onStart();
   void onStop();
 
-protected:
-  void statusReceived( boost::shared_ptr<T_Sta> msg )
+  void triggerFeedbackHandler( boost::shared_ptr<T_Feedback> msg )
   {
-    if( status_handler_ )
+    if(feedback_handler_)
     {
-      status_handler_(msg);
+      feedback_handler_(msg);
     }
   }
 
-  void returnReceived( boost::shared_ptr<T_Ret> msg )
+  void triggerResultHandler( boost::shared_ptr<T_Result> msg )
   {
-    if( return_handler_ )
+    if(result_handler_)
     {
-      return_handler_(msg);
+      result_handler_(msg);
     }
   }
 

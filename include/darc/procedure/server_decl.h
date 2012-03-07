@@ -47,8 +47,8 @@ namespace darc
 namespace procedure
 {
 
-template<typename T_Arg, typename T_Ret, typename T_Sta>
-class Server : public darc::Primitive, public darc::EnableWeakFromStatic<Server<T_Arg, T_Ret, T_Sta> >
+template<typename T_Arg, typename T_Result, typename T_Feedback>
+class Server : public darc::Primitive, public darc::EnableWeakFromStatic<Server<T_Arg, T_Result, T_Feedback> >
 {
 public:
   typedef boost::function<void( boost::shared_ptr<T_Arg>& )> MethodType;
@@ -57,7 +57,7 @@ protected:
   boost::asio::io_service * io_service_;
   darc::Owner * owner_;
   std::string name_;
-  boost::weak_ptr<LocalDispatcher<T_Arg, T_Ret, T_Sta> > dispatcher_;
+  boost::weak_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher_;
 
   MethodType method_;
 
@@ -78,15 +78,15 @@ public:
   }
 
   // Called by components
-  void dispatchStatusMessage( boost::shared_ptr<T_Sta>& msg )
+  void dispatchStatusMessage( boost::shared_ptr<T_Feedback>& msg )
   {
     dispatchStatusMessageLocally(msg);
   }
 
   void onStart();
   void onStop();
-  void reply( boost::shared_ptr<T_Ret>& msg );
-  void status( boost::shared_ptr<T_Ret>& msg );
+  void result( boost::shared_ptr<T_Result>& msg );
+  void feedback( boost::shared_ptr<T_Feedback>& msg );
 
 private:
   void call( boost::shared_ptr<T_Arg> argument )
