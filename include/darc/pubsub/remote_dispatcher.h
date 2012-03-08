@@ -241,12 +241,17 @@ public:
   template<typename T>
   void serializeAndDispatch( const std::string topic, const boost::shared_ptr<const T> msg )
   {
-    // Allocate buffer. todo: derive required size from msg
-    std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBuffer::create(data_len);
-
     // Message Header
     network::packet::Message msg_header(topic);
+
+    // Allocate buffer
+    std::size_t data_len = ros::serialization::serializationLength(*msg)
+      + msg_header.size()
+      + 16/*MD5*/
+      + strlen(ros::message_traits::DataType<T>::value()) + 1;
+
+    SharedBuffer buffer = SharedBuffer::create(data_len);
+
     std::size_t pos = msg_header.write( buffer.data(), buffer.size() );
 
     // todo: Put common serialization stuff somewhere to reuse
