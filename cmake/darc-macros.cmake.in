@@ -16,7 +16,7 @@ function(darc_pybindings ARG_COMPONENT_NAME ARG_SOURCE_FILE)
       )
   endif()
 
-  add_library(${DARC_COMPONENT_NAME}-pybindings SHARED ${DARC_GEN_FILE})
+  add_library(${DARC_COMPONENT_NAME}-pybindings SHARED EXCLUDE_FROM_ALL ${DARC_GEN_FILE})
   target_link_libraries(${DARC_COMPONENT_NAME}-pybindings ${Boost_LIBRARIES} darc)
   set_target_properties(${DARC_COMPONENT_NAME}-pybindings
     PROPERTIES
@@ -25,5 +25,7 @@ function(darc_pybindings ARG_COMPONENT_NAME ARG_SOURCE_FILE)
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
     )
   set_source_files_properties(${DARC_GEN_FILE} OBJECT_DEPENDS ${DARC_SOURCE_FILE})
+
+  add_dependencies(pybindings ${DARC_COMPONENT_NAME}-pybindings)
 
 endfunction()

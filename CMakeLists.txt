@@ -34,13 +34,11 @@ add_library(darc SHARED
 )
 
 target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES})
-message(INFO {Boost_SYSTEM_LIBRARY_DEBUG})
 
 catkin_project(darc
   INCLUDE_DIRS include
   LIBRARIES darc
+  DEPENDS cpp_common roscpp_serialization roscpp_traits rostime
   CFG_EXTRAS darc-macros.cmake)
 
-#add_subdirectory(src/pybindings)
-
-#sphinx(${CMAKE_CURRENT_SOURCE_DIR}/doc ${CMAKE_CURRENT_BINARY_DIR}/doc)
+add_subdirectory(src/pybindings)
