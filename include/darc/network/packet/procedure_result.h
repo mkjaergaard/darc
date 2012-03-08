@@ -28,15 +28,15 @@
  */
 
 /**
- * DARC Message class
+ *
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PACKET_MESSAGE_H_INCLUDED__
-#define __DARC_PACKET_MESSAGE_H_INCLUDED__
+#pragma once
 
 #include <darc/network/packet/parser.h>
+#include <darc/id.h>
 
 namespace darc
 {
@@ -45,33 +45,27 @@ namespace network
 namespace packet
 {
 
-struct Message
+struct ProcedureResult
 {
-  std::string topic;
+  darc::ID call_id;
 
-  Message()
-  {
-  }
-
-  Message(const std::string& topic) :
-    topic(topic)
+  ProcedureResult()
   {
   }
 
   size_t read( const uint8_t * data, size_t data_len )
   {
-    // Topic
-    return Parser::readString(topic, data, data_len);
+    return Parser::readID(call_id, data + cnt, len - cnt);
   }
 
   size_t write( uint8_t * data, size_t size )
   {
-    return Parser::writeString(topic.c_str(), data, size);
+    return Parser::writeID(call_id, data, len);
   }
 
   size_t size()
   {
-    return topic.length() + 1;
+    return ID::static_size();
   }
 
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,14 +28,12 @@
  */
 
 /**
- * DARC Message class
+ * DARC Procedure Advertise Packet
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PACKET_MESSAGE_H_INCLUDED__
-#define __DARC_PACKET_MESSAGE_H_INCLUDED__
-
+#include <darc/network/packet/header.h>
 #include <darc/network/packet/parser.h>
 
 namespace darc
@@ -45,33 +43,34 @@ namespace network
 namespace packet
 {
 
-struct Message
+struct ProcedureAdvertise
 {
-  std::string topic;
+  std::string procedure_name;
+  darc::ID procedure_id;
+  std::string argument_type_name;
+  std::string feedback_type_name;
+  std::string result_type_name;
 
-  Message()
-  {
-  }
-
-  Message(const std::string& topic) :
-    topic(topic)
+  ProcedureAdvertise()
   {
   }
 
   size_t read( const uint8_t * data, size_t data_len )
   {
-    // Topic
-    return Parser::readString(topic, data, data_len);
+    size_t count = Parser::readString(procedure_name, data, data_len);
+    count += Parser::readString(argument_type_name, data + count, data_len - count);
+    count += Parser::readString(feedback_type_name, data + count, data_len - count);
+    count += Parser::readString(result_type_name, data + count, data_len - count);
+    return count
   }
 
   size_t write( uint8_t * data, size_t size )
   {
-    return Parser::writeString(topic.c_str(), data, size);
-  }
-
-  size_t size()
-  {
-    return topic.length() + 1;
+    size_t count = Parser::writeString(procedure_name, data, size);
+    count += Parser::writeString(procedure_name, data + count, size - count);
+    count += Parser::writeString(procedure_name, data + count, size - count);
+    count += Parser::writeString(procedure_name, data + count, size - count);
+    return count;
   }
 
 };
