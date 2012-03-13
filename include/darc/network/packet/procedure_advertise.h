@@ -33,6 +33,8 @@
  * \author Morten Kjaergaard
  */
 
+#pragma once
+
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/parser.h>
 
@@ -61,7 +63,7 @@ struct ProcedureAdvertise
     count += Parser::readString(argument_type_name, data + count, data_len - count);
     count += Parser::readString(feedback_type_name, data + count, data_len - count);
     count += Parser::readString(result_type_name, data + count, data_len - count);
-    return count
+    return count;
   }
 
   size_t write( uint8_t * data, size_t size )
@@ -79,4 +81,3 @@ struct ProcedureAdvertise
 } // namespace network
 } // namespace darc
 
-#endif

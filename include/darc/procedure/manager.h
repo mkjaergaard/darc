@@ -39,6 +39,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 #include <darc/procedure/local_dispatcher.h>
+#include <darc/procedure/remote_dispatcher.h>
 
 namespace darc
 {
@@ -54,7 +55,12 @@ private:
   typedef std::map< const std::string, LocalDispatcherAbstract::Ptr > DispatcherListType;
   DispatcherListType dispatcher_list_;
 
+  RemoteDispatcher remote_dispatcher_;
+
 public:
+  Manager(boost::asio::io_service * io_service, network::LinkManager * link_manager);
+  void remoteCallReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg);
+
   template<typename T_Arg, typename T_Result, typename T_Feedback>
   boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > getLocalDispatcher( const std::string& name )
   {

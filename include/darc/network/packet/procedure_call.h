@@ -56,14 +56,14 @@ struct ProcedureCall
 
   size_t read( const uint8_t * data, size_t data_len )
   {
-    size_t cnt = Parser::readID(procedure_id, data, len);
-    return cnt + Parser::readID(call_id, data + cnt, len - cnt);
+    size_t cnt = Parser::readID(procedure_id, data, data_len);
+    return cnt + Parser::readID(call_id, data + cnt, data_len - cnt);
   }
 
   size_t write( uint8_t * data, size_t size )
   {
-    size_t cnt = Parser::writeID(procedure_id, data, len);
-    return cnt = Parser::writeID(call_id, data, len);
+    size_t cnt = Parser::writeID(procedure_id, data, size);
+    return cnt = Parser::writeID(call_id, data + cnt, size - cnt);
   }
 
   size_t size()
@@ -76,5 +76,3 @@ struct ProcedureCall
 } // namespace packet
 } // namespace network
 } // namespace darc
-
-#endif

@@ -55,12 +55,12 @@ struct ProcedureResult
 
   size_t read( const uint8_t * data, size_t data_len )
   {
-    return Parser::readID(call_id, data + cnt, len - cnt);
+    return Parser::readID(call_id, data, data_len);
   }
 
   size_t write( uint8_t * data, size_t size )
   {
-    return Parser::writeID(call_id, data, len);
+    return Parser::writeID(call_id, data, size);
   }
 
   size_t size()
@@ -74,4 +74,3 @@ struct ProcedureResult
 } // namespace network
 } // namespace darc
 
-#endif

@@ -78,7 +78,8 @@ public:
   NodeImpl() :
     node_id_(ID::create()),
     node_link_manager_(&io_service_, node_id_),
-    publish_manager_(&io_service_, &node_link_manager_)
+    publish_manager_(&io_service_, &node_link_manager_),
+    procedure_manager_(&io_service_, &node_link_manager_)
   {
     DARC_INFO("Created node with ID: %s", node_id_.short_string().c_str() );
   }

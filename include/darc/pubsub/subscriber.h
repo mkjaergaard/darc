@@ -65,7 +65,6 @@ template<typename T>
 void Subscriber<T>::onStop()
 {
   owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_)->unregisterSubscriber(this);
-
 }
 
 }

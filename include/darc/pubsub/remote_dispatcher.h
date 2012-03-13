@@ -42,6 +42,7 @@
 #include <boost/asio.hpp>
 #include <boost/signal.hpp>
 #include <darc/serialization.h>
+#include <darc/procedure/manager.h> //cpp
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/message.h>
 #include <darc/network/packet/message_subscribe.h>

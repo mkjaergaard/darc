@@ -44,7 +44,7 @@ namespace procedure
 
 typedef darc::ID CallID;
 typedef darc::ID ClientID;
-typedef darc::ID ServerID;
+typedef darc::ID ProcedureID;
 
 }
 }
