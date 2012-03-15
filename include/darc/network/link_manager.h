@@ -229,7 +229,12 @@ private:
       case packet::Header::MSG_SUBSCRIBE:
       case packet::Header::MSG_PUBLISH_INFO:
       case packet::Header::MSG_PACKET:
+      case packet::Header::PROCEDURE_ADVERTISE:
+      case packet::Header::PROCEDURE_CALL:
+      case packet::Header::PROCEDURE_FEEDBACK:
+      case packet::Header::PROCEDURE_RESULT:
       {
+	// todo: verify we have a listener
 	packet_received_handlers_[header.payload_type]( header, buffer, data_len );
 	break;
       }

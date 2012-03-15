@@ -28,56 +28,52 @@
  */
 
 /**
- * DARC SharedBuffer class
+ *
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_SHARED_BUFFER_H_INCLUDED__
-#define __DARC_SHARED_BUFFER_H_INCLUDED__
+#pragma once
 
-#include <stdint.h>
-#include <boost/shared_array.hpp>
+#include <darc/network/packet/parser.h>
+#include <darc/id.h>
 
-class SharedBuffer : private boost::shared_array<uint8_t>
+namespace darc
 {
-private:
-  size_t size_;
-  size_t start_offset_;
+namespace network
+{
+namespace packet
+{
 
-  SharedBuffer( size_t size ) :
-    boost::shared_array<uint8_t>( new uint8_t[size] ),
-    size_(size),
-    start_offset_(0)
+struct ProcedureFeedback
+{
+  darc::ID procedure_id;
+  darc::ID call_id;
+
+  ProcedureFeedback()
   {
   }
 
-public:
-  uint8_t * data() const
+  size_t read( const uint8_t * data, size_t data_len )
   {
-    return boost::shared_array<uint8_t>::get() + start_offset_;
+    size_t cnt = Parser::readID(procedure_id, data, data_len);
+    return cnt + Parser::readID(call_id, data + cnt, data_len - cnt);
   }
 
-  size_t size() const
+  size_t write( uint8_t * data, size_t size )
   {
-    return size_ - start_offset_;
+    size_t cnt = Parser::writeID(procedure_id, data, size);
+    return cnt + Parser::writeID(call_id, data + cnt, size - cnt);
   }
 
-  void addOffset(size_t offset)
+  size_t size()
   {
-    start_offset_ += offset;
-  }
-
-  void resetOffset()
-  {
-    start_offset_ = 0;
-  }
-
-  static SharedBuffer create( size_t size )
-  {
-    return SharedBuffer( size );
+    return ID::static_size()*2;
   }
 
 };
 
-#endif
+} // namespace packet
+} // namespace network
+} // namespace darc
+

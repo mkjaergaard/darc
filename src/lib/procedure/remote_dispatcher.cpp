@@ -53,25 +53,21 @@ RemoteDispatcher::RemoteDispatcher(boost::asio::io_service * io_service, Manager
   manager_(manager),
   network_link_manager_(network_link_manager)
 {
-  network_link_manager->registerPacketReceivedHandler( network::packet::Header::PROCEDURE_CALL,
-						       boost::bind( &RemoteDispatcher::callReceiveHandler,
-								    this, _1, _2, _3 ) );
   network_link_manager->registerPacketReceivedHandler( network::packet::Header::PROCEDURE_ADVERTISE,
 						       boost::bind( &RemoteDispatcher::advertiseReceiveHandler,
 								    this, _1, _2, _3 ) );
-  //    link_manager->addNewRemoteNodeListener(boost::bind(&RemoteDispatcher::newRemoteNodeHandler,
-  //						       this, _1));
+  network_link_manager->registerPacketReceivedHandler( network::packet::Header::PROCEDURE_CALL,
+						       boost::bind( &RemoteDispatcher::callReceiveHandler,
+								    this, _1, _2, _3 ) );
+  network_link_manager->registerPacketReceivedHandler( network::packet::Header::PROCEDURE_FEEDBACK,
+						       boost::bind( &RemoteDispatcher::feedbackReceiveHandler,
+								    this, _1, _2, _3 ) );
+  network_link_manager->registerPacketReceivedHandler( network::packet::Header::PROCEDURE_RESULT,
+						       boost::bind( &RemoteDispatcher::resultReceiveHandler,
+								    this, _1, _2, _3 ) );
+  network_link_manager->addNewRemoteNodeListener(boost::bind(&RemoteDispatcher::newRemoteNodeHandler,
+							     this, _1));
 }
-
-void RemoteDispatcher::callReceiveHandler(const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len)
-{
-  network::packet::ProcedureCall packet;
-  size_t packet_size = packet.read(buffer.data(), data_len);
-  buffer.addOffset(packet_size);
-
-  //    local_dispatch_call_function_(packet.procedure_id, packet.call_id, buffer);
-}
-
 void RemoteDispatcher::advertiseReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len )
 {
   network::packet::ProcedureAdvertise packet;
@@ -83,31 +79,69 @@ void RemoteDispatcher::advertiseReceiveHandler( const network::packet::Header& h
   info.feedback_type_name = packet.feedback_type_name;
   info.result_type_name = packet.result_type_name;
 
+  DARC_INFO("Received advertisement for procedure %s (%s)", info.procedure_name.c_str(), info.procedure_id.short_string().c_str());
+
   RemoteAdvertisedProcedureInfo remote_info(header.sender_node_id, info);
 
   remote_procedures_.insert(RemoteAdvertisedProceduresType::value_type(packet.procedure_name, remote_info));
+
+  //  manager_->signalRemoteProcedureAdvertised(packet.procedure_name, packet.procedure_id);
 
   // Trigger Signal
   //    signal_remote_subscriber_change_(packet.topic, packet.type_name, remote_subscribers_.count(packet.topic));
 }
 
-/*
-  void newRemoteNodeHandler(const ID& remote_node_id)
+void RemoteDispatcher::callReceiveHandler(const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len)
+{
+  network::packet::ProcedureCall packet;
+  buffer.addOffset( packet.read(buffer.data(), data_len) );
+
+  manager_->remoteCallReceived(packet.procedure_id, header.sender_node_id, packet.call_id, buffer);
+}
+
+void RemoteDispatcher::feedbackReceiveHandler(const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len)
+{
+  network::packet::ProcedureFeedback packet;
+  buffer.addOffset( packet.read(buffer.data(), data_len) );
+
+  RemoteActiveClientCallsType::iterator item = remote_active_client_calls_.find(packet.call_id);
+  if(item != remote_active_client_calls_.end())
   {
-  for(SubscribedTopicsType::iterator it = subscribed_topics_.begin();
-  it != subscribed_topics_.end();
-  it++)
+    manager_->remoteFeedbackReceived(item->second /*local procedure_id*/, packet.call_id, buffer);
+  }
+  else
   {
-  sendSubscription(it->topic, it->type_name, remote_node_id);
+    DARC_WARNING("Received feedback for unknown call_id %s", packet.call_id.short_string().c_str());
   }
-  for(SubscribedTopicsType::iterator it = published_topics_.begin();
-  it != published_topics_.end();
-  it++)
+}
+
+void RemoteDispatcher::resultReceiveHandler(const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len)
+{
+  network::packet::ProcedureFeedback packet;
+  buffer.addOffset( packet.read(buffer.data(), data_len) );
+
+  RemoteActiveClientCallsType::iterator item = remote_active_client_calls_.find(packet.call_id);
+  if(item != remote_active_client_calls_.end())
   {
-  sendPublish(it->topic, it->type_name, remote_node_id);
+    remote_active_client_calls_.erase(item);
+    manager_->remoteResultReceived(item->second /*local procedure_id*/, packet.call_id, buffer);
   }
+  else
+  {
+    DARC_WARNING("Received result for unknown call_id %s", packet.call_id.short_string().c_str());
   }
-*/
+}
+
+void RemoteDispatcher::newRemoteNodeHandler(const ID& remote_node_id)
+{
+  for(AdvertisedProceduresType::iterator it = advertised_procedures_.begin();
+      it != advertised_procedures_.end();
+      it++)
+  {
+    sendAdvertisement(it->second, remote_node_id);
+  }
+}
+
 void RemoteDispatcher::registerProcedure(const std::string& procedure_name,
 					 const ID& procedure_id,
 					 const std::string& argument_type_name,
@@ -119,13 +153,16 @@ void RemoteDispatcher::registerProcedure(const std::string& procedure_name,
   item.argument_type_name = argument_type_name;
   item.feedback_type_name = feedback_type_name;
   item.result_type_name = result_type_name;
-  advertised_procedures_.insert(item);
-  //sendSubscription(topic, type_name, ID::null());
+  advertised_procedures_.insert(AdvertisedProceduresType::value_type(procedure_id, item));
+  sendAdvertisement(item, ID::null());
 }
 
 void RemoteDispatcher::sendAdvertisement(const AdvertisedProcedureInfo& info, const ID& remote_node_id)
 {
-  DARC_INFO("Sending advertisement to %s for procedure: %s", remote_node_id.short_string().c_str(), info.procedure_name.c_str());
+  DARC_INFO("Sending advertisement to %s for procedure: %s (%s)",
+	    remote_node_id.short_string().c_str(),
+	    info.procedure_name.c_str(),
+	    info.procedure_id.short_string().c_str());
 
   // Allocate buffer. todo: derive required size?
   std::size_t data_len = 1024;
@@ -143,55 +180,10 @@ void RemoteDispatcher::sendAdvertisement(const AdvertisedProcedureInfo& info, co
   network_link_manager_->sendPacket(network::packet::Header::PROCEDURE_ADVERTISE, remote_node_id, buffer, data_len);
 }
 
-/*
-// Triggered by asio post
-template<typename T>
-void serializeAndDispatch( const std::string topic, const boost::shared_ptr<const T> msg )
+void RemoteDispatcher::sendPacket(network::packet::Header::PayloadType type, const ID& recv_node_id, SharedBuffer buffer, std::size_t data_len)
 {
-// Message Header
-network::packet::Message msg_header(topic);
-
-// Allocate buffer
-std::size_t data_len = ros::serialization::serializationLength(*msg)
-+ msg_header.size()
-+ 16 // MD5
-+ strlen(ros::message_traits::DataType<T>::value()) + 1;
-
-SharedBuffer buffer = SharedBuffer::create(data_len);
-
-std::size_t pos = msg_header.write( buffer.data(), buffer.size() );
-
-// todo: Put common serialization stuff somewhere to reuse
-// Write Type Info
-pos += network::packet::Parser::writeString( ros::message_traits::DataType<T>::value(), buffer.data() + pos, buffer.size() - pos );
-// MD5
-pos += network::packet::Parser::writeUint64( ros::message_traits::MD5Sum<T>::static_value1, buffer.data() + pos, buffer.size() - pos );
-pos += network::packet::Parser::writeUint64( ros::message_traits::MD5Sum<T>::static_value2, buffer.data() + pos, buffer.size() - pos );
-
-// Serialize actual message
-ros::serialization::OStream ostream( buffer.data() + pos, buffer.size() - pos );
-ros::serialization::serialize( ostream, *(msg.get()) );
-
-assert( send_to_node_function_ );
-
-// Find the subscribers
-RemoteSubscribersRangeType subscribers = remote_subscribers_.equal_range(topic);
-for(RemoteSubscribersType::iterator it = subscribers.first; it != subscribers.second; it++)
-{
-send_to_node_function_( network::packet::Header::MSG_PACKET, it->second, buffer, data_len );
+  network_link_manager_->sendPacket(type, recv_node_id, buffer, data_len);
 }
-}
-
-// Called by LocalDispatcher
-template<typename T>
-void postRemoteDispatch( const std::string& topic, const boost::shared_ptr<const T> msg )
-{
-if(remote_subscribers_.count(topic) != 0)
-{
-io_service_->post( boost::bind(&RemoteDispatcher::serializeAndDispatch<T>, this, topic, msg) );
-}
-}
-*/
 
 }
 }

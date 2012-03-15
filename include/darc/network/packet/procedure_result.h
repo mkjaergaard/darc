@@ -47,6 +47,7 @@ namespace packet
 
 struct ProcedureResult
 {
+  darc::ID procedure_id;
   darc::ID call_id;
 
   ProcedureResult()
@@ -55,17 +56,19 @@ struct ProcedureResult
 
   size_t read( const uint8_t * data, size_t data_len )
   {
-    return Parser::readID(call_id, data, data_len);
+    size_t cnt = Parser::readID(procedure_id, data, data_len);
+    return cnt + Parser::readID(call_id, data + cnt, data_len - cnt);
   }
 
   size_t write( uint8_t * data, size_t size )
   {
-    return Parser::writeID(call_id, data, size);
+    size_t cnt = Parser::writeID(procedure_id, data, size);
+    return cnt + Parser::writeID(call_id, data + cnt, size - cnt);
   }
 
   size_t size()
   {
-    return ID::static_size();
+    return ID::static_size()*2;
   }
 
 };

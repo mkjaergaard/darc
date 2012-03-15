@@ -44,6 +44,7 @@
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/procedure_call.h>
 #include <darc/network/packet/procedure_advertise.h>
+#include <darc/network/packet/procedure_feedback.h>
 #include <darc/network/packet/procedure_result.h>
 #include <darc/procedure/id_types.h>
 #include <darc/log.h>
@@ -93,7 +94,7 @@ private:
   network::LinkManager * network_link_manager_;
 
   // Procedures we advertise
-  typedef std::set<AdvertisedProcedureInfo> AdvertisedProceduresType;
+  typedef std::map<ProcedureID, AdvertisedProcedureInfo> AdvertisedProceduresType;
   AdvertisedProceduresType advertised_procedures_;
 
   // Procedures other nodes advertises
@@ -101,9 +102,15 @@ private:
   //  typedef std::pair<RemotePublishersType::iterator, RemotePublishersType::iterator> RemotePublishersRangeType;
   RemoteAdvertisedProceduresType remote_procedures_;
 
+  typedef std::map<CallID, ProcedureID> RemoteActiveClientCallsType;
+  RemoteActiveClientCallsType remote_active_client_calls_;
+
   // Signals
   //boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_subscriber_change_;
   //boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_publisher_change_;
+
+private:
+  void newRemoteNodeHandler(const ID& remote_node_id);
 
 public:
   RemoteDispatcher(boost::asio::io_service * io_service, Manager* manager, network::LinkManager * network_link_manager);
@@ -121,6 +128,8 @@ public:
   */
 
   void callReceiveHandler(const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len);
+  void feedbackReceiveHandler(const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len);
+  void resultReceiveHandler(const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len);
   void advertiseReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len );
 
   void registerProcedure(const std::string& procedure_name,
@@ -129,17 +138,135 @@ public:
 			 const std::string& feedback_type_name,
 			 const std::string& result_type_name);
   void sendAdvertisement(const AdvertisedProcedureInfo& info, const ID& remote_node_id);
-  /*
-  // Called by LocalDispatcher
-  template<typename T>
-  void postRemoteDispatch( const std::string& topic, const boost::shared_ptr<const T> msg )
+
+  bool hasRemoteServer(const std::string& procedure_name)
   {
-    if(remote_subscribers_.count(topic) != 0)
+    return (remote_procedures_.find(procedure_name) != remote_procedures_.end());
+  }
+
+  // Called by LocalDispatcher
+  template<typename T_Arg>
+  void postRemoteCall(const ProcedureID& local_procedure_id, /* fix this chaos */
+		      const std::string& procedure_name,
+		      const CallID& call_id,
+		      const boost::shared_ptr<const T_Arg>& arg)
+  {
+    RemoteAdvertisedProceduresType::iterator item = remote_procedures_.find(procedure_name);
+    if(item != remote_procedures_.end())
     {
-      io_service_->post( boost::bind(&RemoteDispatcher::serializeAndDispatch<T>, this, topic, msg) );
+      // Remeber who made the call
+      remote_active_client_calls_.insert(RemoteActiveClientCallsType::value_type(call_id, local_procedure_id));
+
+      io_service_->post(boost::bind(&RemoteDispatcher::serializeAndDispatchCall<T_Arg>,
+				    this,
+				    item->second.second.procedure_id,
+				    call_id,
+				    item->second.first, //Remote Node_ID
+				    arg));
     }
   }
-  */
+
+  template<typename T_Feedback>
+  void postRemoteFeedback(const ProcedureID& procedure_id,
+			  const CallID& call_id,
+			  const NodeID& remote_node_id,
+			  const boost::shared_ptr<const T_Feedback>& msg)
+  {
+    io_service_->post(boost::bind(&RemoteDispatcher::serializeAndDispatchFeedback<T_Feedback>,
+				  this,
+				  procedure_id,
+				  call_id,
+				  remote_node_id,
+				  msg));
+  }
+
+  template<typename T_Result>
+  void postRemoteResult(const ProcedureID& procedure_id,
+			const CallID& call_id,
+			const NodeID& remote_node_id,
+			const boost::shared_ptr<const T_Result>& msg)
+  {
+    io_service_->post(boost::bind(&RemoteDispatcher::serializeAndDispatchResult<T_Result>,
+				  this,
+				  procedure_id,
+				  call_id,
+				  remote_node_id,
+				  msg));
+  }
+
+private:
+  void sendPacket(network::packet::Header::PayloadType type, const ID& recv_node_id, SharedBuffer buffer, std::size_t data_len);
+
+  template<typename T_Arg>
+  void serializeAndDispatchCall(const ProcedureID procedure_id,
+				const CallID call_id,
+				const NodeID remote_node,
+				const boost::shared_ptr<const T_Arg> arg)
+  {
+    // Procedure Call Packet
+    network::packet::ProcedureCall call_packet;
+    call_packet.procedure_id = procedure_id;
+    call_packet.call_id = call_id;
+
+    std::size_t data_len = call_packet.size() + Serialization::size(arg);
+    SharedBuffer buffer = SharedBuffer::create(data_len);
+
+    buffer.addOffset( call_packet.write(buffer.data(), buffer.size()) );
+    Serialization::serialize<T_Arg>(buffer, arg);
+
+    buffer.resetOffset();
+    sendPacket(network::packet::Header::PROCEDURE_CALL,
+	       remote_node,
+	       buffer,
+	       data_len);
+  }
+
+  template<typename T_Feedback>
+  void serializeAndDispatchFeedback(const ProcedureID procedure_id,
+				    const CallID call_id,
+				    const NodeID remote_node,
+				    const boost::shared_ptr<const T_Feedback> msg)
+  {
+    network::packet::ProcedureFeedback feedback_packet;
+    feedback_packet.procedure_id = procedure_id;
+    feedback_packet.call_id = call_id;
+
+    std::size_t data_len = feedback_packet.size() + Serialization::size(msg);
+    SharedBuffer buffer = SharedBuffer::create(data_len);
+
+    buffer.addOffset( feedback_packet.write(buffer.data(), buffer.size()) );
+    Serialization::serialize<T_Feedback>(buffer, msg);
+
+    buffer.resetOffset();
+    sendPacket(network::packet::Header::PROCEDURE_FEEDBACK,
+	       remote_node,
+	       buffer,
+	       data_len);
+  }
+
+  template<typename T_Result>
+  void serializeAndDispatchResult(const ProcedureID procedure_id,
+				    const CallID call_id,
+				    const NodeID remote_node,
+				    const boost::shared_ptr<const T_Result> msg)
+  {
+    network::packet::ProcedureResult packet;
+    packet.procedure_id = procedure_id;
+    packet.call_id = call_id;
+
+    std::size_t data_len = packet.size() + Serialization::size(msg);
+    SharedBuffer buffer = SharedBuffer::create(data_len);
+
+    buffer.addOffset( packet.write(buffer.data(), buffer.size()) );
+    Serialization::serialize<T_Result>(buffer, msg);
+
+    buffer.resetOffset();
+    sendPacket(network::packet::Header::PROCEDURE_RESULT,
+	       remote_node,
+	       buffer,
+	       data_len);
+  }
+
 };
 
 typedef boost::shared_ptr<RemoteDispatcher> RemoteDispatcherPtr;

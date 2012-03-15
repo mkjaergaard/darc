@@ -52,9 +52,43 @@ Manager::Manager(boost::asio::io_service * io_service, network::LinkManager * li
 {
 }
 
-void Manager::remoteCallReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg)
+void Manager::remoteCallReceived(const ProcedureID& procedure_id, const NodeID& remote_node_id, const CallID& call_id, SharedBuffer msg_s)
 {
-  
+  DispatcherListType::iterator elem = dispatcher_list_.find(procedure_id);
+  if( elem != dispatcher_list_.end() )
+  {
+    elem->second->remoteCallReceived(msg_s, remote_node_id, call_id);
+  }
+  else
+  {
+    DARC_WARNING("Received Call for unknown procedure (%s)", procedure_id.short_string().c_str());
+  }
+}
+
+void Manager::remoteFeedbackReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg_s)
+{
+  DispatcherListType::iterator elem = dispatcher_list_.find(procedure_id);
+  if( elem != dispatcher_list_.end() )
+  {
+    elem->second->remoteFeedbackReceived(msg_s, call_id);
+  }
+  else
+  {
+    DARC_WARNING("Received Feedback for unknown procedure (%s)", procedure_id.short_string().c_str());
+  }
+}
+
+void Manager::remoteResultReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg_s)
+{
+  DispatcherListType::iterator elem = dispatcher_list_.find(procedure_id);
+  if( elem != dispatcher_list_.end() )
+  {
+    elem->second->remoteResultReceived(msg_s, call_id);
+  }
+  else
+  {
+    DARC_WARNING("Received Result for unknown procedure (%s)", procedure_id.short_string().c_str());
+  }
 }
 
 }

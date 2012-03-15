@@ -52,31 +52,47 @@ public:
   typedef boost::shared_ptr<Manager> Ptr;
 
 private:
-  typedef std::map< const std::string, LocalDispatcherAbstract::Ptr > DispatcherListType;
+  typedef std::map<const std::string, ProcedureID> ProcedureIDListType;
+  ProcedureIDListType procedure_id_list_;
+
+  typedef std::map<ProcedureID, LocalDispatcherAbstract::Ptr> DispatcherListType;
   DispatcherListType dispatcher_list_;
 
   RemoteDispatcher remote_dispatcher_;
 
 public:
   Manager(boost::asio::io_service * io_service, network::LinkManager * link_manager);
-  void remoteCallReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg);
+  void remoteCallReceived(const ProcedureID& procedure_id, const NodeID& remote_node_id, const CallID& call_id, SharedBuffer msg);
+  void remoteFeedbackReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg);
+  void remoteResultReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg);
 
   template<typename T_Arg, typename T_Result, typename T_Feedback>
-  boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > getLocalDispatcher( const std::string& name )
+  boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > getLocalDispatcher(const std::string& name)
   {
-    DispatcherListType::iterator elem = dispatcher_list_.find(name);
-    if( elem == dispatcher_list_.end() )
+    ProcedureIDListType::iterator elem = procedure_id_list_.find(name);
+    if( elem == procedure_id_list_.end() )
     {
-      boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher( new LocalDispatcher<T_Arg, T_Result, T_Feedback>() );
-      dispatcher_list_[ name ] = dispatcher;
+      boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> >
+	dispatcher(new LocalDispatcher<T_Arg, T_Result, T_Feedback>(name, &remote_dispatcher_));
+      procedure_id_list_[name] = dispatcher->getProcedureID();
+      dispatcher_list_[dispatcher->getProcedureID()] = dispatcher;
       return dispatcher;
     }
     else
     {
-      LocalDispatcherAbstract::Ptr &dispatcher_a = elem->second;
-      // todo, try
-      boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher = boost::dynamic_pointer_cast<LocalDispatcher<T_Arg, T_Result, T_Feedback> >(dispatcher_a);
-      return dispatcher;
+      DispatcherListType::iterator dispatcher_elem = dispatcher_list_.find(elem->second);
+      if(dispatcher_elem != dispatcher_list_.end())
+      {
+	LocalDispatcherAbstract::Ptr &dispatcher_a = dispatcher_elem->second;
+	// todo, try
+	boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher =
+	  boost::dynamic_pointer_cast<LocalDispatcher<T_Arg, T_Result, T_Feedback> >(dispatcher_a);
+	return dispatcher;
+      }
+      else
+      {
+	DARC_FATAL("This is not right");
+      }
     }
   }
 

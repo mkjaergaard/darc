@@ -63,7 +63,7 @@ struct ProcedureCall
   size_t write( uint8_t * data, size_t size )
   {
     size_t cnt = Parser::writeID(procedure_id, data, size);
-    return cnt = Parser::writeID(call_id, data + cnt, size - cnt);
+    return cnt + Parser::writeID(call_id, data + cnt, size - cnt);
   }
 
   size_t size()

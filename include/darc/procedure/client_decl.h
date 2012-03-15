@@ -55,8 +55,8 @@ template<typename T_Arg, typename T_Result, typename T_Feedback>
 class Client : public darc::Primitive, public::darc::EnableWeakFromStatic<Client<T_Arg, T_Result, T_Feedback> >
 {
 public:
-  typedef boost::function<void( const CallID&, boost::shared_ptr<T_Result>& )> ResultHandlerType;
-  typedef boost::function<void( const CallID&, boost::shared_ptr<T_Feedback>& )> FeedbackHandlerType;
+  typedef boost::function<void( const CallID&, const boost::shared_ptr<const T_Result>& )> ResultHandlerType;
+  typedef boost::function<void( const CallID&, const boost::shared_ptr<const T_Feedback>& )> FeedbackHandlerType;
 
 protected:
   boost::asio::io_service * io_service_;
@@ -79,7 +79,7 @@ public:
   }
 
   // Called by darc::procedure::LocalDispatcher
-  void postFeedback(const CallID& call_id,  boost::shared_ptr<T_Feedback>& msg)
+  void postFeedback(const CallID& call_id, const boost::shared_ptr<const T_Feedback>& msg)
   {
     if(feedback_handler_)
     {
@@ -88,7 +88,7 @@ public:
   }
 
   // Called by darc::procedure::LocalDispatcher
-  void postResult(const CallID& call_id,  boost::shared_ptr<T_Result>& msg)
+  void postResult(const CallID& call_id, const boost::shared_ptr<const T_Result>& msg)
   {
     if(result_handler_)
     {
@@ -102,7 +102,7 @@ protected:
   void onStart();
   void onStop();
 
-  void triggerFeedbackHandler(const CallID call_id,  boost::shared_ptr<T_Feedback> msg)
+  void triggerFeedbackHandler(const CallID call_id, const boost::shared_ptr<const T_Feedback> msg)
   {
     if(feedback_handler_)
     {
@@ -110,7 +110,7 @@ protected:
     }
   }
 
-  void triggerResultHandler(const CallID call_id,  boost::shared_ptr<T_Result> msg)
+  void triggerResultHandler(const CallID call_id, const boost::shared_ptr<const T_Result> msg)
   {
     if(result_handler_)
     {

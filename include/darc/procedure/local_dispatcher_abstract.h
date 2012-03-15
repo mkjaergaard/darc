@@ -37,6 +37,7 @@
 #define __DARC_PROCEDURE_LOCAL_DISPATCHER_ABSTRACT_INCLUDED_H__
 
 #include <boost/shared_ptr.hpp>
+#include <darc/shared_buffer.h>
 
 namespace darc
 {
@@ -51,6 +52,10 @@ public:
   virtual ~LocalDispatcherAbstract()
   {
   }
+
+  virtual void remoteCallReceived(SharedBuffer msg_s, const NodeID& remote_node_id, const CallID& call_id) = 0;
+  virtual void remoteFeedbackReceived(SharedBuffer msg_s, const CallID& call_id) = 0;
+  virtual void remoteResultReceived(SharedBuffer msg_s, const CallID& call_id) = 0;
 
 };
 

@@ -79,6 +79,27 @@ public:
     return msg;
   }
 
+  template<typename T>
+  static void serialize(SharedBuffer buffer, boost::shared_ptr<const T> msg)
+  {
+    // Write Type Info
+    buffer.addOffset( network::packet::Parser::writeString(ros::message_traits::DataType<T>::value(), buffer.data(), buffer.size()) );
+    // MD5
+    buffer.addOffset( network::packet::Parser::writeUint64(ros::message_traits::MD5Sum<T>::static_value1, buffer.data(), buffer.size()) );
+    buffer.addOffset( network::packet::Parser::writeUint64(ros::message_traits::MD5Sum<T>::static_value2, buffer.data(), buffer.size()) );
+
+    // Serialize actual message
+    ros::serialization::OStream ostream( buffer.data(), buffer.size() );
+    ros::serialization::serialize( ostream, *(msg.get()) );
+  }
+
+  template<typename T>
+  static std::size_t size(boost::shared_ptr<const T> msg)
+  {
+    return ros::serialization::serializationLength(*msg) +
+      + 16/*MD5*/
+      + strlen(ros::message_traits::DataType<T>::value()) + 1; // +1 is the null-term
+  }
 };
 
 }

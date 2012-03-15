@@ -60,6 +60,7 @@ struct ProcedureAdvertise
   size_t read( const uint8_t * data, size_t data_len )
   {
     size_t count = Parser::readString(procedure_name, data, data_len);
+    count += Parser::readID(procedure_id, data + count, data_len - count);
     count += Parser::readString(argument_type_name, data + count, data_len - count);
     count += Parser::readString(feedback_type_name, data + count, data_len - count);
     count += Parser::readString(result_type_name, data + count, data_len - count);
@@ -69,9 +70,10 @@ struct ProcedureAdvertise
   size_t write( uint8_t * data, size_t size )
   {
     size_t count = Parser::writeString(procedure_name, data, size);
-    count += Parser::writeString(procedure_name, data + count, size - count);
-    count += Parser::writeString(procedure_name, data + count, size - count);
-    count += Parser::writeString(procedure_name, data + count, size - count);
+    count += Parser::writeID(procedure_id, data + count, size - count);
+    count += Parser::writeString(argument_type_name, data + count, size - count);
+    count += Parser::writeString(feedback_type_name, data + count, size - count);
+    count += Parser::writeString(result_type_name, data + count, size - count);
     return count;
   }
 
