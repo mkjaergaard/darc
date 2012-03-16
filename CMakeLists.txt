@@ -27,6 +27,7 @@ add_library(darc SHARED
   src/lib/subcomponent_list.cpp
   src/lib/network/udp/protocol_manager.cpp
   src/lib/pubsub/manager.cpp
+  src/lib/pubsub/remote_dispatcher.cpp
   src/lib/pubsub/event_listener.cpp
   src/lib/procedure/manager.cpp
   src/lib/procedure/remote_dispatcher.cpp

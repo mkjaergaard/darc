@@ -41,8 +41,10 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
 #include <boost/signal.hpp>
+#include <boost/bind.hpp>
 #include <darc/serialization.h>
-#include <darc/procedure/manager.h> //cpp
+//#include <darc/pubsub/manager_fwd.h>
+#include <darc/network/link_manager_fwd.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/message.h>
 #include <darc/network/packet/message_subscribe.h>
@@ -53,6 +55,8 @@ namespace darc
 {
 namespace pubsub
 {
+
+class Manager;
 
 class RemoteDispatcher
 {
@@ -76,14 +80,8 @@ private:
 
 private:
   boost::asio::io_service * io_service_;
-
-  // Function to dispatch locally
-  typedef boost::function<void (const std::string& topic, SharedBuffer)> LocalDispatchFunctionType;
-  LocalDispatchFunctionType local_dispatch_function_;
-
-  // Function to send to remote node
-  typedef boost::function<void (network::packet::Header::PayloadType, const ID&, SharedBuffer, std::size_t )> SendToNodeFunctionType;
-  SendToNodeFunctionType send_to_node_function_;
+  Manager * manager_;
+  network::LinkManager * network_link_manager_;
 
   // Topics we subscribe to
   typedef std::set<SubscribedTopicInfo> SubscribedTopicsType;
@@ -107,11 +105,11 @@ private:
   boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_subscriber_change_;
   boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_publisher_change_;
 
+private:
+  void sendPacket(network::packet::Header::PayloadType type, const ID& recv_node_id, SharedBuffer buffer, std::size_t data_len);
+
 public:
-  RemoteDispatcher( boost::asio::io_service * io_service ) :
-    io_service_( io_service )
-  {
-  }
+  RemoteDispatcher(boost::asio::io_service * io_service, Manager * manager, network::LinkManager * network_link_manager);
 
   boost::signal<void (const std::string&, const std::string&, size_t)>& remoteSubscriberChangeSignal()
   {
@@ -123,120 +121,17 @@ public:
     return signal_remote_publisher_change_;
   }
 
-  void messageReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len )
-  {
-    // Parse Msg Packet
-    network::packet::Message msg_packet;
-    size_t msg_header_size = msg_packet.read( buffer.data(), data_len );
-    buffer.addOffset( msg_header_size );
+  void messageReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len );
+  void subscriptionReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len );
+  void publishInfoReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len );
 
-    // Dispatch to local subscribers
-    local_dispatch_function_( msg_packet.topic, buffer );
-  }
+  void newRemoteNodeHandler(const ID& remote_node_id);
 
-  void subscriptionReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len )
-  {
-    // Parse Packet
-    network::packet::MessageSubscribe packet;
-    packet.read( buffer.data(), data_len );
+  void registerSubscription(const std::string& topic, const std::string& type_name);
+  void registerPublisher(const std::string& topic, const std::string& type_name);
 
-    // Todo check the correct type
-    remote_subscribers_.insert(RemoteSubscribersType::value_type(packet.topic, header.sender_node_id));
-
-    // Trigger Signal
-    signal_remote_subscriber_change_(packet.topic, packet.type_name, remote_subscribers_.count(packet.topic));
-  }
-
-  void publishInfoReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len )
-  {
-    // Parse Packet
-    network::packet::MessagePublishInfo packet;
-    packet.read( buffer.data(), data_len );
-
-    // Todo check the correct type
-    remote_publishers_.insert(RemoteSubscribersType::value_type(packet.topic, header.sender_node_id));
-
-    // Trigger Signal
-    signal_remote_publisher_change_(packet.topic, packet.type_name, remote_publishers_.count(packet.topic));
-  }
-
-  void setLocalDispatchFunction( LocalDispatchFunctionType local_dispatch_function )
-  {
-    local_dispatch_function_ = local_dispatch_function;
-  }
-
-  void newRemoteNodeHandler(const ID& remote_node_id)
-  {
-    for(SubscribedTopicsType::iterator it = subscribed_topics_.begin();
-	it != subscribed_topics_.end();
-	it++)
-    {
-      sendSubscription(it->topic, it->type_name, remote_node_id);
-    }
-    for(SubscribedTopicsType::iterator it = published_topics_.begin();
-	it != published_topics_.end();
-	it++)
-    {
-      sendPublish(it->topic, it->type_name, remote_node_id);
-    }
-  }
-
-  void registerSubscription(const std::string& topic, const std::string& type_name)
-  {
-    // check that type is correct
-    SubscribedTopicInfo item(topic, type_name);
-    subscribed_topics_.insert(item);
-    sendSubscription(topic, type_name, ID::null());
-  }
-
-  void registerPublisher(const std::string& topic, const std::string& type_name)
-  {
-    // check that type is correct
-    SubscribedTopicInfo item(topic, type_name);
-    published_topics_.insert(item);
-    sendPublish(topic, type_name, ID::null());
-  }
-
-  void sendSubscription(const std::string& topic, const std::string& type_name, const ID& remote_node_id)
-  {
-    DARC_INFO("Sending subscription to %s for topic: %s", remote_node_id.short_string().c_str(), topic.c_str());
-
-    // Allocate buffer. todo: derive required size?
-    std::size_t data_len = 1024;
-    SharedBuffer buffer = SharedBuffer::create(data_len);
-
-    // Message Subscription Packet
-    network::packet::MessageSubscribe packet;
-    packet.topic = topic;
-    packet.type_name = type_name;
-    packet.write(buffer.data(), buffer.size());
-
-    assert( send_to_node_function_ );
-    send_to_node_function_( network::packet::Header::MSG_SUBSCRIBE, remote_node_id, buffer, data_len );
-  }
-
-  void sendPublish(const std::string& topic, const std::string& type_name, const ID& remote_node_id)
-  {
-    DARC_INFO("Sending publish info to %s for topic: %s", remote_node_id.short_string().c_str(), topic.c_str());
-
-    // Allocate buffer. todo: derive required size?
-    std::size_t data_len = 1024;
-    SharedBuffer buffer = SharedBuffer::create(data_len);
-
-    // Message Subscription Packet
-    network::packet::MessagePublishInfo packet;
-    packet.topic = topic;
-    packet.type_name = type_name;
-    packet.write(buffer.data(), buffer.size());
-
-    assert( send_to_node_function_ );
-    send_to_node_function_( network::packet::Header::MSG_PUBLISH_INFO, remote_node_id, buffer, data_len );
-  }
-
-  void setSendToNodeFunction( SendToNodeFunctionType send_to_node_function )
-  {
-    send_to_node_function_ = send_to_node_function;
-  }
+  void sendSubscription(const std::string& topic, const std::string& type_name, const ID& remote_node_id);
+  void sendPublish(const std::string& topic, const std::string& type_name, const ID& remote_node_id);
 
   // Triggered by asio post
   template<typename T>
@@ -266,13 +161,11 @@ public:
     ros::serialization::OStream ostream( buffer.data() + pos, buffer.size() - pos );
     ros::serialization::serialize( ostream, *(msg.get()) );
 
-    assert( send_to_node_function_ );
-
     // Find the subscribers
     RemoteSubscribersRangeType subscribers = remote_subscribers_.equal_range(topic);
     for(RemoteSubscribersType::iterator it = subscribers.first; it != subscribers.second; it++)
     {
-      send_to_node_function_( network::packet::Header::MSG_PACKET, it->second, buffer, data_len );
+      sendPacket( network::packet::Header::MSG_PACKET, it->second, buffer, data_len );
     }
   }
 

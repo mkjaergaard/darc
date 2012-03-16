@@ -40,10 +40,10 @@
 #include <boost/smart_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <darc/id.h>
-#include <darc/pubsub/local_dispatcher_abstract.h>
 #include <darc/pubsub/subscriber_decl.h>
+#include <darc/pubsub/local_dispatcher_abstract.h>
 #include <darc/pubsub/remote_dispatcher.h>
-#include <darc/pubsub/i_manager_callback.h>
+#include <darc/pubsub/manager_decl.h>
 
 namespace darc
 {
@@ -55,17 +55,17 @@ class LocalDispatcher : public LocalDispatcherAbstract
 {
 private:
   std::string topic_;
-  IManagerCallback * manager_callback_;
+  Manager * manager_;
 
-  typedef std::map<ID, boost::weak_ptr<Subscriber<T> > > SubscriberListType; // <-- weak_ptr! dont keep alive
+  typedef std::map<ID, boost::weak_ptr<Subscriber<T> > > SubscriberListType;
   SubscriberListType subscriber_list_;
 
   size_t publisher_count_;
 
 public:
-  LocalDispatcher( const std::string& topic, IManagerCallback * manager_callback ) :
+  LocalDispatcher(const std::string& topic, Manager * manager) :
     topic_(topic),
-    manager_callback_( manager_callback ),
+    manager_(manager),
     publisher_count_(0)
   {
   }
@@ -79,7 +79,7 @@ public:
   {
     if( subscriber_list_.empty() )
     {
-      manager_callback_->getRemoteDispatcher().registerSubscription(topic_, ros::message_traits::DataType<T>::value());
+      manager_->getRemoteDispatcher().registerSubscription(topic_, ros::message_traits::DataType<T>::value());
     }
     subscriber_list_[sub->getID()] = sub->getWeakPtr();
   }
@@ -98,7 +98,7 @@ public:
   {
     if(publisher_count_ == 0)
     {
-      manager_callback_->getRemoteDispatcher().registerPublisher(topic_, ros::message_traits::DataType<T>::value());
+      manager_->getRemoteDispatcher().registerPublisher(topic_, ros::message_traits::DataType<T>::value());
     }
     publisher_count_++;
   }
@@ -115,7 +115,7 @@ public:
     info.sender_component_id = sender_component_id;
     dispatchMessageLocally(msg, info);
     // if remote subscribers
-    manager_callback_->getRemoteDispatcher().postRemoteDispatch<T>(topic_, msg);
+    manager_->getRemoteDispatcher().postRemoteDispatch<T>(topic_, msg);
   }
 
   void dispatchMessageLocally( boost::shared_ptr<const T> msg, CallbackInfo info )

@@ -28,7 +28,7 @@
  */
 
 /**
- * DARC LocalDispatcherManager class
+ * DARC LocalDispatcherManager
  *
  * \author Morten Kjaergaard
  */
@@ -36,71 +36,32 @@
 #ifndef __DARC_PUBLISH_MANAGER_H_INCLUDED__
 #define __DARC_PUBLISH_MANAGER_H_INCLUDED__
 
-#include <vector>
-#include <iostream>
-#include <boost/thread.hpp>
-#include <boost/asio.hpp>
-#include <boost/shared_ptr.hpp>
-#include <darc/pubsub/fwd.h>
-#include <darc/pubsub/i_manager_callback.h>
+#include <darc/pubsub/manager_decl.h>
 #include <darc/pubsub/local_dispatcher.h>
-#include <darc/pubsub/remote_dispatcher.h>
-#include <darc/pubsub/event_listener.h>
-#include <darc/network/link_manager_fwd.h>
 
 namespace darc
 {
-
 namespace pubsub
 {
 
-class Manager : public IManagerCallback
+template<typename T>
+boost::shared_ptr<LocalDispatcher<T> > Manager::getLocalDispatcher(const std::string& topic)
 {
-  typedef std::map<const std::string, LocalDispatcherAbstractPtr > LocalDispatcherListType;
-  LocalDispatcherListType local_dispatcher_list_;
-
-
-public:
-  // link stuff
-  boost::asio::io_service * io_service_;
-  RemoteDispatcher remote_dispatcher_;
-
-public:
-  Manager( boost::asio::io_service * io_service, network::LinkManager * node_link_manager );
-  void receiveFromRemoteNode( const std::string& topic, SharedBuffer msg_s );
-
-  RemoteDispatcher& getRemoteDispatcher()
+  LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
+  if( elem == local_dispatcher_list_.end() )
   {
-    return remote_dispatcher_;
+    boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( topic, this ) );
+    local_dispatcher_list_[ topic ] = disp;
+    return disp;
   }
-
-  void notifyLocalDispatcherEmpty(const std::string& topic)
+  else
   {
-    //todo
+    boost::shared_ptr<LocalDispatcherAbstract> &disp_a = elem->second;
+    // todo, try
+    boost::shared_ptr<LocalDispatcher<T> > disp = boost::dynamic_pointer_cast<LocalDispatcher<T> >(disp_a);
+    return disp;
   }
-
-  // todo, not thread safe!
-  template<typename T>
-  boost::shared_ptr<LocalDispatcher<T> > getLocalDispatcher( const std::string& topic )
-  {
-    // do single lookup with
-    LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
-    if( elem == local_dispatcher_list_.end() )
-    {
-      boost::shared_ptr<LocalDispatcher<T> > disp( new LocalDispatcher<T>( topic, this ) );
-      local_dispatcher_list_[ topic ] = disp;
-      return disp;
-    }
-    else
-    {
-      boost::shared_ptr<LocalDispatcherAbstract> &disp_a = elem->second;
-      // todo, try
-      boost::shared_ptr<LocalDispatcher<T> > disp = boost::dynamic_pointer_cast<LocalDispatcher<T> >(disp_a);
-      return disp;
-    }
-  }
-
-};
+}
 
 }
 }

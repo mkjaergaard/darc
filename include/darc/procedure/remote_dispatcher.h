@@ -42,6 +42,7 @@
 #include <boost/signal.hpp>
 #include <boost/bind.hpp>
 #include <darc/serialization.h>
+#include <darc/network/link_manager_fwd.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/procedure_call.h>
 #include <darc/network/packet/procedure_advertise.h>
@@ -52,12 +53,6 @@
 
 namespace darc
 {
-
-// fwd
-namespace network
-{
-class LinkManager;
-}
 
 namespace procedure
 {

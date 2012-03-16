@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Prevas A/S
+ * Copyright (c) 2011, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,27 +28,59 @@
  */
 
 /**
- * DARC IManagerCallback Interface
+ * DARC LocalDispatcherManager class
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
+#ifndef __DARC_PUBLISH_MANAGER_DECL_H_INCLUDED__
+#define __DARC_PUBLISH_MANAGER_DECL_H_INCLUDED__
 
+#include <vector>
+#include <iostream>
+#include <boost/thread.hpp>
+#include <boost/asio.hpp>
+#include <boost/shared_ptr.hpp>
+#include <darc/pubsub/local_dispatcher_abstract.h>
+#include <darc/pubsub/local_dispatcher_fwd.h>
 #include <darc/pubsub/remote_dispatcher.h>
+#include <darc/network/link_manager_fwd.h>
 
 namespace darc
 {
-
 namespace pubsub
 {
 
-class IManagerCallback
+class Manager
 {
+private:
+  // Collection of LocalDispatcher instaces (Mapped to topic)
+  typedef std::map<const std::string, LocalDispatcherAbstractPtr > LocalDispatcherListType;
+  LocalDispatcherListType local_dispatcher_list_;
+
+  // We hold the instance of RemoteDispatcher
+  RemoteDispatcher remote_dispatcher_;
+
 public:
-  virtual void notifyLocalDispatcherEmpty(const std::string& topic) = 0;
-  virtual RemoteDispatcher& getRemoteDispatcher() = 0;
+  // Constructor
+  Manager(boost::asio::io_service * io_service, network::LinkManager * node_link_manager);
+
+  //
+  inline RemoteDispatcher& getRemoteDispatcher()
+  {
+    return remote_dispatcher_;
+  }
+
+  // Called by RemoteDispatcher (Node Thread)
+  void remoteMessageReceived(const std::string& topic, SharedBuffer msg_s);
+
+  // Called by Publishers/Subscribers/RemoteDispatcher (Node and Component Threads)
+  template<typename T>
+  boost::shared_ptr<LocalDispatcher<T> > getLocalDispatcher(const std::string& topic);
+
 };
 
 }
 }
+
+#endif

@@ -28,38 +28,21 @@
  */
 
 /**
- * DARC pubsub::Manager implementation
+ * DARC Forward Declaration
  *
  * \author Morten Kjaergaard
  */
 
-#include <iostream>
-#include <boost/thread.hpp>
-#include <boost/asio.hpp>
+#pragma once
+
 #include <boost/shared_ptr.hpp>
-#include <darc/pubsub/manager.h>
-#include <darc/network/link_manager.h>
-#include <darc/pubsub/local_dispatcher.h>
-#include <darc/pubsub/remote_dispatcher.h>
 
 namespace darc
 {
 namespace pubsub
 {
 
-Manager::Manager(boost::asio::io_service * io_service, network::LinkManager * node_link_manager) :
-  remote_dispatcher_(io_service, this, node_link_manager)
-{
-}
-
-void Manager::remoteMessageReceived(const std::string& topic, SharedBuffer msg_s)
-{
-  LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
-  if( elem != local_dispatcher_list_.end() )
-  {
-    elem->second->dispatchMessageLocally( msg_s );
-  }
-}
+template<typename T> class LocalDispatcher;
 
 }
 }
