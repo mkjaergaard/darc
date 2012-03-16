@@ -83,7 +83,6 @@ protected:
       statistics_timer_.expires_from_now(statistics_period_);
       statistics_timer_.async_wait(boost::bind( &Component::statisticsTimerHandler, this, boost::asio::placeholders::error ));
       latchStatistics( statistics_period_.total_milliseconds() );
-      DARC_INFO("STATISTICS!!! %u", statistics_period_.total_milliseconds());
     }
   }
 
