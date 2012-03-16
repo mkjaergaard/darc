@@ -28,36 +28,59 @@
  */
 
 /**
- * DARC LocalDispatcherAbstract class
+ * DARC Manager class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PROCEDURE_LOCAL_DISPATCHER_ABSTRACT_INCLUDED_H__
-#define __DARC_PROCEDURE_LOCAL_DISPATCHER_ABSTRACT_INCLUDED_H__
+#ifndef __DARC_PROCEDURE_MANAGER_DECL_INCLUDED__
+#define __DARC_PROCEDURE_MANAGER_DECL_INCLUDED__
 
+#include <map>
 #include <boost/shared_ptr.hpp>
-#include <darc/shared_buffer.h>
-#include <darc/procedure/id_types.h>
+#include <darc/procedure/local_dispatcher_abstract.h>
+#include <darc/procedure/local_dispatcher_fwd.h>
+#include <darc/procedure/remote_dispatcher.h>
 
 namespace darc
 {
 namespace procedure
 {
 
-class LocalDispatcherAbstract
+class Manager
 {
+private:
+  // Mapping from ProcedureName to ProcedureID
+  typedef std::map<const std::string, ProcedureID> ProcedureIDListType;
+  ProcedureIDListType procedure_id_list_;
+
+  // Collection of LocalDispatcher instances (Mapped to ProcedureID)
+  typedef std::map<ProcedureID, LocalDispatcherAbstractPtr> DispatcherListType;
+  DispatcherListType dispatcher_list_;
+
+  // Single instance of RemoteDispatcher
+  RemoteDispatcher remote_dispatcher_;
+
 public:
-  virtual ~LocalDispatcherAbstract()
+  // Constructor
+  Manager(boost::asio::io_service * io_service, network::LinkManager * link_manager);
+
+  //
+  inline RemoteDispatcher& getRemoteDispatcher()
   {
+    return remote_dispatcher_;
   }
 
-  virtual void remoteCallReceived(SharedBuffer msg_s, const NodeID& remote_node_id, const CallID& call_id) = 0;
-  virtual void remoteFeedbackReceived(SharedBuffer msg_s, const CallID& call_id) = 0;
-  virtual void remoteResultReceived(SharedBuffer msg_s, const CallID& call_id) = 0;
-};
+  // Called by RemoteDispatcher (Node Thread)
+  void remoteCallReceived(const ProcedureID& procedure_id, const NodeID& remote_node_id, const CallID& call_id, SharedBuffer msg);
+  void remoteFeedbackReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg);
+  void remoteResultReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg);
 
-typedef boost::shared_ptr<LocalDispatcherAbstract> LocalDispatcherAbstractPtr;
+  // Called by Client/Servers (Component Threads)
+  template<typename T_Arg, typename T_Result, typename T_Feedback>
+  boost::shared_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > getLocalDispatcher(const std::string& name);
+
+};
 
 }
 }

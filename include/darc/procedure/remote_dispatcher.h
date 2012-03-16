@@ -40,6 +40,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/asio.hpp>
 #include <boost/signal.hpp>
+#include <boost/bind.hpp>
 #include <darc/serialization.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/procedure_call.h>

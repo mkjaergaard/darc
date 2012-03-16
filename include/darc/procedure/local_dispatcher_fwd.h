@@ -40,7 +40,7 @@ namespace darc
 namespace procedure
 {
 
-template<typename T_Arg, typename T_Ret, typename T_Sta> class LocalDispatcher;
+template<typename T_Arg, typename T_Result, typename T_Feedback> class LocalDispatcher;
 
 }
 }
