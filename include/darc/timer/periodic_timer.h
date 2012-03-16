@@ -66,6 +66,8 @@ protected:
   boost::posix_time::time_duration period_;
   boost::posix_time::ptime expected_deadline_;
 
+  statistics::Consumer callback_consumer_;
+
 public:
   PeriodicTimer(darc::Owner * owner, CallbackType callback, boost::posix_time::time_duration period) :
     boost::asio::deadline_timer(*(owner->getIOService()), period),
@@ -73,6 +75,8 @@ public:
     period_(period)
   {
     owner->addTimer(this->getWeakPtr());
+
+    consumer_list_["Timer_Callback"] = &callback_consumer_;
   }
 
 protected:
@@ -114,12 +118,13 @@ protected:
       expected_deadline_ += period_;
       //    std::cout << diff.total_milliseconds() << std::endl;
       async_wait( boost::bind( &PeriodicTimer::handler, this, boost::asio::placeholders::error ) );
-      //    Consumer::cpu_usage_.start();
+
       if( state_ == RUNNING)
       {
+	callback_consumer_.start();
 	callback_();
+	callback_consumer_.stop();
       }
-      //    Consumer::cpu_usage_.stop();
     }
   }
 

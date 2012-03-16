@@ -63,13 +63,28 @@ protected:
   boost::scoped_ptr<boost::asio::io_service::work> keep_alive_;
   ID id_;
 
+  boost::posix_time::time_duration statistics_period_;
+  boost::asio::deadline_timer statistics_timer_;
+
 protected:
   Component(const std::string& name, boost::shared_ptr<Node> node):
     name_(name),
     node_(node),
-    id_(ID::create())
+    id_(ID::create()),
+    statistics_period_(boost::posix_time::seconds(1)),
+    statistics_timer_(io_service_, statistics_period_)
   {
-    std::cout << "construct component" << std::endl;
+  }
+
+  void statisticsTimerHandler(const boost::system::error_code& error)
+  {
+    if(!error)
+    {
+      statistics_timer_.expires_from_now(statistics_period_);
+      statistics_timer_.async_wait(boost::bind( &Component::statisticsTimerHandler, this, boost::asio::placeholders::error ));
+      latchStatistics( statistics_period_.total_milliseconds() );
+      DARC_INFO("STATISTICS!!! %u", statistics_period_.total_milliseconds());
+    }
   }
 
 public:
@@ -85,7 +100,11 @@ public:
     return node_;
   }
 
-  virtual void onStart() {}
+  virtual void onStart()
+  {
+    statistics_timer_.expires_from_now(statistics_period_);
+    statistics_timer_.async_wait(boost::bind( &Component::statisticsTimerHandler, this, boost::asio::placeholders::error ));
+  }
 
   template<typename T>
   static boost::shared_ptr<T> instantiate( const std::string& instance_name, Node::Ptr node )
@@ -132,19 +151,17 @@ public:
 
   void work()
   {
-    DARC_AUTOTRACE();
-    std::cout << "Running Component: " << name_ << std::endl;
+    DARC_INFO("Running Component: %s", name_.c_str());
     keep_alive_.reset( new boost::asio::io_service::work(io_service_) );
     startPrimitives();
     onStart();
     io_service_.reset();
     io_service_.run();
-    std::cout << "Component " << name_ << " Stopped!" << std::endl;
+    DARC_INFO("Stopped Component: %s", name_.c_str());
   }
 
   void stop_work()
   {
-    DARC_AUTOTRACE();
     stopPrimitives();
     keep_alive_.reset();
   }

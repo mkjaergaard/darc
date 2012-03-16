@@ -35,9 +35,9 @@
 
 #pragma once
 
+// todo: This stuff only works on linux, just disable on windows
 #include <sys/time.h>
 #include <sys/resource.h>
-
 
 namespace darc
 {
@@ -90,6 +90,26 @@ public:
       usec -= 1000000;
     }
     usage_usec_ += usec;
+  }
+
+  void reset(int32_t& sec, int32_t& usec)
+  {
+    if(measuring_)
+    {
+      stop();
+      sec = usage_sec_;
+      usec = usage_usec_;
+      usage_sec_ = 0;
+      usage_usec_ = 0;
+      start();
+    }
+    else
+    {
+      sec = usage_sec_;
+      usec = usage_usec_;
+      usage_sec_ = 0;
+      usage_usec_ = 0;
+    }
   }
 
 };

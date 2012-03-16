@@ -86,6 +86,8 @@ public:
     subcomponent_list_.unpauseAll();
   }
 
+  void latchStatistics(int32_t period_usec);
+
   void addPrimitive(boost::weak_ptr<Primitive> prim);
   void addTimer(boost::weak_ptr<timer::PeriodicTimer> timer);
   void addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter );

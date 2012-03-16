@@ -48,33 +48,35 @@ namespace statistics
 class Consumer
 {
 protected:
-  typedef boost::shared_ptr<Consumer> Ptr;
-
-  typedef std::map<const std::string, Consumer::Ptr> ConsumerListType;
-  ConsumerListType child_consumers_;
-
   CPUUsage cpu_usage_;
+
+  int32_t last_period_usec_; // this design handles max 32 seconds which should be ok
 
 public:
   Consumer()
   {
   }
 
-  void addChild(const std::string name, Consumer::Ptr child_consumer)
+  void start()
   {
-    // todo: check for name clash
-    child_consumers_[name] = child_consumer;
+    cpu_usage_.start();
   }
 
-  Consumer::Ptr getChild(const std::string name)
+  void stop()
   {
-    // todo: check for existance
-    return child_consumers_[name];
+    cpu_usage_.stop();
+  }
+
+  void latch(int32_t period_usec)
+  {
+    int32_t sec = 0;
+    int32_t usec = 0;
+    cpu_usage_.reset(sec, usec);
+    assert(sec < 32);
+    last_period_usec_ = sec * 1000 + usec;
   }
 
 };
-
-typedef boost::shared_ptr<Consumer> ConsumerPtr;
 
 }
 }

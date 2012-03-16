@@ -36,6 +36,7 @@
 #include <darc/owner.h>
 #include <darc/timer/periodic_timer.h>
 #include <darc/parameter/parameter.h>
+#include <darc/subcomponent.h>
 
 namespace darc
 {
@@ -61,5 +62,23 @@ void Owner::addSubcomponent(boost::weak_ptr<Subcomponent> sc)
 {
   subcomponent_list_.add(sc);
 }
+
+void Owner::latchStatistics(int32_t period_usec)
+{
+  for(PrimitiveList<Primitive>::PrimitiveListType::iterator it = all_list_.list_.begin();
+      it != all_list_.list_.end();
+      it++)
+  {
+    it->lock()->latchStatistics(period_usec);
+  }
+
+  for(SubcomponentList::SubcomponentListType::iterator it = subcomponent_list_.list_.begin();
+      it != subcomponent_list_.list_.end();
+      it++)
+  {
+    it->lock()->latchStatistics(period_usec);
+  }
+}
+
 
 }

@@ -35,8 +35,10 @@
 
 #pragma once
 
+#include <map>
 #include <darc/enable_weak_from_static.h>
 #include <darc/id.h>
+#include <darc/statistics/consumer.h>
 
 namespace darc
 {
@@ -45,6 +47,9 @@ class Primitive
 {
 protected:
   typedef enum {STOPPED, PAUSED, RUNNING} StateType;
+
+  typedef std::map<std::string, statistics::Consumer*> ConsumerListType;
+  ConsumerListType consumer_list_;
 
   StateType state_;
   ID id_;
@@ -98,6 +103,17 @@ public:
     {
       state_ = RUNNING;
       onStart();
+    }
+  }
+
+  void latchStatistics(int32_t period_usec)
+  {
+    assert(period_usec < 32000); // todo: fix this later if more time is required
+    for(ConsumerListType::iterator it = consumer_list_.begin();
+	it != consumer_list_.end();
+	it++)
+    {
+      it->second->latch(period_usec);
     }
   }
 

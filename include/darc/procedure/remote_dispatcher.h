@@ -74,11 +74,6 @@ private:
     std::string feedback_type_name;
     std::string result_type_name;
 
-    bool operator<(const AdvertisedProcedureInfo& other) const
-    {
-      return procedure_id < other.procedure_id;
-    }
-
     AdvertisedProcedureInfo(const std::string& procedure_name, const darc::ID& procedure_id) :
       procedure_name(procedure_name),
       procedure_id(procedure_id)
