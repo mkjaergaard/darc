@@ -78,17 +78,13 @@ void RemoteDispatcher::advertiseReceiveHandler( const network::packet::Header& h
   info.argument_type_name = packet.argument_type_name;
   info.feedback_type_name = packet.feedback_type_name;
   info.result_type_name = packet.result_type_name;
+  info.advertising_node = header.sender_node_id;
 
   DARC_INFO("Received advertisement for procedure %s (%s)", info.procedure_name.c_str(), info.procedure_id.short_string().c_str());
 
-  RemoteAdvertisedProcedureInfo remote_info(header.sender_node_id, info);
+  remote_procedures_.insert(RemoteAdvertisedProceduresType::value_type(packet.procedure_name, info));
 
-  remote_procedures_.insert(RemoteAdvertisedProceduresType::value_type(packet.procedure_name, remote_info));
-
-  //  manager_->signalRemoteProcedureAdvertised(packet.procedure_name, packet.procedure_id);
-
-  // Trigger Signal
-  //    signal_remote_subscriber_change_(packet.topic, packet.type_name, remote_subscribers_.count(packet.topic));
+  manager_->remoteProcedureAdvertiseChange(info);
 }
 
 void RemoteDispatcher::callReceiveHandler(const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len)

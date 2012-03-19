@@ -41,6 +41,8 @@
 #include <darc/procedure/local_dispatcher_abstract.h>
 #include <darc/procedure/local_dispatcher_fwd.h>
 #include <darc/procedure/remote_dispatcher.h>
+#include <darc/procedure/advertised_procedure_info.h>
+#include <darc/procedure/event_listener.h>
 
 namespace darc
 {
@@ -61,6 +63,10 @@ private:
   // Single instance of RemoteDispatcher
   RemoteDispatcher remote_dispatcher_;
 
+  // Signals
+  typedef boost::signal<void (const AdvertisedProcedureInfo&, const size_t&)> RemoteProcedureChangeSignalType;
+  RemoteProcedureChangeSignalType remote_procedure_change_signal_;
+
 public:
   // Constructor
   Manager(boost::asio::io_service * io_service, network::LinkManager * link_manager);
@@ -71,7 +77,13 @@ public:
     return remote_dispatcher_;
   }
 
+  inline RemoteProcedureChangeSignalType& getRemoteProcedureChangeSignal()
+  {
+    return remote_procedure_change_signal_;
+  }
+
   // Called by RemoteDispatcher (Node Thread)
+  void remoteProcedureAdvertiseChange(const AdvertisedProcedureInfo& procedure_info); // plus add info if is also removed
   void remoteCallReceived(const ProcedureID& procedure_id, const NodeID& remote_node_id, const CallID& call_id, SharedBuffer msg);
   void remoteFeedbackReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg);
   void remoteResultReceived(const ProcedureID& procedure_id, const CallID& call_id, SharedBuffer msg);

@@ -100,18 +100,19 @@ protected:
   {
     if( error == boost::asio::error::operation_aborted )
     {
-      std::cout << "Aborted" << std::endl;
+      // Happens if we pause it
     }
     else if(error)
     {
-      std::cout << "Some error in timer callback: " << error << std::endl;
+      DARC_WARNING("PeriodicTimer callback gave some error %u", error.value());
     }
     else if( state_ == STOPPED )
     {
-      std::cout << "Ignored" << std::endl;
+      // Just ignore it
     }
     else
     {
+      // Todo: system time can actually not be trusted. What about using boost::chrono?
       boost::posix_time::time_duration diff = boost::posix_time::microsec_clock::universal_time() - expected_deadline_;
       expires_from_now( period_ - diff );
       //DARC_INFO("Diff: %s", boost::posix_time::to_simple_string(diff).c_str());

@@ -42,18 +42,18 @@
 #include <boost/signal.hpp>
 #include <boost/bind.hpp>
 #include <darc/serialization.h>
+#include <darc/procedure/id_types.h>
+#include <darc/procedure/advertised_procedure_info.h>
 #include <darc/network/link_manager_fwd.h>
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/procedure_call.h>
 #include <darc/network/packet/procedure_advertise.h>
 #include <darc/network/packet/procedure_feedback.h>
 #include <darc/network/packet/procedure_result.h>
-#include <darc/procedure/id_types.h>
 #include <darc/log.h>
 
 namespace darc
 {
-
 namespace procedure
 {
 
@@ -61,24 +61,6 @@ class Manager;
 
 class RemoteDispatcher
 {
-private:
-  struct AdvertisedProcedureInfo
-  {
-    std::string procedure_name;
-    darc::ID procedure_id;
-    std::string argument_type_name;
-    std::string feedback_type_name;
-    std::string result_type_name;
-
-    AdvertisedProcedureInfo(const std::string& procedure_name, const darc::ID& procedure_id) :
-      procedure_name(procedure_name),
-      procedure_id(procedure_id)
-    {
-    }
-  };
-
-  typedef std::pair<darc::NodeID, AdvertisedProcedureInfo> RemoteAdvertisedProcedureInfo;
-
 private:
   boost::asio::io_service * io_service_;
   Manager * manager_;
@@ -89,34 +71,17 @@ private:
   AdvertisedProceduresType advertised_procedures_;
 
   // Procedures other nodes advertises
-  typedef std::map<std::string, RemoteAdvertisedProcedureInfo> RemoteAdvertisedProceduresType;
-  //  typedef std::pair<RemotePublishersType::iterator, RemotePublishersType::iterator> RemotePublishersRangeType;
+  typedef std::map<std::string, AdvertisedProcedureInfo> RemoteAdvertisedProceduresType;
   RemoteAdvertisedProceduresType remote_procedures_;
 
   typedef std::map<CallID, ProcedureID> RemoteActiveClientCallsType;
   RemoteActiveClientCallsType remote_active_client_calls_;
-
-  // Signals
-  //boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_subscriber_change_;
-  //boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_publisher_change_;
 
 private:
   void newRemoteNodeHandler(const ID& remote_node_id);
 
 public:
   RemoteDispatcher(boost::asio::io_service * io_service, Manager* manager, network::LinkManager * network_link_manager);
-
-  /*
-  boost::signal<void (const std::string&, const std::string&, size_t)>& remoteSubscriberChangeSignal()
-  {
-    return signal_remote_subscriber_change_;
-  }
-
-  boost::signal<void (const std::string&, const std::string&, size_t)>& remotePublisherChangeSignal()
-  {
-    return signal_remote_publisher_change_;
-  }
-  */
 
   void callReceiveHandler(const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len);
   void feedbackReceiveHandler(const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len);
@@ -150,9 +115,9 @@ public:
 
       io_service_->post(boost::bind(&RemoteDispatcher::serializeAndDispatchCall<T_Arg>,
 				    this,
-				    item->second.second.procedure_id,
+				    item->second.procedure_id,
 				    call_id,
-				    item->second.first, //Remote Node_ID
+				    item->second.advertising_node, //Remote Node_ID
 				    arg));
     }
   }

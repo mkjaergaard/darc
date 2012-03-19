@@ -31,6 +31,7 @@ add_library(darc SHARED
   src/lib/pubsub/event_listener.cpp
   src/lib/procedure/manager.cpp
   src/lib/procedure/remote_dispatcher.cpp
+  src/lib/procedure/event_listener.cpp
   src/lib/parameter/manager.cpp
   src/lib/parameter/parameter_abstract.cpp
   src/lib/parameter/server_component.cpp

@@ -91,5 +91,11 @@ void Manager::remoteResultReceived(const ProcedureID& procedure_id, const CallID
   }
 }
 
+void Manager::remoteProcedureAdvertiseChange(const AdvertisedProcedureInfo& procedure_info)
+{
+  remote_procedure_change_signal_(procedure_info, 1);
+  // todo: keep more complex records
+}
+
 }
 }
