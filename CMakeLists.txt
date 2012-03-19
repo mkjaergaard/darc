@@ -26,6 +26,7 @@ add_library(darc SHARED
   src/lib/log.cpp
   src/lib/subcomponent_list.cpp
   src/lib/network/udp/protocol_manager.cpp
+  src/lib/timer/deadline_timer.cpp
   src/lib/pubsub/manager.cpp
   src/lib/pubsub/remote_dispatcher.cpp
   src/lib/pubsub/event_listener.cpp
