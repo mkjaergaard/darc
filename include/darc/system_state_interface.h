@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,51 +28,42 @@
  */
 
 /**
- * DARC Node class
+ * DARC
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <vector>
-#include <iostream>
-#include <boost/shared_ptr.hpp>
+#include <darc/primitive.h>
+#include <darc/enable_weak_from_static.h>
+#include <darc/owner.h>
 #include <darc/id.h>
-#include <darc/pubsub/fwd.h>
-#include <darc/procedure/manager_fwd.h>
-#include <darc/parameter/manager_fwd.h>
-#include <darc/network/link_manager_fwd.h>
+#include <darc/network/link_manager.h>
 
 namespace darc
 {
 
-class Component;
-typedef boost::shared_ptr<Component> ComponentPtr;
-
-class Node
+class SystemStateInterface : public darc::Primitive, public darc::EnableWeakFromStatic<StateInterface>
 {
-public:
-  typedef boost::shared_ptr<Node> Ptr;
+protected:
+  darc::Owner * owner_;
 
 public:
-  virtual void run(bool blocking = true) = 0;
-  virtual pubsub::Manager& getPublisherManager() = 0;
-  virtual procedure::Manager& getProcedureManager() = 0;
-  virtual parameter::Manager& getParameterManager() = 0;
-  virtual network::LinkManager& getNetworkManager() = 0;
-  virtual void accept( const std::string& url ) = 0;
-  virtual void connect( const std::string& url ) = 0;
-  virtual ComponentPtr instantiateComponent(const std::string& instance_name) = 0;
-  virtual void runComponent(ID id) = 0;
-  virtual void stopComponent(ID id) = 0;
-  virtual void attach(ComponentPtr component) = 0;
-  virtual const ID& lookupComponentInstance(const std::string& instance_name) = 0;
+  typedef std::vector<NodeID> NodeListType;
 
-  static Node::Ptr create();
+public:
+  SystemStateInterface(darc::Owner* owner) :
+    owner_(owner)
+  {
+  }
+
+  void getRemoteNodeList(NodeListType& node_list)
+  {
+    owner_->getNode()->getNetworkManager().getRemoteNodeList(node_list);
+  }
 
 };
 
-typedef boost::shared_ptr<Node> NodePtr;
-
+}
 }

@@ -84,7 +84,6 @@ public:
 
   void addNewRemoteNodeListener(NewRemoteNodeListenerType listener)
   {
-    DARC_AUTOTRACE();
     new_remote_node_listeners_.push_back(listener);
   }
 
@@ -92,6 +91,17 @@ public:
   const ID& getNodeID()
   {
     return node_id_;
+  }
+
+  void getRemoteNodeList(std::vector<NodeID>& node_list)
+  {
+    node_list.clear();
+    for(NeighbourNodesType::iterator it = neighbour_nodes_.begin();
+	it != neighbour_nodes_.end();
+	it++)
+    {
+      node_list.push_back(it->first);
+    }
   }
 
   void sendPacket( packet::Header::PayloadType type, const ID& recv_node_id, SharedBuffer buffer, std::size_t data_len )

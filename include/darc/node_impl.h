@@ -140,6 +140,11 @@ protected:
     return parameter_manager_;
   }
 
+  network::LinkManager& getNetworkManager()
+  {
+    return node_link_manager_;
+  }
+
   void accept( const std::string& url )
   {
     node_link_manager_.accept(url);
