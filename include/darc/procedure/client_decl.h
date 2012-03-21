@@ -55,8 +55,8 @@ template<typename T_Arg, typename T_Result, typename T_Feedback>
 class Client : public darc::Primitive, public::darc::EnableWeakFromStatic<Client<T_Arg, T_Result, T_Feedback> >
 {
 public:
-  typedef boost::function<void( const CallID&, const boost::shared_ptr<const T_Result>& )> ResultHandlerType;
-  typedef boost::function<void( const CallID&, const boost::shared_ptr<const T_Feedback>& )> FeedbackHandlerType;
+  typedef boost::function<void(const CallID&, const T_Result&)> ResultHandlerType;
+  typedef boost::function<void(const CallID&, const T_Feedback&)> FeedbackHandlerType;
 
 protected:
   boost::asio::io_service * io_service_;
@@ -68,14 +68,20 @@ protected:
   boost::weak_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher_;
 
 public:
-  Client(darc::Owner* owner, const std::string& name, ResultHandlerType result_handler, FeedbackHandlerType feedback_handler) :
+  template<typename O>
+  Client(O * owner, const std::string& name, void(O::*callback)(const CallID&, const T_Result&)) :
     io_service_(owner->getIOService()),
     owner_(owner),
     name_(name),
-    result_handler_(result_handler),
-    feedback_handler_(feedback_handler)
+    result_handler_(boost::bind(callback, owner, _1, _2))
   {
     owner->addPrimitive(this->getWeakPtr());
+  }
+
+  template<typename O>
+  void registerFeedbackHandler(O * owner, void(O::*callback)(const CallID&, const T_Feedback&))
+  {
+    feedback_handler_ = boost::bind(callback, owner, _1, _2);
   }
 
   // Called by darc::procedure::LocalDispatcher
@@ -106,7 +112,7 @@ protected:
   {
     if(feedback_handler_)
     {
-      feedback_handler_(call_id, msg);
+      feedback_handler_(call_id, *msg);
     }
   }
 
@@ -114,7 +120,7 @@ protected:
   {
     if(result_handler_)
     {
-      result_handler_(call_id, msg);
+      result_handler_(call_id, *msg);
     }
   }
 

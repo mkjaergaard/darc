@@ -53,7 +53,7 @@ template<typename T_Arg, typename T_Result, typename T_Feedback>
 class Server : public darc::Primitive, public darc::EnableWeakFromStatic<Server<T_Arg, T_Result, T_Feedback> >
 {
 public:
-  typedef boost::function<void(const CallID&, boost::shared_ptr<const T_Arg>&)> MethodType;
+  typedef boost::function<void(const CallID&, const T_Arg&)> MethodType;
 
 protected:
   boost::asio::io_service * io_service_;
@@ -64,11 +64,12 @@ protected:
   MethodType method_;
 
 public:
-  Server(darc::Owner * owner, const std::string& name, MethodType method) :
+  template<typename O>
+  Server(O * owner, const std::string& name, void(O::*callback)(const CallID&, const T_Arg&)) :
     io_service_(owner->getIOService()),
     owner_(owner),
     name_(name),
-    method_(method)
+    method_(boost::bind(callback, owner, _1, _2))
   {
     DARC_AUTOTRACE();
     owner->addPrimitive(this->getWeakPtr());
@@ -95,7 +96,7 @@ private:
   void triggerCallHandler(const CallID& call_id, boost::shared_ptr<const T_Arg> argument)
   {
     assert(method_);
-    method_(call_id,  argument);
+    method_(call_id, *argument);
   }
 
 };
