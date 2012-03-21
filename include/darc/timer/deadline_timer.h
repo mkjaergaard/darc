@@ -36,6 +36,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <darc/owner.h>
 #include <darc/primitive.h>
@@ -54,7 +55,14 @@ protected:
   CallbackType callback_;
 
 public:
-  DeadlineTimer(darc::Owner * owner, CallbackType callback);
+  template<typename O>
+  DeadlineTimer(O * owner, void(O::*callback)()) :
+    boost::asio::deadline_timer(*(owner->getIOService())),
+    callback_(boost::bind(callback, owner))
+  {
+    owner->addPrimitive(this->getWeakPtr());
+  }
+
   void start(boost::posix_time::time_duration time);
 
 protected:

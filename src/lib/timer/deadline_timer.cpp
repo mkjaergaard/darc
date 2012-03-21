@@ -35,21 +35,12 @@
 
 #include <darc/timer/deadline_timer.h>
 
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <darc/log.h>
 
 namespace darc
 {
 namespace timer
 {
-
-DeadlineTimer::DeadlineTimer(darc::Owner * owner, CallbackType callback) :
-  boost::asio::deadline_timer(*(owner->getIOService())),
-  callback_(callback)
-{
-  owner->addPrimitive(this->getWeakPtr());
-}
 
 void DeadlineTimer::start(boost::posix_time::time_duration time)
 {
