@@ -54,7 +54,7 @@ private:
   darc::Owner * owner_;
   std::string topic_;
 
-  typedef boost::function<void( boost::shared_ptr<const T>, CallbackInfo)> CallbackType;
+  typedef boost::function<void(const T&, const CallbackInfo&)> CallbackType;
   CallbackType callback_;
 
   boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
@@ -63,7 +63,13 @@ private:
 
 
 public:
-  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback);
+  //  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback);
+  template<typename O>
+  Subscriber(O * owner, const std::string& topic, void(O::*callback)(const T&));
+
+  template<typename O>
+  Subscriber(O * owner, const std::string& topic, void(O::*callback)(const T&, const CallbackInfo&));
+
   void onStart();
   void onStop();
 
@@ -80,7 +86,7 @@ public:
 private:
   void receive(MsgPtrType msg, CallbackInfo info)
   {
-    callback_(msg, info);
+    callback_(*msg, info);
   }
 
 

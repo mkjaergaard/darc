@@ -38,7 +38,6 @@
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
-#include <boost/date_time/posix_time/time_formatters.hpp>
 #include <darc/log.h>
 #include <darc/primitive.h>
 #include <darc/enable_weak_from_static.h>
@@ -69,14 +68,12 @@ protected:
   statistics::Consumer callback_consumer_;
 
 public:
-  PeriodicTimer(darc::Owner * owner, CallbackType callback, boost::posix_time::time_duration period) :
+  template<typename T>
+  PeriodicTimer(T * owner, void (T::*callback)(), boost::posix_time::time_duration period) :
     boost::asio::deadline_timer(*(owner->getIOService()), period),
-    callback_(callback),
+    callback_(boost::bind(callback, owner)),
     period_(period)
   {
-    owner->addTimer(this->getWeakPtr());
-
-    consumer_list_["Timer_Callback"] = &callback_consumer_;
   }
 
 protected:

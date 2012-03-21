@@ -59,6 +59,7 @@ public:
 protected:
   std::string name_;
   boost::shared_ptr<Node> node_;
+  bool attached_;
   boost::asio::io_service io_service_;
   boost::scoped_ptr<boost::asio::io_service::work> keep_alive_;
   ID id_;
@@ -67,13 +68,31 @@ protected:
   boost::asio::deadline_timer statistics_timer_;
 
 protected:
-  Component(const std::string& name, boost::shared_ptr<Node> node):
-    name_(name),
-    node_(node),
+  Component():
+    name_(""),
+    attached_(false),
     id_(ID::create()),
     statistics_period_(boost::posix_time::seconds(1)),
     statistics_timer_(io_service_, statistics_period_)
   {
+  }
+
+  /*
+  Component(const std::string& name, boost::shared_ptr<Node> node):
+    name_(""),
+    attached(false),
+    id_(ID::create()),
+    statistics_period_(boost::posix_time::seconds(1)),
+    statistics_timer_(io_service_, statistics_period_)
+  {
+  }
+  */
+
+  void attachNode(const std::string& instance_name, Node::Ptr node)
+  {
+    attached_ = true;
+    name_ = instance_name;
+    node = node;
   }
 
   void statisticsTimerHandler(const boost::system::error_code& error)
@@ -86,6 +105,7 @@ protected:
     }
   }
 
+
 public:
   // impl of darc::Owner
   boost::asio::io_service * getIOService()
@@ -96,6 +116,7 @@ public:
   // impl of darc::Owner
   boost::shared_ptr<Node> getNode()
   {
+    assert(attached_);
     return node_;
   }
 
@@ -108,7 +129,8 @@ public:
   template<typename T>
   static boost::shared_ptr<T> instantiate( const std::string& instance_name, Node::Ptr node )
   {
-    boost::shared_ptr<T> instance( new T(instance_name, node) );
+    boost::shared_ptr<T> instance( new T() );
+    instance->attachNode(instance_name, node);
     node->attach(instance);
     return instance;
   }
@@ -130,11 +152,13 @@ public:
 
   void run()
   {
+    assert(attached_);
     node_->runComponent(id_);
   }
 
   void stop()
   {
+    assert(attached_);
     node_->stopComponent(id_);
   }
 
