@@ -35,8 +35,6 @@
 
 #pragma once
 
-#include <darc/primitive.h>
-#include <darc/enable_weak_from_static.h>
 #include <darc/owner.h>
 #include <darc/id.h>
 #include <darc/network/link_manager.h>
@@ -44,7 +42,7 @@
 namespace darc
 {
 
-class SystemStateInterface : public darc::Primitive, public darc::EnableWeakFromStatic<StateInterface>
+class SystemStateInterface
 {
 protected:
   darc::Owner * owner_;
@@ -65,5 +63,4 @@ public:
 
 };
 
-}
 }

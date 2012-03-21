@@ -42,7 +42,6 @@
 #include <darc/procedure/local_dispatcher_fwd.h>
 #include <darc/procedure/remote_dispatcher.h>
 #include <darc/procedure/advertised_procedure_info.h>
-#include <darc/procedure/event_listener.h>
 
 namespace darc
 {

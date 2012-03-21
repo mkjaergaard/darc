@@ -28,42 +28,29 @@
  */
 
 /**
- * DARC Event Listener class
+ * DARC System State Interface class
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
-
-#include <boost/function.hpp>
-#include <boost/bind.hpp>
-#include <boost/signals.hpp>
-#include <darc/event_signal.h>
-#include <darc/primitive.h>
-#include <darc/enable_weak_from_static.h>
-#include <darc/owner.h>
-#include <darc/procedure/advertised_procedure_info.h>
+#include <darc/procedure/system_state_interface.h>
+#include <darc/procedure/manager.h>
+#include <darc/node.h>
 
 namespace darc
 {
 namespace procedure
 {
 
-class EventListener : public darc::Primitive, public darc::EnableWeakFromStatic<EventListener>
+SystemStateInterface::SystemStateInterface(darc::Owner* owner) :
+  remote_procedure_changes_event_( owner, owner->getNode()->getProcedureManager().getRemoteProcedureChangeSignal() )
 {
-private:
-  typedef darc::EventSignal2<AdvertisedProcedureInfo, size_t> RemoteProcedureChanges;
+}
 
-  RemoteProcedureChanges remote_procedure_changes_event_;
-
-protected:
-  darc::Owner * owner_;
-
-public:
-  EventListener(darc::Owner* owner);
-  void remoteProcedureChangesListen(RemoteProcedureChanges::CallbackType callback);
-
-};
+void SystemStateInterface::remoteProcedureChangesListen(RemoteProcedureChanges::CallbackType callback)
+{
+  remote_procedure_changes_event_.addCallback(callback);
+}
 
 }
 }
