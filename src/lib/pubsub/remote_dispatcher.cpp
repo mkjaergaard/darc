@@ -136,7 +136,7 @@ void RemoteDispatcher::registerPublisher(const std::string& topic, const std::st
 
 void RemoteDispatcher::sendSubscription(const std::string& topic, const std::string& type_name, const ID& remote_node_id)
 {
-  DARC_INFO("Sending subscription to %s for topic: %s", remote_node_id.short_string().c_str(), topic.c_str());
+  DARC_DEBUG("Sending subscription to %s for topic: %s", remote_node_id.short_string().c_str(), topic.c_str());
 
   // Allocate buffer. todo: derive required size?
   std::size_t data_len = 1024;
@@ -153,7 +153,7 @@ void RemoteDispatcher::sendSubscription(const std::string& topic, const std::str
 
 void RemoteDispatcher::sendPublish(const std::string& topic, const std::string& type_name, const ID& remote_node_id)
 {
-  DARC_INFO("Sending publish info to %s for topic: %s", remote_node_id.short_string().c_str(), topic.c_str());
+  DARC_DEBUG("Sending publish info to %s for topic: %s", remote_node_id.short_string().c_str(), topic.c_str());
 
   // Allocate buffer. todo: derive required size?
   std::size_t data_len = 1024;

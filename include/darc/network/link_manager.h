@@ -250,19 +250,17 @@ private:
       }
       case packet::Header::DISCOVER_PACKET:
       {
-	DARC_INFO("DISCOVER_PACKET");
 	handleDiscoverPacket(header.sender_node_id, source_link, buffer, data_len);
 	break;
       }
       case packet::Header::DISCOVER_REPLY_PACKET:
       {
-	DARC_INFO("DISCOVER_REPLY_PACKET");
 	handleDiscoverReplyPacket(header.sender_node_id, inbound_id, buffer, data_len);
 	break;
       }
       default:
       {
-	DARC_WARNING("Unknown packet type received");
+	DARC_WARNING("Unknown packet type received %u", header.payload_type);
 	break;
       }
     }

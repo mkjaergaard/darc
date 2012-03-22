@@ -47,7 +47,7 @@ namespace darc
 class Registry
 {
 private:
-  typedef boost::function<Component::Ptr(const std::string&, Node::Ptr)> InstantiateComponentMethod;
+  typedef boost::function<ComponentPtr(const std::string&, NodePtr)> InstantiateComponentMethod;
   typedef std::map<const std::string, InstantiateComponentMethod> ComponentListType;
 
   ComponentListType component_list_;
@@ -71,23 +71,22 @@ public:
   {
     Registry * inst = instance();
     inst->component_list_[component_name] = method;
-    std::cout << "Registered Component: " << component_name << std::endl;
+    DARC_INFO("Registered Component: %s", component_name.c_str());
     return 1;
   }
 
-  static darc::Component::Ptr instantiateComponent( const std::string& instance_name, Node::Ptr node )
+  static darc::ComponentPtr instantiateComponent( const std::string& instance_name, NodePtr node )
   {
     Registry * inst = instance();
     if( inst->component_list_.count(instance_name) )
     {
-      std::cout << "Instantiate " << instance_name << std::endl;
+      DARC_INFO("Instantiating Component %s", instance_name.c_str());
       return inst->component_list_[instance_name](instance_name, node);
     }
     else
     {
-      std::cout << "Component " << instance_name << " not registered" << std::endl;
-      assert(0);
-      return darc::Component::Ptr();
+      DARC_FATAL("Component not registered %s", instance_name.c_str());
+      return darc::ComponentPtr();
     }
   }
 

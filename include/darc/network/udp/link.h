@@ -85,7 +85,6 @@ public:
   {
     boost::system::error_code ec;
     socket_.bind(local_endpoint, ec);
-    DARC_INFO("Bind returned %s", ec.message().c_str() );
     if(!ec)
     {
       opened_ = true;
@@ -125,7 +124,6 @@ public:
     std::size_t data_len = 1024*32;
     SharedBuffer buffer = SharedBuffer::create(data_len);
 
-    DARC_INFO("Sending DISCOVER for connection: %s", outbound_id.short_string().c_str());
     // Create packet
     network::packet::Discover discover(outbound_id);
     std::size_t len = discover.write( buffer.data(), buffer.size() );
@@ -134,8 +132,6 @@ public:
 
   void sendDiscoverReply(const ID& remote_outbound_id, const ID& remote_node_id)
   {
-    DARC_INFO("Sending DISCOVER_REPLY for connection: %s", remote_outbound_id.short_string().c_str());
-
     // Create packet
     std::size_t data_len = 1024*32;
     SharedBuffer buffer = SharedBuffer::create(data_len);

@@ -53,12 +53,12 @@ class Component : public Owner, public EnableWeakFromStatic<Component>
 {
   friend class python::ComponentProxy;
 
-public:
+private:
   typedef boost::shared_ptr<Component> Ptr;
 
 protected:
   std::string name_;
-  boost::shared_ptr<Node> node_;
+  NodePtr node_;
   bool attached_;
   boost::asio::io_service io_service_;
   boost::scoped_ptr<boost::asio::io_service::work> keep_alive_;
@@ -88,11 +88,11 @@ protected:
   }
   */
 
-  void attachNode(const std::string& instance_name, Node::Ptr node)
+  void attachNode(const std::string& instance_name, NodePtr node)
   {
     attached_ = true;
     name_ = instance_name;
-    node = node;
+    node_ = node;
   }
 
   void statisticsTimerHandler(const boost::system::error_code& error)
@@ -127,7 +127,7 @@ public:
   }
 
   template<typename T>
-  static boost::shared_ptr<T> instantiate( const std::string& instance_name, Node::Ptr node )
+  static boost::shared_ptr<T> instantiate( const std::string& instance_name, NodePtr node )
   {
     boost::shared_ptr<T> instance( new T() );
     instance->attachNode(instance_name, node);

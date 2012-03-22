@@ -44,9 +44,9 @@ namespace bt = boost::posix_time;
 namespace darc
 {
 
-Log::LevelType Log::current_level_ = Log::LOG_ALL;
+Log::LevelType Log::current_level_ = Log::LOG_TRACE;
 
-const char* Log::level_names_[] = {"?????","TRACE","DEBUG","INFO ","WARN ","ERROR", "FATAL"};
+const char* Log::level_names_[] = {"?????","DEBUG","TRACE","INFO ","WARN ","ERROR", "FATAL"};
 
 Log::LevelType Log::getLevel()
 {

@@ -38,8 +38,8 @@
 
 namespace darc
 {
-  Node::Ptr Node::create()
+  NodePtr Node::create()
   {
-    return Node::Ptr( new NodeImpl() );
+    return NodePtr( new NodeImpl() );
   }
 }

@@ -53,10 +53,8 @@ typedef boost::shared_ptr<Component> ComponentPtr;
 class Node
 {
 public:
-  typedef boost::shared_ptr<Node> Ptr;
-
-public:
-  virtual void run(bool blocking = true) = 0;
+  virtual void run() = 0;
+  virtual void runCurrentThread() = 0;
   virtual pubsub::Manager& getPublisherManager() = 0;
   virtual procedure::Manager& getProcedureManager() = 0;
   virtual parameter::Manager& getParameterManager() = 0;
@@ -69,7 +67,7 @@ public:
   virtual void attach(ComponentPtr component) = 0;
   virtual const ID& lookupComponentInstance(const std::string& instance_name) = 0;
 
-  static Node::Ptr create();
+  static boost::shared_ptr<Node> create();
 
 };
 

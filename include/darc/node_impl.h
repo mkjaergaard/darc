@@ -92,13 +92,14 @@ protected:
     io_service_.run();
   }
 
-  void run(bool blocking = false)
+  void run()
   {
     node_thread_ = boost::thread( boost::bind(&NodeImpl::work, this) );
-    if(blocking)
-    {
-      node_thread_.join();
-    }
+  }
+
+  void runCurrentThread()
+  {
+    work();
   }
 
   void attach(ComponentPtr component)
