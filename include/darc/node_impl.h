@@ -47,7 +47,6 @@
 #include <darc/thread_manager.h>
 #include <darc/pubsub/manager.h>
 #include <darc/procedure/manager.h>
-#include <darc/parameter/manager.h>
 #include <darc/network/link_manager.h>
 
 namespace darc
@@ -69,7 +68,6 @@ private:
 
   pubsub::Manager publish_manager_;
   procedure::Manager procedure_manager_;
-  parameter::Manager parameter_manager_;
 
   typedef std::map<ID, ComponentPtr> ComponentInstancesList;
   ComponentInstancesList component_instances_;
@@ -134,11 +132,6 @@ protected:
   procedure::Manager& getProcedureManager()
   {
     return procedure_manager_;
-  }
-
-  parameter::Manager& getParameterManager()
-  {
-    return parameter_manager_;
   }
 
   network::LinkManager& getNetworkManager()

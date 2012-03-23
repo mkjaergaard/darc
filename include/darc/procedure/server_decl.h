@@ -71,7 +71,6 @@ public:
     name_(name),
     method_(boost::bind(callback, owner, _1, _2))
   {
-    DARC_AUTOTRACE();
     owner->addPrimitive(this->getWeakPtr());
   }
 

@@ -33,9 +33,6 @@ add_library(darc SHARED
   src/lib/procedure/manager.cpp
   src/lib/procedure/remote_dispatcher.cpp
   src/lib/procedure/system_state_interface.cpp
-  src/lib/parameter/manager.cpp
-  src/lib/parameter/parameter_abstract.cpp
-#  src/lib/parameter/server_component.cpp
 )
 
 target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES})

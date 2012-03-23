@@ -35,6 +35,9 @@
 
 #pragma once
 
+#include <iostream>
+#include <fstream>
+
 namespace darc
 {
 class Log
@@ -53,10 +56,14 @@ public:
 private:
   static LevelType current_level_;
   static const char* level_names_[];
+  static std::ofstream log_file_;
+  static bool log_to_file_;
 
 public:
   static LevelType getLevel();
   static void setLevel(LevelType);
+  static void logToFile(const std::string& filename);
+  static void logToConsole();
   static void report(LevelType level, const char * msg, ...);
 
 };

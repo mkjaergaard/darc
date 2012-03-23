@@ -74,6 +74,7 @@ public:
     callback_(boost::bind(callback, owner)),
     period_(period)
   {
+    owner->addTimer(this->getWeakPtr());
   }
 
 protected:

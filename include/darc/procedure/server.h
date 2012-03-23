@@ -51,7 +51,6 @@ void Server<T_Arg, T_Result, T_Feedback>::onStart()
     owner_->getNode()->getProcedureManager().getLocalDispatcher<T_Arg, T_Result, T_Feedback>(name_);
   dispatcher->registerServer(this);
   dispatcher_ = dispatcher;
-  DARC_AUTOTRACE();
 }
 
 template<typename T_Arg, typename T_Result, typename T_Feedback>

@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
-import darc, time, publisher_component
+import darc, MyPublisherComponent
+
+darc.Log.logToFile("out.log")
 
 n = darc.Node.create()
-c = darc.ComponentRegister.instantiateComponent("MyPublisherComponent", n)
+c = n.instantiateComponent("MyPublisherComponent")
 
-n.setNodeID(120)
-#n.accept("udp://127.0.0.1:5120")
-#n.connect(125, "udp://127.0.0.1:5125")
+n.accept("udp://127.0.0.1:5120-5125")
+n.connect("udp://127.0.0.1:5120-5125")
 
-#c.run()
+c.run()
+n.run()
 
 from IPython.Shell import IPShellEmbed
 ipshell = IPShellEmbed()

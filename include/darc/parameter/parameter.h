@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include <boost/function.hpp>
 #include <darc/owner.h>
 #include <darc/parameter/parameter_abstract.h>
 
@@ -47,23 +46,16 @@ namespace parameter
 template<typename T>
 class Parameter : public ParameterAbstract
 {
-protected:
-  typedef boost::function<void(void)> UpdateCallbackType;
-  UpdateCallbackType update_callback_;
 
 protected:
   T value_;
 
 public:
-  Parameter(darc::Owner * owner, const std::string& name, UpdateCallbackType update_callback = UpdateCallbackType()) :
-    ParameterAbstract(owner, name),
-    update_callback_(update_callback)
+  Parameter(darc::Owner * owner, const std::string& name, const T& initial_value) :
+    ParameterAbstract(name),
+    value_(initial_value)
   {
-  }
-
-  void change(ParameterChange& change_info)
-  {
-    
+    owner->addParameter(this->getWeakPtr());
   }
 
   const T& getValue() const
@@ -71,14 +63,16 @@ public:
     return value_;
   }
 
-  void setValue(const T& value, const Status& status)
+  bool getValue2(T& value)
+  {
+    value = value_;
+    return true;
+  }
+
+  bool setValue(const T& value)
   {
     value_ = value;
-    status_ = status;
-    if(update_callback_)
-    {
-      update_callback_();
-    }
+    return true;
   }
 
 };

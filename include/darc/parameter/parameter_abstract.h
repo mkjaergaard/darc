@@ -35,11 +35,7 @@
 
 #pragma once
 
-#include <darc/enable_weak_from_static.h>
 #include <darc/primitive.h>
-#include <darc/parameter/parameter_change.h>
-#include <darc/parameter/status.h>
-#include <darc/owner.h>
 
 namespace darc
 {
@@ -48,22 +44,42 @@ namespace parameter
 
 class ParameterAbstract : public Primitive, public EnableWeakFromStatic<ParameterAbstract>
 {
-public:
 
 protected:
   std::string name_;
-  Status status_;
 
 public:
-  ParameterAbstract(darc::Owner * owner, const std::string& name);
+  ParameterAbstract(const std::string& name) :
+    name_(name)
+  {
+  }
 
-  virtual void change(ParameterChange& change_info) = 0;
-  const std::string& getName();
+  const std::string& getName() const
+  {
+    return name_;
+  }
+
+  //**
+  // Ugly hack for the demo. Dont judge me!
+  virtual bool getValue2(std::string& out)
+  {
+    return false;
+  }
+  virtual bool getValue2(int& out)
+  {
+    return false;
+  }
+  virtual bool setValue(const std::string& value)
+  {
+    return false;
+  }
+  virtual bool setValue(const int& value)
+  {
+    return false;
+  }
+  //**
 
 };
-
-typedef boost::weak_ptr<ParameterAbstract> ParameterAbstractWkPtr;
-typedef boost::shared_ptr<ParameterAbstract> ParameterAbstractPtr;
 
 }
 }

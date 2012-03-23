@@ -22,12 +22,12 @@ namespace python
 {
 
 template<typename T, typename PT, char const* myname>
-class PrimitiveListProxy : public ProxyBase< PrimitiveList<T> >
+class PrimitiveListProxy1 : public ProxyBase< PrimitiveList<T> >
 {
   typedef ProxyBase< PrimitiveList<T> > MyProxyBase;
 
 public:
-  PrimitiveListProxy(boost::weak_ptr<PrimitiveList<T> > instance) :
+  PrimitiveListProxy1(boost::weak_ptr<PrimitiveList<T> > instance) :
     MyProxyBase(instance)
   {
   }
@@ -60,6 +60,51 @@ public:
     for( unsigned int i = 0; i < MyProxyBase::instance_.lock()->list_.size(); i++ )
     {
       l.insert(0, std::string(myname) + boost::lexical_cast<std::string>(i) );
+    }
+    return l;
+  }
+
+};
+
+template<typename T, typename PT>
+class PrimitiveListProxy2 : public ProxyBase< PrimitiveList<T> >
+{
+  typedef ProxyBase< PrimitiveList<T> > MyProxyBase;
+
+public:
+  PrimitiveListProxy2(boost::weak_ptr<PrimitiveList<T> > instance) :
+    MyProxyBase(instance)
+  {
+  }
+
+  PT get(int idx)
+  {
+    return PT( MyProxyBase::instance_.lock()->list_.at(idx) );
+  }
+
+  PT getitem(std::string text)
+  {
+    for( typename PrimitiveList<T>::PrimitiveListType::iterator it = MyProxyBase::instance_.lock()->list_.begin();
+	 it != MyProxyBase::instance_.lock()->list_.end();
+	 it++)
+    {
+      if(it->lock()->getName() == text)
+      {
+	return PT(*it);
+      }
+    }
+    PyErr_SetString(PyExc_AttributeError, "object has no attribute with that name" );
+    throw boost::python::error_already_set();
+  }
+
+  boost::python::list dir()
+  {
+    boost::python::list l;
+    for( typename PrimitiveList<T>::PrimitiveListType::iterator it = MyProxyBase::instance_.lock()->list_.begin();
+	 it != MyProxyBase::instance_.lock()->list_.end();
+	 it++)
+    {
+      l.insert(0, std::string(it->lock()->getName()) );
     }
     return l;
   }
@@ -99,13 +144,53 @@ public:
     return instance_.lock()->getName();
   }
 
+  boost::python::object getValue()
+  {
+    // hack for the demo
+    std::string my_string;
+    int my_int;
+
+    if(instance_.lock()->getValue2(my_string))
+    {
+      return boost::python::object(my_string);
+    }
+    else if(instance_.lock()->getValue2(my_int))
+    {
+      return boost::python::object(my_string);
+    }
+    else
+    {
+      return boost::python::object();
+    }
+  }
+
+  void setValue(boost::python::object value)
+  {
+    // hack for the demo
+    boost::python::extract<std::string> my_string(value);
+    if (my_string.check())
+    {
+      std::string val = my_string;
+      instance_.lock()->setValue(val);
+      return;
+    }
+    boost::python::extract<int> my_int(value);
+    if (my_int.check())
+    {
+      int val = my_int;
+      instance_.lock()->setValue(val);
+      return;
+    }
+  }
+
+
 };
 
 char timer_string[] = "timer_";
 char parameter_string[] = "parameter_";
 
-typedef PrimitiveListProxy<timer::PeriodicTimer, PeriodicTimerProxy, timer_string> TimerListProxy;
-typedef PrimitiveListProxy<parameter::ParameterAbstract, ParameterProxy, parameter_string> ParameterListProxy;
+typedef PrimitiveListProxy1<timer::PeriodicTimer, PeriodicTimerProxy, timer_string> TimerListProxy;
+typedef PrimitiveListProxy2<parameter::ParameterAbstract, ParameterProxy> ParameterListProxy;
 
 class ComponentProxy : public ProxyBase<Component>
 {
@@ -195,7 +280,11 @@ BOOST_PYTHON_MODULE(darc)
 {
   // DARC
   bp::class_<darc::Log, boost::noncopyable>("Log", bp::no_init)
-    .add_static_property("level", &darc::Log::getLevel ,&darc::Log::setLevel);
+    .add_static_property("level", &darc::Log::getLevel ,&darc::Log::setLevel)
+    .def("logToFile", &darc::Log::logToFile)
+    .def("logToConsole", &darc::Log::logToConsole)
+    .staticmethod("logToFile")
+    .staticmethod("logToConsole");
 
   bp::enum_<darc::Log::LevelType>("LevelType")
     .value("ALL", darc::Log::LOG_ALL)
@@ -250,7 +339,8 @@ BOOST_PYTHON_MODULE(darc)
     .add_property("period", &darc::python::PeriodicTimerProxy::getPeriod, &darc::python::PeriodicTimerProxy::setPeriod);
 
   bp::class_<darc::python::ParameterProxy>("Parameter_", bp::no_init)
-    .add_property("name", &darc::python::ParameterProxy::getName);
+    .add_property("name", &darc::python::ParameterProxy::getName)
+    .add_property("value", &darc::python::ParameterProxy::getValue, &darc::python::ParameterProxy::setValue);
 
   bp::class_<darc::python::TimerListProxy>("TimerList_", bp::no_init)
     .def("get", &darc::python::TimerListProxy::get)
@@ -265,18 +355,4 @@ BOOST_PYTHON_MODULE(darc)
   bp::class_<std::vector<std::string> >("list")
     .def(bp::vector_indexing_suite<std::vector<std::string> >());
 
-  // Ctrl Handles
-  /*  bp::class_<darc::ComponentCtrlHandle>("ComponentCtrlHandle", bp::no_init)
-    .def("instanceName", &darc::ComponentCtrlHandle::instanceName)
-    .add_property("timers", &darc::ComponentCtrlHandle::timers);
-
-  bp::class_<darc::timer::TimerListCtrlHandle>("TimerListCtrlHandle", bp::no_init)
-    .add_property("periodic", &darc::timer::TimerListCtrlHandle::getPeriodicTimers);
-
-  bp::class_<darc::timer::PeriodicTimerCtrlHandle>("PeriodicTimerCtrlHandle", bp::no_init)
-    .add_property("period", &darc::timer::PeriodicTimerCtrlHandle::getPeriod, &darc::timer::PeriodicTimerCtrlHandle::setPeriod);
-
-  bp::class_<std::vector<darc::timer::PeriodicTimerCtrlHandle> >("PeriodicTimerCtrlHandleList")
-    .def(bp::vector_indexing_suite<std::vector<darc::timer::PeriodicTimerCtrlHandle> >());
-  */
 }

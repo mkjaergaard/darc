@@ -45,8 +45,22 @@ namespace darc
 {
 
 Log::LevelType Log::current_level_ = Log::LOG_TRACE;
+bool Log::log_to_file_ = false;
+std::ofstream Log::log_file_;
 
 const char* Log::level_names_[] = {"?????","DEBUG","TRACE","INFO ","WARN ","ERROR", "FATAL"};
+
+void Log::logToFile(const std::string& filename)
+{
+  log_file_.open(filename.c_str());
+  log_to_file_ = true;
+}
+
+void Log::logToConsole()
+{
+  log_file_.close();
+  log_to_file_ = false;
+}
 
 Log::LevelType Log::getLevel()
 {
@@ -63,12 +77,24 @@ void Log::report(Log::LevelType level, const char * msg, ...)
   if(level >= current_level_)
   {
     char buffer[512];
-    sprintf(buffer, "[%s %s] %s\n", level_names_[level], bt::to_simple_string(bt::microsec_clock::universal_time().time_of_day()).c_str(), msg );
+    sprintf(buffer, "[%s %s] %s", level_names_[level], bt::to_simple_string(bt::microsec_clock::universal_time().time_of_day()).c_str(), msg );
 
+    char buffer2[1024];
     va_list args;
     va_start(args, msg);
-    vprintf(buffer, args);
+    vsprintf(buffer2, buffer, args);
     va_end(args);
+
+    if(log_to_file_)
+    {
+      log_file_ << buffer2 << std::endl;
+      log_file_.flush();
+    }
+    else
+    {
+      std::cout << buffer2 << std::endl;
+    }
+
   }
 }
 
