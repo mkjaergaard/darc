@@ -47,6 +47,10 @@ EventListener::EventListener(darc::Owner* owner) :
   owner_(owner)
 {
   owner->addPrimitive(this->getWeakPtr());
+}
+
+void EventListener::onStart()
+{
   conn1_ = owner_->getNode()->getPublisherManager().getRemoteDispatcher().remoteSubscriberChangeSignal().
     connect(boost::bind(&EventListener::postRemoteSubscriberChanges,
 			this, _1, _2, _3));
