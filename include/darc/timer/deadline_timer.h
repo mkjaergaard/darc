@@ -57,13 +57,13 @@ protected:
 public:
   template<typename O>
   DeadlineTimer(O * owner, void(O::*callback)()) :
+    darc::Primitive(owner),
     boost::asio::deadline_timer(*(owner->getIOService())),
     callback_(boost::bind(callback, owner))
   {
-    owner->addPrimitive(this);
   }
 
-  void start(boost::posix_time::time_duration time);
+  void startTimer(boost::posix_time::time_duration time);
 
 protected:
   void onStart();

@@ -64,13 +64,18 @@ protected:
 
 public:
   // impl of darc::Owner
-  boost::asio::io_service * getIOService()
+  inline boost::asio::io_service * getIOService()
   {
     return parent_->getIOService();
   }
 
+  inline const bool& isAttached()
+  {
+    return parent_->isAtatched();
+  }
+
   // impl of darc::Owner
-  boost::shared_ptr<Node> getNode()
+  inline boost::shared_ptr<Node> getNode()
   {
     return parent_->getNode();
   }

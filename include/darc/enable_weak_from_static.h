@@ -36,6 +36,7 @@
 #pragma once
 
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 namespace darc
 {

@@ -34,37 +34,56 @@
  */
 
 #include <darc/owner.h>
-#include <darc/timer/periodic_timer.h>
-#include <darc/parameter/parameter.h>
-#include <darc/composition.h>
 
 namespace darc
 {
 
-void Owner::addPrimitive(Primitive * prim)
+void Owner::startPrimitives()
 {
-  all_list_.add(prim);
+  for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {
+    it->second.lock()->start();
+  }
 }
 
-void Owner::addTimer(boost::weak_ptr<timer::PeriodicTimer> timer)
+void Owner::stopPrimitives()
 {
-  //  all_list_.add(timer);
+  for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {
+    it->second.lock()->stop();
+  }
 }
 
-void Owner::addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter)
+void Owner::pausePrimitives()
 {
-  //  all_list_.add(parameter);
+  for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {
+    it->second.lock()->pause();
+  }
+}
+
+void Owner::unpausePrimitives()
+{
+  for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {
+    it->second.lock()->unpause();
+  }
+}
+
+void Owner::add(Primitive * item)
+{
+  list_.insert(PrimitiveListType::value_type(item->getID(), item->getWeakPtr()));
 }
 
 void Owner::latchStatistics(int32_t period_usec)
 {
   /*
-  for(PrimitiveList::PrimitiveListType::iterator it = all_list_.list_.begin();
-      it != all_list_.list_.end();
-      it++)
-  {
+    for(PrimitiveList::PrimitiveListType::iterator it = all_list_.list_.begin();
+    it != all_list_.list_.end();
+    it++)
+    {
     it->lock()->latchStatistics(period_usec);
-  }
+    }
   */
 }
 

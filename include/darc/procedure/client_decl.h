@@ -60,7 +60,6 @@ public:
 
 protected:
   boost::asio::io_service * io_service_;
-  darc::Owner * owner_;
   std::string name_;
   ResultHandlerType result_handler_;
   FeedbackHandlerType feedback_handler_;
@@ -70,12 +69,11 @@ protected:
 public:
   template<typename O>
   Client(O * owner, const std::string& name, void(O::*callback)(const CallID&, const T_Result&)) :
+    darc::Primitive(owner),
     io_service_(owner->getIOService()),
-    owner_(owner),
     name_(name),
     result_handler_(boost::bind(callback, owner, _1, _2))
   {
-    owner->addPrimitive(this);
   }
 
   template<typename O>

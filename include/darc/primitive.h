@@ -37,14 +37,19 @@
 
 #include <map>
 #include <darc/enable_weak_from_static.h>
+//#include <darc/owner_fwd.h>
 #include <darc/id.h>
 #include <darc/statistics/consumer.h>
 
 namespace darc
 {
 
+class Owner;
+
 class Primitive : public EnableWeakFromStatic<Primitive>
 {
+  friend class Owner;
+
 protected:
   typedef enum {STOPPED, PAUSED, RUNNING} StateType;
 
@@ -53,25 +58,15 @@ protected:
 
   StateType state_;
   ID id_;
+  Owner * owner_;
 
   virtual void onPause() {}
   virtual void onUnpause() {}
   virtual void onStop() {}
   virtual void onStart() {}
-
-public:
-  Primitive():
-    state_(STOPPED),
-    id_(ID::create())
-  {}
-
-  virtual ~Primitive()
-  {}
-
-  const ID& getID() const
-  {
-    return id_;
-  }
+  virtual void onAttach() {};
+  virtual const char * getTypeName() { return ""; }
+  virtual const uint32_t getTypeID() { return 0; }
 
   virtual void pause()
   {
@@ -118,6 +113,17 @@ public:
     {
       it->second->latch(period_usec);
     }
+  }
+
+public:
+  Primitive(Owner * owner);
+
+  virtual ~Primitive()
+  {}
+
+  const ID& getID() const
+  {
+    return id_;
   }
 
 };

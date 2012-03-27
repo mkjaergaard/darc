@@ -44,7 +44,7 @@ namespace pubsub
 {
 
 EventListener::EventListener(darc::Owner* owner) :
-  owner_(owner)
+  darc::Primitive(owner)
 {
   owner->addPrimitive(this);
 }

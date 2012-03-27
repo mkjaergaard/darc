@@ -51,7 +51,6 @@ class Subscriber : public darc::Primitive
 {
 private:
   boost::asio::io_service * io_service_;
-  darc::Owner * owner_;
   std::string topic_;
 
   typedef boost::function<void(const T&, const CallbackInfo&)> CallbackType;

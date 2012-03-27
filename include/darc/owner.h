@@ -37,52 +37,38 @@
 #define __DARC_OWNER_H_INCLUDED__
 
 #include <boost/asio/io_service.hpp>
+#include <boost/weak_ptr.hpp>
 #include <darc/primitive.h>
-#include <darc/primitive_list.h>
 
 namespace darc
 {
-
-namespace timer { class PeriodicTimer; }
-namespace parameter { class ParameterAbstract; }
 
 class Node;
 
 class Owner
 {
 protected:
-  PrimitiveList all_list_;
+  typedef std::map<ID, boost::weak_ptr<Primitive> > PrimitiveListType;
+  PrimitiveListType list_;
 
 public:
   virtual boost::asio::io_service * getIOService() = 0;
+  virtual const bool& isAttached() = 0;
   virtual boost::shared_ptr<darc::Node> getNode() = 0;
   virtual const ID& getComponentID() = 0;
 
-  void startPrimitives()
-  {
-    all_list_.startAll();
-  }
-
-  void stopPrimitives()
-  {
-    all_list_.stopAll();
-  }
-
-  void pausePrimitives()
-  {
-    all_list_.pauseAll();
-  }
-
-  void unpausePrimitives()
-  {
-    all_list_.unpauseAll();
-  }
-
+  void startPrimitives();
+  void stopPrimitives();
+  void pausePrimitives();
+  void unpausePrimitives();
+  void add(Primitive * item);
   void latchStatistics(int32_t period_usec);
 
-  void addPrimitive(Primitive * prim);
-  void addTimer(boost::weak_ptr<timer::PeriodicTimer> timer);
-  void addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter);
+  void addPrimitive(Primitive * prim)
+  {
+    // todo: replace calls;
+    add(prim);
+  }
 
 };
 

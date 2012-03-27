@@ -42,7 +42,7 @@ namespace darc
 namespace timer
 {
 
-void DeadlineTimer::start(boost::posix_time::time_duration time)
+void DeadlineTimer::startTimer(boost::posix_time::time_duration time)
 {
   expires_from_now(time);
   async_wait( boost::bind(&DeadlineTimer::handler, this, boost::asio::placeholders::error) );

@@ -88,6 +88,11 @@ public:
     return &io_service_;
   }
 
+  inline const bool& isAttached()
+  {
+    return attached_;
+  }
+
   // impl of darc::Owner
   inline NodePtr getNode()
   {

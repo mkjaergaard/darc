@@ -52,7 +52,7 @@ protected:
 
 public:
   Parameter(darc::Owner * owner, const std::string& name, const T& initial_value) :
-    ParameterAbstract(name),
+    ParameterAbstract(owner, name),
     value_(initial_value)
   {
     owner->addPrimitive(this);

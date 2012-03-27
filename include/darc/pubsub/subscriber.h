@@ -48,23 +48,21 @@ namespace pubsub
 template<typename T>
 template<typename O>
 Subscriber<T>::Subscriber(O * owner, const std::string& topic, void(O::*callback)(const T&)) :
+  darc::Primitive(owner),
   io_service_(owner->getIOService()),
-  owner_(owner),
   topic_(topic),
   callback_(boost::bind(callback, owner, _1))
 {
-  owner->addPrimitive(this);
 }
 
 template<typename T>
 template<typename O>
 Subscriber<T>::Subscriber(O * owner, const std::string& topic, void(O::*callback)(const T&, const CallbackInfo&)) :
+  darc::Primitive(owner),
   io_service_(owner->getIOService()),
-  owner_(owner),
   topic_(topic),
   callback_(boost::bind(callback, owner, _1, _2))
 {
-  owner->addPrimitive(this->getWeakPtr());
 }
 
 template<typename T>

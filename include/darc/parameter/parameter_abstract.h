@@ -49,7 +49,8 @@ protected:
   std::string name_;
 
 public:
-  ParameterAbstract(const std::string& name) :
+  ParameterAbstract(darc::Owner * owner, const std::string& name) :
+    darc::Primitive(owner),
     name_(name)
   {
   }

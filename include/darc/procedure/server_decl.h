@@ -57,7 +57,6 @@ public:
 
 protected:
   boost::asio::io_service * io_service_;
-  darc::Owner * owner_;
   std::string name_;
   boost::weak_ptr<LocalDispatcher<T_Arg, T_Result, T_Feedback> > dispatcher_;
 
@@ -66,8 +65,8 @@ protected:
 public:
   template<typename O>
   Server(O * owner, const std::string& name, void(O::*callback)(const CallID&, const T_Arg&)) :
+    darc::Primitive(owner),
     io_service_(owner->getIOService()),
-    owner_(owner),
     name_(name),
     method_(boost::bind(callback, owner, _1, _2))
   {

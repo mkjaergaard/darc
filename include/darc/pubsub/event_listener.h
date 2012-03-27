@@ -56,7 +56,6 @@ public:
   RemotePublisherChangesCallbackType remote_publisher_changes_callback_;
 
 protected:
-  darc::Owner * owner_;
   boost::signals::connection conn1_;
   boost::signals::connection conn2_;
 

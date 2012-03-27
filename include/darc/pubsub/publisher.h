@@ -52,15 +52,24 @@ class Publisher : public darc::Primitive
 {
 protected:
   boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
-  darc::Owner * owner_;
   std::string topic_;
+
+protected:
+  const char * getTypeName()
+  {
+    return "Publisher";
+  }
+
+  const uint32_t getTypeID()
+  {
+    return 0x00010001u;
+  }
 
 public:
   Publisher(darc::Owner* owner, const std::string& topic) :
-    owner_(owner),
+    darc::Primitive(owner),
     topic_(topic)
   {
-    owner->addPrimitive(this);
   }
 
   void publish(boost::shared_ptr<const T> msg)
