@@ -47,9 +47,6 @@
 namespace darc
 {
 
-class Component;
-typedef boost::shared_ptr<Component> ComponentPtr;
-
 class Node
 {
 public:
@@ -58,16 +55,15 @@ public:
   virtual pubsub::Manager& getPublisherManager() = 0;
   virtual procedure::Manager& getProcedureManager() = 0;
   virtual network::LinkManager& getNetworkManager() = 0;
-  virtual void accept( const std::string& url ) = 0;
-  virtual void connect( const std::string& url ) = 0;
+  virtual void accept(const std::string& url) = 0;
+  virtual void connect(const std::string& url) = 0;
   virtual ComponentPtr instantiateComponent(const std::string& instance_name) = 0;
-  virtual void runComponent(ID id) = 0;
-  virtual void stopComponent(ID id) = 0;
+  virtual void runComponent(const ID& id) = 0;
+  virtual void stopComponent(const ID& id) = 0;
   virtual void attach(ComponentPtr component) = 0;
   virtual const ID& lookupComponentInstance(const std::string& instance_name) = 0;
 
   static boost::shared_ptr<Node> create();
-
 };
 
 typedef boost::shared_ptr<Node> NodePtr;

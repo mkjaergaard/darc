@@ -41,6 +41,7 @@
 #include <darc/pubsub/manager.h>
 #include <darc/enable_weak_from_static.h>
 #include <darc/owner.h>
+#include <darc/pubsub/id_types.h>
 
 namespace darc
 {
@@ -60,9 +61,9 @@ protected:
     return "Publisher";
   }
 
-  const uint32_t getTypeID()
+  const int getTypeID()
   {
-    return 0x00010001u;
+    return PUBLISHER_TYPE_ID;
   }
 
 public:

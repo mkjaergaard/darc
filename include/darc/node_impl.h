@@ -113,13 +113,13 @@ protected:
     return c;
   }
 
-  void runComponent(ID id)
+  void runComponent(const ID& id)
   {
     assert(component_instances_.count(id) > 0);
     thread_manager_.allocateThreadAndRun(component_instances_[id]);
   }
 
-  void stopComponent(ID id)
+  void stopComponent(const ID& id)
   {
     assert(component_instances_.count(id) > 0);
     thread_manager_.stopThread(component_instances_[id]);

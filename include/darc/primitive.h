@@ -66,7 +66,7 @@ protected:
   virtual void onStart() {}
   virtual void onAttach() {};
   virtual const char * getTypeName() { return ""; }
-  virtual const uint32_t getTypeID() { return 0; }
+  virtual const int getTypeID() { return 0; }
 
   virtual void pause()
   {

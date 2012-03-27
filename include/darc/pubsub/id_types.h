@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,68 +28,28 @@
  */
 
 /**
- * DARC Subscriber class
+ * DARC PubSub ID definitions
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-#include <darc/owner.h>
-#include <darc/enable_weak_from_static.h>
-#include <darc/pubsub/callback_info.h>
+#include <darc/id.h>
 
 namespace darc
 {
-
 namespace pubsub
 {
 
-template<typename T>
-class Subscriber : public darc::Primitive
-{
-private:
-  boost::asio::io_service * io_service_;
-  std::string topic_;
+typedef darc::ID SubscriberID;
+typedef darc::ID PublisherID;
+typedef darc::ID TopicID;
 
-  typedef boost::function<void(const T&, const CallbackInfo&)> CallbackType;
-  CallbackType callback_;
-
-  boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
-
-  typedef boost::shared_ptr<const T> MsgPtrType;
-
-
-public:
-  //  Subscriber(darc::Owner * owner, const std::string& topic, CallbackType callback);
-  template<typename O>
-  Subscriber(O * owner, const std::string& topic, void(O::*callback)(const T&));
-
-  template<typename O>
-  Subscriber(O * owner, const std::string& topic, void(O::*callback)(const T&, const CallbackInfo&));
-
-  void onStart();
-  void onStop();
-
-  ~Subscriber()
-  {
-    // unregister subscriber
-  }
-
-  void dispatch( MsgPtrType &msg, CallbackInfo &info)
-  {
-    io_service_->post( boost::bind( &Subscriber::receive, this, msg, info ) );
-  }
-
-protected:
-  void receive(MsgPtrType msg, CallbackInfo info)
-  {
-    callback_(*msg, info);
-  }
-
-  const char * getTypeName();
-  const int getTypeID();
+enum {
+  MANAGER_TYPE_ID = 0x0100,
+  PUBLISHER_TYPE_ID = 0x0101,
+  SUBSCRIBER_TYPE_ID = 0x0102
 };
 
 }

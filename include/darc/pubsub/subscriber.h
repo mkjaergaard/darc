@@ -39,6 +39,7 @@
 #include <darc/pubsub/subscriber_decl.h>
 #include <darc/pubsub/manager.h>
 #include <darc/pubsub/local_dispatcher.h>
+#include <darc/pubsub/id_types.h>
 
 namespace darc
 {
@@ -75,6 +76,18 @@ template<typename T>
 void Subscriber<T>::onStop()
 {
   owner_->getNode()->getPublisherManager().getLocalDispatcher<T>(topic_)->unregisterSubscriber(this);
+}
+
+template<typename T>
+const char * Subscriber<T>::getTypeName()
+{
+  return "Subscriber";
+}
+
+template<typename T>
+const int Subscriber<T>::getTypeID()
+{
+  return SUBSCRIBER_TYPE_ID;
 }
 
 }
