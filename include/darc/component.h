@@ -44,6 +44,7 @@
 #include <darc/enable_weak_from_static.h>
 #include <darc/node.h>
 #include <darc/id.h>
+#include <darc/registry.h>
 
 namespace darc
 {

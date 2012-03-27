@@ -34,10 +34,48 @@
  */
 
 #include <darc/registry.h>
+#include <darc/log.h>
 
 namespace darc
 {
 
-  Registry * Registry::instance_ = 0;
+Registry::Registry()
+{
+}
+
+Registry * Registry::instance_ = 0;
+
+Registry * Registry::instance()
+{
+  // todo: better use a mutex
+  if( instance_ == 0 )
+  {
+    instance_ = new Registry();
+  }
+  return instance_;
+}
+
+int Registry::registerComponent(const std::string& component_name, InstantiateComponentMethod method)
+{
+  Registry * inst = instance();
+  inst->component_list_[component_name] = method;
+  DARC_INFO("Registered Component: %s", component_name.c_str());
+  return 1;
+}
+
+darc::ComponentPtr Registry::instantiateComponent(const std::string& instance_name, NodePtr node)
+{
+  Registry * inst = instance();
+  if( inst->component_list_.count(instance_name) )
+  {
+    DARC_INFO("Instantiating Component %s", instance_name.c_str());
+    return inst->component_list_[instance_name](instance_name, node);
+  }
+  else
+  {
+    DARC_FATAL("Component not registered %s", instance_name.c_str());
+    return darc::ComponentPtr();
+  }
+}
 
 }
