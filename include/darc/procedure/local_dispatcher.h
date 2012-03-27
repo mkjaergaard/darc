@@ -54,7 +54,7 @@ protected:
   typedef Client<T_Arg, T_Result, T_Feedback> ClientType;
   typedef Server<T_Arg, T_Result, T_Feedback> ServerType;
 
-  typedef std::map<ClientID, boost::weak_ptr<ClientType> > ClientListType;
+  typedef std::map<ClientID, ClientType*> ClientListType;
   typedef std::map<CallID, NodeID> ActiveServerCallsType;
   typedef std::map<CallID, ClientID> ActiveClientCallsType;
 
@@ -64,7 +64,7 @@ protected:
 
   Manager * manager_;
 
-  boost::weak_ptr<ServerType> server_;
+  ServerType* server_;
   ClientListType client_list_;
 
   // Structure to hold procedure calls we have received
@@ -77,7 +77,8 @@ public:
   LocalDispatcher(const std::string& procedure_name, Manager * manager) :
     procedure_name_(procedure_name),
     procedure_id_(ProcedureID::create()),
-    manager_(manager)
+    manager_(manager),
+    server_(0)
   {
   }
 
@@ -90,7 +91,7 @@ public:
   const CallID& performCall(const ClientID& client_id, const boost::shared_ptr< T_Arg >& arg)
   {
     // Check if server is available locally
-    if(server_.use_count() != 0)
+    if(server_ != 0)
     {
       // Create CallID
       CallID call_id = CallID::create();
@@ -152,19 +153,19 @@ public:
   // Called by Clients (Component Thread)
   void registerClient( ClientType * client )
   {
-    client_list_[client->getID()] = client->getWeakPtr();
+    client_list_[client->getID()] = client;
   }
 
   // Called by Servers (Component Thread)
   void registerServer( ServerType * server )
   {
-    assert(server_.use_count() == 0);
+    assert(server_ == 0);
     manager_->getRemoteDispatcher().registerProcedure(procedure_name_,
 						      procedure_id_,
 						      ros::message_traits::DataType<T_Arg>::value(),
 						      ros::message_traits::DataType<T_Result>::value(),
 						      ros::message_traits::DataType<T_Feedback>::value());
-    server_ = server->getWeakPtr();
+    server_ = server;
   }
 
   // Called by Manager (Node Thread)
@@ -190,10 +191,10 @@ public:
 private:
   void dispatchCallLocally(const CallID& call_id, const NodeID& calling_node, const boost::shared_ptr<const T_Arg>& arg)
   {
-    if(server_.use_count() != 0)
+    if(server_ != 0)
     {
       active_server_calls_.insert(ActiveServerCallsType::value_type(call_id, calling_node));
-      server_.lock()->postCall(call_id, arg);
+      server_->postCall(call_id, arg);
     }
   }
 
@@ -205,7 +206,7 @@ private:
       typename ClientListType::iterator client_entry = client_list_.find(client_call_entry->second);
       if(client_entry != client_list_.end())
       {
-	client_entry->second.lock()->postFeedback(call_id, msg);
+	client_entry->second->postFeedback(call_id, msg);
       }
     }
   }
@@ -219,7 +220,7 @@ private:
       active_client_calls_.erase(client_call_entry);
       if(client_entry != client_list_.end())
       {
-	client_entry->second.lock()->postResult(call_id, msg);
+	client_entry->second->postResult(call_id, msg);
       }
     }
   }

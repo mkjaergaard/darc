@@ -46,7 +46,7 @@ namespace pubsub
 EventListener::EventListener(darc::Owner* owner) :
   owner_(owner)
 {
-  owner->addPrimitive(this->getWeakPtr());
+  owner->addPrimitive(this);
 }
 
 void EventListener::onStart()

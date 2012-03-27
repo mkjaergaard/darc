@@ -41,31 +41,31 @@
 namespace darc
 {
 
-void Owner::addPrimitive(boost::weak_ptr<Primitive> prim)
+void Owner::addPrimitive(Primitive * prim)
 {
   all_list_.add(prim);
 }
 
 void Owner::addTimer(boost::weak_ptr<timer::PeriodicTimer> timer)
 {
-  timer_list_.add(timer);
-  all_list_.add(timer);
+  //  all_list_.add(timer);
 }
 
 void Owner::addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter)
 {
-  parameter_list_.add(parameter);
-  all_list_.add(parameter);
+  //  all_list_.add(parameter);
 }
 
 void Owner::latchStatistics(int32_t period_usec)
 {
-  for(PrimitiveList<Primitive>::PrimitiveListType::iterator it = all_list_.list_.begin();
+  /*
+  for(PrimitiveList::PrimitiveListType::iterator it = all_list_.list_.begin();
       it != all_list_.list_.end();
       it++)
   {
     it->lock()->latchStatistics(period_usec);
   }
+  */
 }
 
 

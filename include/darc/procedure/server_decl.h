@@ -50,7 +50,7 @@ namespace procedure
 {
 
 template<typename T_Arg, typename T_Result, typename T_Feedback>
-class Server : public darc::Primitive, public darc::EnableWeakFromStatic<Server<T_Arg, T_Result, T_Feedback> >
+class Server : public darc::Primitive
 {
 public:
   typedef boost::function<void(const CallID&, const T_Arg&)> MethodType;
@@ -71,7 +71,7 @@ public:
     name_(name),
     method_(boost::bind(callback, owner, _1, _2))
   {
-    owner->addPrimitive(this->getWeakPtr());
+    owner->addPrimitive(this);
   }
 
   // Called by darc::procedure::Dispatcher

@@ -43,7 +43,7 @@
 namespace darc
 {
 
-class Primitive
+class Primitive : public EnableWeakFromStatic<Primitive>
 {
 protected:
   typedef enum {STOPPED, PAUSED, RUNNING} StateType;

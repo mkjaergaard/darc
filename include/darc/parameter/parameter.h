@@ -55,7 +55,7 @@ public:
     ParameterAbstract(name),
     value_(initial_value)
   {
-    owner->addParameter(this->getWeakPtr());
+    owner->addPrimitive(this);
   }
 
   const T& getValue() const

@@ -46,7 +46,7 @@ namespace darc
 namespace pubsub
 {
 
-class EventListener : public darc::Primitive, public darc::EnableWeakFromStatic<EventListener>
+class EventListener : public darc::Primitive
 {
 public:
   typedef boost::function<void(const std::string, const std::string, size_t)> RemoteSubscriberChangesCallbackType;

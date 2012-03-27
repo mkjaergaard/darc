@@ -48,7 +48,7 @@ namespace pubsub
 {
 
 template<typename T>
-class Publisher : public darc::Primitive, public darc::EnableWeakFromStatic<Publisher<T> >
+class Publisher : public darc::Primitive
 {
 protected:
   boost::weak_ptr<LocalDispatcher<T> > dispatcher_;
@@ -60,7 +60,7 @@ public:
     owner_(owner),
     topic_(topic)
   {
-    owner->addPrimitive(this->getWeakPtr());
+    owner->addPrimitive(this);
   }
 
   void publish(boost::shared_ptr<const T> msg)

@@ -52,7 +52,7 @@ namespace procedure
 {
 
 template<typename T_Arg, typename T_Result, typename T_Feedback>
-class Client : public darc::Primitive, public::darc::EnableWeakFromStatic<Client<T_Arg, T_Result, T_Feedback> >
+class Client : public darc::Primitive
 {
 public:
   typedef boost::function<void(const CallID&, const T_Result&)> ResultHandlerType;
@@ -75,7 +75,7 @@ public:
     name_(name),
     result_handler_(boost::bind(callback, owner, _1, _2))
   {
-    owner->addPrimitive(this->getWeakPtr());
+    owner->addPrimitive(this);
   }
 
   template<typename O>

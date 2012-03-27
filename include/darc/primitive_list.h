@@ -41,51 +41,50 @@
 namespace darc
 {
 
-template<typename T>
-class PrimitiveList : public EnableWeakFromStatic<PrimitiveList<T> >
+class PrimitiveList
 {
 protected:
 public:
-  typedef std::vector<boost::weak_ptr<T> > PrimitiveListType;
+  typedef std::map<ID, boost::weak_ptr<Primitive> > PrimitiveListType;
   PrimitiveListType list_;
 
 public:
   void startAll()
-  {
-    for( typename PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {/*
+    for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
     {
-      it->lock()->start();
-    }
+      it->second.lock()->start();
+      }*/
   }
 
   void stopAll()
-  {
-    for( typename PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {/*
+    for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
     {
-      it->lock()->stop();
-    }
+      it->second.lock()->stop();
+      }*/
   }
 
   void pauseAll()
-  {
-    for( typename PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {/*
+    for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
     {
-      it->lock()->pause();
-    }
+      it->second.lock()->pause();
+      }*/
   }
 
   void unpauseAll()
-  {
-    for( typename PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {/*
+    for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
     {
-      it->lock()->unpause();
-    }
+      it->second.lock()->unpause();
+      }*/
   }
 
-  void add(boost::weak_ptr<T> item)
-  {
-    list_.push_back(item);
-  }
+  void add(Primitive * item)
+  {/*
+     list_.insert(PrimitiveListType::value_type(item->getID(),item->getWeakPtr()));*/
+    }
 
 };
 

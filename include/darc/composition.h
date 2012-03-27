@@ -46,7 +46,7 @@
 namespace darc
 {
 
-class Composition : public Owner, public Primitive, public EnableWeakFromStatic<Composition>
+class Composition : public Owner, public Primitive
 {
 protected:
   Owner * parent_;
@@ -55,7 +55,7 @@ protected:
   Composition(Owner * parent):
     parent_(parent)
   {
-    parent->addPrimitive(this->getWeakPtr());
+    parent->addPrimitive(this);
   }
 
   virtual ~Composition()

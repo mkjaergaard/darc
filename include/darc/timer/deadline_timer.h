@@ -47,7 +47,7 @@ namespace darc
 namespace timer
 {
 
-class DeadlineTimer : public darc::Primitive, public boost::asio::deadline_timer, public EnableWeakFromStatic<DeadlineTimer>
+class DeadlineTimer : public darc::Primitive, public boost::asio::deadline_timer
 {
 protected:
   typedef boost::function<void()> CallbackType;
@@ -60,7 +60,7 @@ public:
     boost::asio::deadline_timer(*(owner->getIOService())),
     callback_(boost::bind(callback, owner))
   {
-    owner->addPrimitive(this->getWeakPtr());
+    owner->addPrimitive(this);
   }
 
   void start(boost::posix_time::time_duration time);

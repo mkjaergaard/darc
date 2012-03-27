@@ -50,7 +50,7 @@ namespace python{ class PeriodicTimerProxy; }
 namespace timer
 {
 
-class PeriodicTimer : public darc::Primitive, public boost::asio::deadline_timer, public EnableWeakFromStatic<PeriodicTimer>
+class PeriodicTimer : public darc::Primitive, public boost::asio::deadline_timer
 {
   friend class python::PeriodicTimerProxy;
 
@@ -74,7 +74,7 @@ public:
     callback_(boost::bind(callback, owner)),
     period_(period)
   {
-    owner->addTimer(this->getWeakPtr());
+    owner->addPrimitive(this);
   }
 
 protected:

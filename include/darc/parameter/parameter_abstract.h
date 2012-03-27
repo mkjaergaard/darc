@@ -42,7 +42,7 @@ namespace darc
 namespace parameter
 {
 
-class ParameterAbstract : public Primitive, public EnableWeakFromStatic<ParameterAbstract>
+class ParameterAbstract : public Primitive
 {
 
 protected:

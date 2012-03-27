@@ -57,7 +57,7 @@ private:
   std::string topic_;
   Manager * manager_;
 
-  typedef std::map<ID, boost::weak_ptr<Subscriber<T> > > SubscriberListType;
+  typedef std::map<ID, Subscriber<T>* > SubscriberListType;
   SubscriberListType subscriber_list_;
 
   size_t publisher_count_;
@@ -81,7 +81,7 @@ public:
     {
       manager_->getRemoteDispatcher().registerSubscription(topic_, ros::message_traits::DataType<T>::value());
     }
-    subscriber_list_[sub->getID()] = sub->getWeakPtr();
+    subscriber_list_[sub->getID()] = sub;
   }
 
   void unregisterSubscriber( Subscriber<T> * sub )
@@ -124,7 +124,7 @@ public:
          it != subscriber_list_.end();
          it++)
     {
-      it->second.lock()->dispatch( msg, info );
+      it->second->dispatch( msg, info );
     }
   }
 

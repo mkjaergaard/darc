@@ -53,7 +53,7 @@ Subscriber<T>::Subscriber(O * owner, const std::string& topic, void(O::*callback
   topic_(topic),
   callback_(boost::bind(callback, owner, _1))
 {
-  owner->addPrimitive(this->getWeakPtr());
+  owner->addPrimitive(this);
 }
 
 template<typename T>

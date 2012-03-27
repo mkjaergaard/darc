@@ -51,9 +51,7 @@ class Node;
 class Owner
 {
 protected:
-  PrimitiveList<timer::PeriodicTimer> timer_list_;
-  PrimitiveList<parameter::ParameterAbstract> parameter_list_;
-  PrimitiveList<Primitive> all_list_;
+  PrimitiveList all_list_;
 
 public:
   virtual boost::asio::io_service * getIOService() = 0;
@@ -82,7 +80,7 @@ public:
 
   void latchStatistics(int32_t period_usec);
 
-  void addPrimitive(boost::weak_ptr<Primitive> prim);
+  void addPrimitive(Primitive * prim);
   void addTimer(boost::weak_ptr<timer::PeriodicTimer> timer);
   void addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter);
 
