@@ -65,12 +65,15 @@ public:
     id_(ID::create())
   {}
 
+  virtual ~Primitive()
+  {}
+
   const ID& getID() const
   {
     return id_;
   }
 
-  void pause()
+  virtual void pause()
   {
     if( state_ == RUNNING )
     {
@@ -79,7 +82,7 @@ public:
     }
   }
 
-  void unpause()
+  virtual void unpause()
   {
     if( state_ == PAUSED )
     {
@@ -88,7 +91,7 @@ public:
     }
   }
 
-  void stop()
+  virtual void stop()
   {
     if( state_ != STOPPED )
     {
@@ -97,7 +100,7 @@ public:
     }
   }
 
-  void start()
+  virtual void start()
   {
     if( state_ == STOPPED )
     {

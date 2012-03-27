@@ -37,9 +37,8 @@
 #define __DARC_OWNER_H_INCLUDED__
 
 #include <boost/asio/io_service.hpp>
-#include <darc/primitive_list.h>
 #include <darc/primitive.h>
-#include <darc/subcomponent_list.h>
+#include <darc/primitive_list.h>
 
 namespace darc
 {
@@ -55,7 +54,6 @@ protected:
   PrimitiveList<timer::PeriodicTimer> timer_list_;
   PrimitiveList<parameter::ParameterAbstract> parameter_list_;
   PrimitiveList<Primitive> all_list_;
-  SubcomponentList subcomponent_list_;
 
 public:
   virtual boost::asio::io_service * getIOService() = 0;
@@ -65,33 +63,28 @@ public:
   void startPrimitives()
   {
     all_list_.startAll();
-    subcomponent_list_.startAll();
   }
 
   void stopPrimitives()
   {
     all_list_.stopAll();
-    subcomponent_list_.stopAll();
   }
 
   void pausePrimitives()
   {
     all_list_.pauseAll();
-    subcomponent_list_.pauseAll();
   }
 
   void unpausePrimitives()
   {
     all_list_.unpauseAll();
-    subcomponent_list_.unpauseAll();
   }
 
   void latchStatistics(int32_t period_usec);
 
   void addPrimitive(boost::weak_ptr<Primitive> prim);
   void addTimer(boost::weak_ptr<timer::PeriodicTimer> timer);
-  void addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter );
-  void addSubcomponent(boost::weak_ptr<Subcomponent> sc);
+  void addParameter(boost::weak_ptr<parameter::ParameterAbstract> parameter);
 
 };
 

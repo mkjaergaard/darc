@@ -24,39 +24,86 @@
  * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF bvSUCH DAMAGE.
+ * POSSIBILITY OF SUCH DAMAGE.
  */
 
 /**
- * DARC SubcomponentList class
+ * DARC Composition class
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
+#ifndef __DARC_COMPOSITION_H_INCLUDED__
+#define __DARC_COMPOSITION_H_INCLUDED__
 
-#include <vector>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <darc/node.h>
+#include <darc/component.h>
+#include <darc/primitive.h>
 #include <darc/enable_weak_from_static.h>
 
 namespace darc
 {
 
-class Subcomponent;
-
-class SubcomponentList : public EnableWeakFromStatic<SubcomponentList>
+class Composition : public Owner, public Primitive, public EnableWeakFromStatic<Composition>
 {
 protected:
-public:
-  typedef std::vector<boost::weak_ptr<Subcomponent> > SubcomponentListType;
-  SubcomponentListType list_;
+  Owner * parent_;
+
+protected:
+  Composition(Owner * parent):
+    parent_(parent)
+  {
+    parent->addPrimitive(this->getWeakPtr());
+  }
+
+  virtual ~Composition()
+  {
+  }
 
 public:
-  void startAll();
-  void stopAll();
-  void pauseAll();
-  void unpauseAll();
-  void add(boost::weak_ptr<Subcomponent> item);
+  // impl of darc::Owner
+  boost::asio::io_service * getIOService()
+  {
+    return parent_->getIOService();
+  }
+
+  // impl of darc::Owner
+  boost::shared_ptr<Node> getNode()
+  {
+    return parent_->getNode();
+  }
+
+  // impl of darc::Owner
+  const ID& getComponentID()
+  {
+    return parent_->getComponentID();
+  }
+
+  // Override of Primitive methods
+  virtual void start()
+  {
+    Owner::startPrimitives();
+  }
+
+  virtual void stop()
+  {
+    Owner::stopPrimitives();
+  }
+
+  virtual void pause()
+  {
+    Owner::pausePrimitives();
+  }
+
+  virtual void unpause()
+  {
+    Owner::unpausePrimitives();
+  }
 
 };
 
 }
+
+#endif
