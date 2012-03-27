@@ -61,7 +61,7 @@ protected:
 
 public:
   EventListener(darc::Owner* owner);
-  void onStart();
+  void onAttach();
 
   void remoteSubscriberChangesListen(RemoteSubscriberChangesCallbackType callback);
   void postRemoteSubscriberChanges(const std::string& topic, const std::string& type_name, size_t remote_subscribers);

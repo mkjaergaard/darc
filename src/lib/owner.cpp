@@ -70,9 +70,23 @@ void Owner::unpausePrimitives()
   }
 }
 
+void Owner::triggerPrimitivesOnAttach()
+{
+  for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {
+    it->second.lock()->onAttach();
+  }
+}
+
 void Owner::add(Primitive * item)
 {
   list_.insert(PrimitiveListType::value_type(item->getID(), item->getWeakPtr()));
+
+  // Trigger onAttach if the owner is already attached to a node
+  if(isAttached())
+  {
+    item->onAttach();
+  }
 }
 
 void Owner::latchStatistics(int32_t period_usec)

@@ -107,6 +107,11 @@ public:
     Owner::unpausePrimitives();
   }
 
+  virtual void onAttach()
+  {
+    triggerPrimitivesOnAttach();
+  }
+
 };
 
 }

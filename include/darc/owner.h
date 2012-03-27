@@ -61,6 +61,7 @@ public:
   void stopPrimitives();
   void pausePrimitives();
   void unpausePrimitives();
+  void triggerPrimitivesOnAttach();
   void add(Primitive * item);
   void latchStatistics(int32_t period_usec);
 

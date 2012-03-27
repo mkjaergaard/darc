@@ -52,9 +52,11 @@ Component::Component() :
 
 void Component::attachNode(const std::string& instance_name, NodePtr node)
 {
+  assert(attached_ == false);
   attached_ = true;
   name_ = instance_name;
   node_ = node;
+  triggerPrimitivesOnAttach();
 }
 
 void Component::statisticsTimerHandler(const boost::system::error_code& error)
