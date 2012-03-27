@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,71 +28,20 @@
  */
 
 /**
- * DARC Registry class
+ * DARC Component Fwd Decl
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <map>
-#include <iostream>
-#include <boost/function.hpp>
-#include <darc/component.h>
-#include <darc/node.h>
-#include <darc/log.h>
+#include <boost/shared_ptr.hpp>
 
 namespace darc
 {
 
-class Registry
-{
-private:
-  typedef boost::function<ComponentPtr(const std::string&, NodePtr)> InstantiateComponentMethod;
-  typedef std::map<const std::string, InstantiateComponentMethod> ComponentListType;
-
-  ComponentListType component_list_;
-
-  static Registry * instance_;
-
-private:
-  Registry() {}
-
-  static Registry * instance()
-  {
-    if( instance_ == 0 )
-    {
-      instance_ = new Registry();
-    }
-    return instance_;
-  }
-
-public:
-  static int registerComponent( const std::string& component_name, InstantiateComponentMethod method )
-  {
-    Registry * inst = instance();
-    inst->component_list_[component_name] = method;
-    DARC_INFO("Registered Component: %s", component_name.c_str());
-    return 1;
-  }
-
-  static darc::ComponentPtr instantiateComponent( const std::string& instance_name, NodePtr node )
-  {
-    Registry * inst = instance();
-    if( inst->component_list_.count(instance_name) )
-    {
-      DARC_INFO("Instantiating Component %s", instance_name.c_str());
-      return inst->component_list_[instance_name](instance_name, node);
-    }
-    else
-    {
-      DARC_FATAL("Component not registered %s", instance_name.c_str());
-      return darc::ComponentPtr();
-    }
-  }
-
-};
+class Component;
+typedef boost::shared_ptr<Component> ComponentPtr;
+typedef boost::weak_ptr<Component> ComponentWkPtr;
 
 }
-
-#define DARC_REGISTER_COMPONENT(classname) namespace classname##_reg { static int dummy = darc::Registry::registerComponent( #classname, boost::bind(&classname::instantiate<classname>, _1, _2) ); }

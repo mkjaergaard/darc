@@ -57,7 +57,7 @@ public:
   void stopThread(ComponentPtr component)
   {
     assert(thread_list_.count(component->getID()) != 0);
-    component->stop_work();
+    component->stopWork();
     thread_list_[component->getID()]->join();
     thread_list_.erase(component->getID());
   }

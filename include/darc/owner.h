@@ -36,7 +36,7 @@
 #ifndef __DARC_OWNER_H_INCLUDED__
 #define __DARC_OWNER_H_INCLUDED__
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_service.hpp>
 #include <darc/primitive_list.h>
 #include <darc/primitive.h>
 #include <darc/subcomponent_list.h>

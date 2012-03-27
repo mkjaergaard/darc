@@ -28,71 +28,88 @@
  */
 
 /**
- * DARC Registry class
+ * DARC Component class
  *
  * \author Morten Kjaergaard
  */
 
-#pragma once
-
-#include <map>
-#include <iostream>
-#include <boost/function.hpp>
 #include <darc/component.h>
-#include <darc/node.h>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
 #include <darc/log.h>
 
 namespace darc
 {
 
-class Registry
+Component::Component() :
+  name_(""),
+  attached_(false),
+  id_(ID::create()),
+  statistics_period_(boost::posix_time::seconds(1)),
+  statistics_timer_(io_service_, statistics_period_)
 {
-private:
-  typedef boost::function<ComponentPtr(const std::string&, NodePtr)> InstantiateComponentMethod;
-  typedef std::map<const std::string, InstantiateComponentMethod> ComponentListType;
-
-  ComponentListType component_list_;
-
-  static Registry * instance_;
-
-private:
-  Registry() {}
-
-  static Registry * instance()
-  {
-    if( instance_ == 0 )
-    {
-      instance_ = new Registry();
-    }
-    return instance_;
-  }
-
-public:
-  static int registerComponent( const std::string& component_name, InstantiateComponentMethod method )
-  {
-    Registry * inst = instance();
-    inst->component_list_[component_name] = method;
-    DARC_INFO("Registered Component: %s", component_name.c_str());
-    return 1;
-  }
-
-  static darc::ComponentPtr instantiateComponent( const std::string& instance_name, NodePtr node )
-  {
-    Registry * inst = instance();
-    if( inst->component_list_.count(instance_name) )
-    {
-      DARC_INFO("Instantiating Component %s", instance_name.c_str());
-      return inst->component_list_[instance_name](instance_name, node);
-    }
-    else
-    {
-      DARC_FATAL("Component not registered %s", instance_name.c_str());
-      return darc::ComponentPtr();
-    }
-  }
-
-};
-
 }
 
-#define DARC_REGISTER_COMPONENT(classname) namespace classname##_reg { static int dummy = darc::Registry::registerComponent( #classname, boost::bind(&classname::instantiate<classname>, _1, _2) ); }
+void Component::attachNode(const std::string& instance_name, NodePtr node)
+{
+  attached_ = true;
+  name_ = instance_name;
+  node_ = node;
+}
+
+void Component::statisticsTimerHandler(const boost::system::error_code& error)
+{
+  if(!error)
+  {
+    statistics_timer_.expires_from_now(statistics_period_);
+    statistics_timer_.async_wait(boost::bind( &Component::statisticsTimerHandler, this, boost::asio::placeholders::error ));
+    latchStatistics( statistics_period_.total_milliseconds() );
+  }
+}
+
+void Component::onStart()
+{
+  statistics_timer_.expires_from_now(statistics_period_);
+  statistics_timer_.async_wait(boost::bind( &Component::statisticsTimerHandler, this, boost::asio::placeholders::error ));
+}
+
+void Component::run()
+{
+  assert(attached_);
+  node_->runComponent(id_);
+}
+
+void Component::stop()
+{
+  assert(attached_);
+  node_->stopComponent(id_);
+}
+
+void Component::pause()
+{
+  pausePrimitives();
+}
+
+void Component::unpause()
+{
+  unpausePrimitives();
+}
+
+void Component::work()
+{
+  DARC_INFO("Running Component: %s", name_.c_str());
+  keep_alive_.reset( new boost::asio::io_service::work(io_service_) );
+  startPrimitives();
+  onStart();
+  io_service_.reset();
+  io_service_.run();
+  DARC_INFO("Stopped Component: %s", name_.c_str());
+}
+
+void Component::stopWork()
+{
+  stopPrimitives();
+  keep_alive_.reset();
+}
+
+}

@@ -39,6 +39,7 @@
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 #include <darc/id.h>
+#include <darc/component_fwd.h>
 #include <darc/pubsub/fwd.h>
 #include <darc/procedure/manager_fwd.h>
 #include <darc/network/link_manager_fwd.h>

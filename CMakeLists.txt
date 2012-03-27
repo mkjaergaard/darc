@@ -19,6 +19,7 @@ set(CMAKE_CXX_FLAGS "-Wall -g")
 #set(CMAKE_CXX_FLAGS "-Os")
 
 add_library(darc SHARED
+  src/lib/component.cpp
   src/lib/node.cpp
   src/lib/registry.cpp
   src/lib/owner.cpp

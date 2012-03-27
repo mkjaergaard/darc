@@ -44,6 +44,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <darc/node.h>
 #include <darc/component.h>
+#include <darc/registry.h>
 #include <darc/thread_manager.h>
 #include <darc/pubsub/manager.h>
 #include <darc/procedure/manager.h>

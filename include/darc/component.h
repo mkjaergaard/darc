@@ -36,13 +36,14 @@
 #ifndef __DARC_COMPONENT_H_INCLUDED__
 #define __DARC_COMPONENT_H_INCLUDED__
 
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <darc/node.h>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/deadline_timer.hpp>
+#include <boost/scoped_ptr.hpp>
+#include <darc/component_fwd.h>
 #include <darc/owner.h>
 #include <darc/enable_weak_from_static.h>
+#include <darc/node.h>
 #include <darc/id.h>
-#include <darc/log.h>
 
 namespace darc
 {
@@ -54,9 +55,6 @@ class Component : public Owner, public EnableWeakFromStatic<Component>
   friend class python::ComponentProxy;
 
 private:
-  typedef boost::shared_ptr<Component> Ptr;
-
-protected:
   std::string name_;
   NodePtr node_;
   bool attached_;
@@ -68,135 +66,62 @@ protected:
   boost::asio::deadline_timer statistics_timer_;
 
 protected:
-  Component():
-    name_(""),
-    attached_(false),
-    id_(ID::create()),
-    statistics_period_(boost::posix_time::seconds(1)),
-    statistics_timer_(io_service_, statistics_period_)
-  {
-  }
+  Component();
+  void attachNode(const std::string& instance_name, NodePtr node);
+  void statisticsTimerHandler(const boost::system::error_code& error);
 
-  /*
-  Component(const std::string& name, boost::shared_ptr<Node> node):
-    name_(""),
-    attached(false),
-    id_(ID::create()),
-    statistics_period_(boost::posix_time::seconds(1)),
-    statistics_timer_(io_service_, statistics_period_)
-  {
-  }
-  */
-
-  void attachNode(const std::string& instance_name, NodePtr node)
-  {
-    attached_ = true;
-    name_ = instance_name;
-    node_ = node;
-  }
-
-  void statisticsTimerHandler(const boost::system::error_code& error)
-  {
-    if(!error)
-    {
-      statistics_timer_.expires_from_now(statistics_period_);
-      statistics_timer_.async_wait(boost::bind( &Component::statisticsTimerHandler, this, boost::asio::placeholders::error ));
-      latchStatistics( statistics_period_.total_milliseconds() );
-    }
-  }
-
+  virtual void onStart();
 
 public:
+  void run();
+  void stop();
+  void pause();
+  void unpause();
+
+  void work();
+  void stopWork();
+
   // impl of darc::Owner
-  boost::asio::io_service * getIOService()
+  inline boost::asio::io_service * getIOService()
   {
     return &io_service_;
   }
 
   // impl of darc::Owner
-  boost::shared_ptr<Node> getNode()
+  inline NodePtr getNode()
   {
     assert(attached_);
     return node_;
   }
 
-  virtual void onStart()
+  // Getters
+  inline const std::string getName() const
   {
-    statistics_timer_.expires_from_now(statistics_period_);
-    statistics_timer_.async_wait(boost::bind( &Component::statisticsTimerHandler, this, boost::asio::placeholders::error ));
+    return name_;
   }
 
-  template<typename T>
-  static boost::shared_ptr<T> instantiate( const std::string& instance_name, NodePtr node )
+  inline const ID& getComponentID()
   {
-    boost::shared_ptr<T> instance( new T() );
+    return id_;
+  }
+
+  inline const ID& getID()
+  {
+    return id_;
+  }
+
+  // Method to instantiate components
+  template<typename T>
+  static boost::shared_ptr<T> instantiate(const std::string& instance_name, NodePtr node)
+  {
+    boost::shared_ptr<T> instance(new T());
     instance->attachNode(instance_name, node);
     node->attach(instance);
     return instance;
   }
 
-  const std::string getName() const
-  {
-    return name_;
-  }
-
-  const ID getID() const
-  {
-    return id_;
-  }
-
-  const ID& getComponentID()
-  {
-    return id_;
-  }
-
-  void run()
-  {
-    assert(attached_);
-    node_->runComponent(id_);
-  }
-
-  void stop()
-  {
-    assert(attached_);
-    node_->stopComponent(id_);
-  }
-
-  void pause()
-  {
-    pausePrimitives();
-  }
-
-  void unpause()
-  {
-    unpausePrimitives();
-  }
-
-  void work()
-  {
-    DARC_INFO("Running Component: %s", name_.c_str());
-    keep_alive_.reset( new boost::asio::io_service::work(io_service_) );
-    startPrimitives();
-    onStart();
-    io_service_.reset();
-    io_service_.run();
-    DARC_INFO("Stopped Component: %s", name_.c_str());
-  }
-
-  void stop_work()
-  {
-    stopPrimitives();
-    keep_alive_.reset();
-  }
-
 };
 
-typedef boost::shared_ptr<Component> ComponentPtr;
-typedef boost::weak_ptr<Component> ComponentWkPtr;
-
 }
-
-// Include here so its available for the components
-#include <darc/registry.h>
 
 #endif
