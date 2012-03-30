@@ -60,6 +60,16 @@ public:
     return name_;
   }
 
+  const char * getTypeName()
+  {
+    return "Parameters";
+  }
+
+  const int getTypeID()
+  {
+    return 234;
+  }
+
   //**
   // Ugly hack for the demo. Dont judge me!
   virtual bool getValue2(std::string& out)

@@ -79,7 +79,7 @@ public:
 
   const char * getTypeName()
   {
-    return "PeriodTimer";
+    return "PeriodicTimers";
   }
 
   const int getTypeID()

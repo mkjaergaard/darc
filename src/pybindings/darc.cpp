@@ -20,97 +20,40 @@ namespace darc
 {
 namespace python
 {
-/*
-template<typename T, typename PT, char const* myname>
-class PrimitiveListProxy1 : public ProxyBase< PrimitiveList<T> >
+
+typedef boost::function<bp::object(boost::weak_ptr<darc::Primitive>)> ConvertToPythonMethod;
+typedef std::map<int, ConvertToPythonMethod> ConverterListType;
+ConverterListType converter_list_type_;
+
+template<typename T, typename TP>
+bp::object stdConverter(boost::weak_ptr<darc::Primitive> ptr)
 {
-  typedef ProxyBase< PrimitiveList<T> > MyProxyBase;
+  boost::shared_ptr<darc::Primitive> prim_shared = ptr.lock()->getWeakPtr().lock();
+  boost::shared_ptr<T> type_shared = boost::dynamic_pointer_cast<T>(prim_shared);
+  assert(type_shared.get());
+  boost::weak_ptr<T> type_weak(type_shared);
+  return bp::object(TP(type_weak));
+}
 
-public:
-  PrimitiveListProxy1(boost::weak_ptr<PrimitiveList<T> > instance) :
-    MyProxyBase(instance)
-  {
-  }
-
-  PT get(int idx)
-  {
-    return PT( MyProxyBase::instance_.lock()->list_.at(idx) );
-  }
-
-  PT getitem(std::string text)
-  {
-    std::string mynamestr(myname);
-    boost::regex rex( mynamestr.append("(\\d+)") );
-    boost::smatch what;
-    if( regex_match(text, what, rex) )
-    {
-      int idx = boost::lexical_cast<int>(what[1]);
-      return get(idx);
-    }
-    else
-    {
-      PyErr_SetString(PyExc_AttributeError, "object has no attribute with that name" );
-      throw boost::python::error_already_set();
-    }
-  }
-
-  boost::python::list dir()
-  {
-    boost::python::list l;
-    for( unsigned int i = 0; i < MyProxyBase::instance_.lock()->list_.size(); i++ )
-    {
-      l.insert(0, std::string(myname) + boost::lexical_cast<std::string>(i) );
-    }
-    return l;
-  }
-
-};
-
-template<typename T, typename PT>
-class PrimitiveListProxy2 : public ProxyBase< PrimitiveList<T> >
+void registerConverterMethod(int id, ConvertToPythonMethod method)
 {
-  typedef ProxyBase< PrimitiveList<T> > MyProxyBase;
+  converter_list_type_.insert(ConverterListType::value_type(id, method));
+}
 
-public:
-  PrimitiveListProxy2(boost::weak_ptr<PrimitiveList<T> > instance) :
-    MyProxyBase(instance)
+bp::object getPrimitiveObject(boost::weak_ptr<darc::Primitive> ptr)
+{
+  ConverterListType::iterator item = converter_list_type_.find(ptr.lock()->getTypeID());
+  if(item != converter_list_type_.end())
   {
+    return item->second(ptr);
   }
-
-  PT get(int idx)
+  else
   {
-    return PT( MyProxyBase::instance_.lock()->list_.at(idx) );
+    std::cout << "Hmm" << std::endl;
+    assert(false); // this fails if we dont have a proper converter registered
   }
+}
 
-  PT getitem(std::string text)
-  {
-    for( typename PrimitiveList<T>::PrimitiveListType::iterator it = MyProxyBase::instance_.lock()->list_.begin();
-	 it != MyProxyBase::instance_.lock()->list_.end();
-	 it++)
-    {
-      if(it->lock()->getName() == text)
-      {
-	return PT(*it);
-      }
-    }
-    PyErr_SetString(PyExc_AttributeError, "object has no attribute with that name" );
-    throw boost::python::error_already_set();
-  }
-
-  boost::python::list dir()
-  {
-    boost::python::list l;
-    for( typename PrimitiveList<T>::PrimitiveListType::iterator it = MyProxyBase::instance_.lock()->list_.begin();
-	 it != MyProxyBase::instance_.lock()->list_.end();
-	 it++)
-    {
-      l.insert(0, std::string(it->lock()->getName()) );
-    }
-    return l;
-  }
-
-};
-*/
 class PeriodicTimerProxy : public ProxyBase<timer::PeriodicTimer>
 {
 public:
@@ -185,17 +128,25 @@ public:
 
 
 };
-/*
-char timer_string[] = "timer_";
-char parameter_string[] = "parameter_";
-
-typedef PrimitiveListProxy1<timer::PeriodicTimer, PeriodicTimerProxy, timer_string> TimerListProxy;
-typedef PrimitiveListProxy2<parameter::ParameterAbstract, ParameterProxy> ParameterListProxy;
-*/
 
 class ObjectList : public std::map<std::string, bp::object>
 {
   typedef std::map<std::string, bp::object> MyType;
+
+public:
+  bp::object getitem(std::string text)
+  {
+    MyType::iterator item = this->find(text);
+    if(item != this->end())
+    {
+      return item->second;
+    }
+    else
+    {
+      PyErr_SetString(PyExc_AttributeError, "object has no attribute with that name" );
+      throw boost::python::error_already_set();
+    }
+  }
 
   boost::python::list dir()
   {
@@ -213,7 +164,26 @@ class ObjectList : public std::map<std::string, bp::object>
 class OwnerProxy
 {
 protected:
+  typedef std::map<std::string, int> TypeListType;
+
+protected:
   boost::weak_ptr<darc::Owner> owner_instance_;
+  TypeListType type_list_;
+
+protected:
+  void updateTypeList()
+  {
+    type_list_.clear();
+    for(darc::Owner::PrimitiveListType::iterator it = owner_instance_.lock()->list_.begin();
+	it != owner_instance_.lock()->list_.end();
+	it++)
+    {
+      if(type_list_.find(it->second.lock()->getTypeName()) == type_list_.end())
+      {
+	type_list_.insert(TypeListType::value_type(it->second.lock()->getTypeName(), it->second.lock()->getTypeID()));
+      }
+    }
+  }
 
 public:
   OwnerProxy(boost::weak_ptr<darc::Owner> instance) :
@@ -223,8 +193,9 @@ public:
 
   ObjectList getitem(std::string text)
   {
-    std::cout << "Im Here:" << text << std::endl;
-    if(text == "PeriodicTimers")
+    updateTypeList();
+    TypeListType::iterator item = type_list_.find(text);
+    if(item != type_list_.end())
     {
       ObjectList l;
       for(darc::Owner::PrimitiveListType::iterator it = owner_instance_.lock()->list_.begin();
@@ -232,10 +203,9 @@ public:
 	  it++)
       {
 	int type_id = it->second.lock()->getTypeID();
-	if(type_id == 123)
+	if(type_id == item->second)
 	{
-	  boost::weak_ptr<darc::parameter::ParameterAbstract> myp = boost::dynamic_pointer_cast<boost::weak_ptr<parameter::ParameterAbstract> >(it->second);
-	  l.insert(ObjectList::value_type("hej", bp::object(it->second)));
+	  l["hej"] = getPrimitiveObject(it->second);
 	}
       }
       return l;
@@ -249,18 +219,13 @@ public:
 
   boost::python::list dir()
   {
+    updateTypeList();
     boost::python::list l;
-    std::set<int> seen_types;
-    for(darc::Owner::PrimitiveListType::iterator it = owner_instance_.lock()->list_.begin();
-	it != owner_instance_.lock()->list_.end();
+    for(TypeListType::iterator it = type_list_.begin();
+	it != type_list_.end();
 	it++)
     {
-      int type_id = it->second.lock()->getTypeID();
-      if(seen_types.count(type_id) == 0)
-      {
-	l.insert(0, std::string(it->second.lock()->getTypeName()).append("s"));
-	seen_types.insert(type_id);
-      }
+      l.insert(0, it->first);
     }
     return l;
   }
@@ -352,6 +317,9 @@ NodeProxy createNodeProxy( darc::NodeImpl* source)
 
 BOOST_PYTHON_MODULE(darc)
 {
+  darc::python::registerConverterMethod(123, boost::bind(&darc::python::stdConverter<darc::timer::PeriodicTimer, darc::python::PeriodicTimerProxy>, _1));
+  darc::python::registerConverterMethod(234, boost::bind(&darc::python::stdConverter<darc::parameter::ParameterAbstract, darc::python::ParameterProxy>, _1));
+
   // DARC
   bp::class_<darc::Log, boost::noncopyable>("Log", bp::no_init)
     .add_static_property("level", &darc::Log::getLevel ,&darc::Log::setLevel)
@@ -419,6 +387,10 @@ BOOST_PYTHON_MODULE(darc)
   bp::class_<darc::python::ParameterProxy>("Parameter_", bp::no_init)
     .add_property("name", &darc::python::ParameterProxy::getName)
     .add_property("value", &darc::python::ParameterProxy::getValue, &darc::python::ParameterProxy::setValue);
+
+  bp::class_<darc::python::ObjectList>("ObjectList", bp::no_init)
+    .def("__dir__", &darc::python::ObjectList::dir)
+    .def("__getattr__", &darc::python::ObjectList::getitem);
 
   bp::class_<std::vector<std::string> >("list")
     .def(bp::vector_indexing_suite<std::vector<std::string> >());
