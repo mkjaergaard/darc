@@ -20,7 +20,7 @@ namespace darc
 {
 namespace python
 {
-
+/*
 template<typename T, typename PT, char const* myname>
 class PrimitiveListProxy1 : public ProxyBase< PrimitiveList<T> >
 {
@@ -110,7 +110,7 @@ public:
   }
 
 };
-
+*/
 class PeriodicTimerProxy : public ProxyBase<timer::PeriodicTimer>
 {
 public:
@@ -185,18 +185,95 @@ public:
 
 
 };
-
+/*
 char timer_string[] = "timer_";
 char parameter_string[] = "parameter_";
 
 typedef PrimitiveListProxy1<timer::PeriodicTimer, PeriodicTimerProxy, timer_string> TimerListProxy;
 typedef PrimitiveListProxy2<parameter::ParameterAbstract, ParameterProxy> ParameterListProxy;
+*/
 
-class ComponentProxy : public ProxyBase<Component>
+class ObjectList : public std::map<std::string, bp::object>
+{
+  typedef std::map<std::string, bp::object> MyType;
+
+  boost::python::list dir()
+  {
+    boost::python::list l;
+    for(MyType::iterator it = this->begin();
+         it != this->end();
+         it++)
+    {
+      l.insert(0, it->first);
+    }
+    return l;
+  }
+};
+
+class OwnerProxy
+{
+protected:
+  boost::weak_ptr<darc::Owner> owner_instance_;
+
+public:
+  OwnerProxy(boost::weak_ptr<darc::Owner> instance) :
+    owner_instance_(instance)
+  {
+  }
+
+  ObjectList getitem(std::string text)
+  {
+    std::cout << "Im Here:" << text << std::endl;
+    if(text == "PeriodicTimers")
+    {
+      ObjectList l;
+      for(darc::Owner::PrimitiveListType::iterator it = owner_instance_.lock()->list_.begin();
+	  it != owner_instance_.lock()->list_.end();
+	  it++)
+      {
+	int type_id = it->second.lock()->getTypeID();
+	if(type_id == 123)
+	{
+	  boost::weak_ptr<darc::parameter::ParameterAbstract> myp = boost::dynamic_pointer_cast<boost::weak_ptr<parameter::ParameterAbstract> >(it->second);
+	  l.insert(ObjectList::value_type("hej", bp::object(it->second)));
+	}
+      }
+      return l;
+    }
+    else
+    {
+      PyErr_SetString(PyExc_AttributeError, "object has no attribute with that name" );
+      throw boost::python::error_already_set();
+    }
+  }
+
+  boost::python::list dir()
+  {
+    boost::python::list l;
+    std::set<int> seen_types;
+    for(darc::Owner::PrimitiveListType::iterator it = owner_instance_.lock()->list_.begin();
+	it != owner_instance_.lock()->list_.end();
+	it++)
+    {
+      int type_id = it->second.lock()->getTypeID();
+      if(seen_types.count(type_id) == 0)
+      {
+	l.insert(0, std::string(it->second.lock()->getTypeName()).append("s"));
+	seen_types.insert(type_id);
+      }
+    }
+    return l;
+  }
+
+};
+
+
+class ComponentProxy : public OwnerProxy, public ProxyBase<darc::Component>
 {
 public:
-  ComponentProxy(boost::weak_ptr<Component> instance) :
-    ProxyBase(instance.lock()->getWeakPtr())
+  ComponentProxy(boost::weak_ptr<darc::Component> instance) :
+    OwnerProxy(instance.lock()->getWeakPtr()),
+    ProxyBase<darc::Component>(instance.lock()->getWeakPtr())
   {
   }
 
@@ -205,25 +282,22 @@ public:
     return instance_.lock()->getName();
   }
 
-  TimerListProxy timers()
-  {
-    return TimerListProxy( instance_.lock()->timer_list_.getWeakPtr() );
-  }
-
-  ParameterListProxy parameters()
-  {
-    return ParameterListProxy( instance_.lock()->parameter_list_.getWeakPtr() );
-  }
-
   void run()
   {
     return instance_.lock()->run();
+  }
+
+  boost::python::list dir()
+  {
+    return OwnerProxy::dir();
   }
 
   void pause() { instance_.lock()->pause(); }
   void unpause() { instance_.lock()->unpause(); }
 
 };
+
+
 
 class NodeProxy : public ProxyBase<NodeImpl>
 {
@@ -301,7 +375,7 @@ BOOST_PYTHON_MODULE(darc)
     .def("pause", &darc::Component::pause)
     .def("unpause", &darc::Component::unpause)
     .def("getName", &darc::Component::getName)
-    .def("getID", &darc::Component::getID);
+    .def("getID", &darc::Component::getID, bp::return_value_policy<bp::copy_const_reference>());
 
   bp::class_<darc::Registry>("Registry", bp::no_init)
     .def("instantiateComponent", &darc::Registry::instantiateComponent)
@@ -322,13 +396,17 @@ BOOST_PYTHON_MODULE(darc)
   // Proxys
   bp::class_<darc::python::ProxyBaseAbstract, boost::noncopyable >("Abstract_", bp::no_init );
 
-  bp::class_<darc::python::ComponentProxy>("Component_", bp::init<darc::ComponentPtr>())
+  bp::class_<darc::python::OwnerProxy, boost::noncopyable>("Owner_", bp::no_init)
+    .def("__dir__", &darc::python::OwnerProxy::dir)
+    .def("__getattr__", &darc::python::OwnerProxy::getitem);
+
+  bp::class_<darc::python::ComponentProxy, bp::bases<darc::python::OwnerProxy> >("Component_", bp::init<darc::ComponentPtr>())
     .def("instanceName", &darc::python::ComponentProxy::instanceName)
-    .add_property("timers", &darc::python::ComponentProxy::timers)
-    .add_property("parameters", &darc::python::ComponentProxy::parameters)
     .def("pause", &darc::python::ComponentProxy::pause)
     .def("unpause", &darc::python::ComponentProxy::unpause)
-    .def("run", &darc::python::ComponentProxy::run);
+    .def("run", &darc::python::ComponentProxy::run)
+    .def("__dir__", &darc::python::ComponentProxy::dir);
+
 
   bp::class_<darc::python::NodeProxy>("Node_", bp::init<boost::shared_ptr<darc::NodeImpl> >())
     .def("instantiateComponent", &darc::python::NodeProxy::instantiateComponent)
@@ -341,16 +419,6 @@ BOOST_PYTHON_MODULE(darc)
   bp::class_<darc::python::ParameterProxy>("Parameter_", bp::no_init)
     .add_property("name", &darc::python::ParameterProxy::getName)
     .add_property("value", &darc::python::ParameterProxy::getValue, &darc::python::ParameterProxy::setValue);
-
-  bp::class_<darc::python::TimerListProxy>("TimerList_", bp::no_init)
-    .def("get", &darc::python::TimerListProxy::get)
-    .def("__dir__", &darc::python::TimerListProxy::dir)
-    .def("__getattribute__", &darc::python::TimerListProxy::getitem);
-
-  bp::class_<darc::python::ParameterListProxy>("ParameterList_", bp::no_init)
-    .def("get", &darc::python::ParameterListProxy::get)
-    .def("__dir__", &darc::python::ParameterListProxy::dir)
-    .def("__getattribute__", &darc::python::ParameterListProxy::getitem);
 
   bp::class_<std::vector<std::string> >("list")
     .def(bp::vector_indexing_suite<std::vector<std::string> >());

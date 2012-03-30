@@ -77,6 +77,16 @@ public:
   {
   }
 
+  const char * getTypeName()
+  {
+    return "PeriodTimer";
+  }
+
+  const int getTypeID()
+  {
+    return 123;
+  }
+
 protected:
   void onStart()
   {

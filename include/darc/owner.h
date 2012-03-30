@@ -43,10 +43,17 @@
 namespace darc
 {
 
+namespace python
+{
+class OwnerProxy;
+}
+
 class Node;
 
 class Owner
 {
+  friend class darc::python::OwnerProxy;
+
 protected:
   typedef std::map<ID, boost::weak_ptr<Primitive> > PrimitiveListType;
   PrimitiveListType list_;

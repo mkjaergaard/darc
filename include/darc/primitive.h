@@ -65,8 +65,6 @@ protected:
   virtual void onStop() {}
   virtual void onStart() {}
   virtual void onAttach() {};
-  virtual const char * getTypeName() { return ""; }
-  virtual const int getTypeID() { return 0; }
 
   virtual void pause()
   {
@@ -120,6 +118,9 @@ public:
 
   virtual ~Primitive()
   {}
+
+  virtual const char * getTypeName() { return ""; }
+  virtual const int getTypeID() { return 0; }
 
   const ID& getID() const
   {
