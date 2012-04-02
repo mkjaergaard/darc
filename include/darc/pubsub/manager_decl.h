@@ -45,6 +45,7 @@
 #include <darc/pubsub/local_dispatcher_fwd.h>
 #include <darc/pubsub/remote_dispatcher.h>
 #include <darc/network/link_manager_fwd.h>
+#include <darc/node_fwd.h>
 
 namespace darc
 {
@@ -64,6 +65,8 @@ private:
 public:
   // Constructor
   Manager(boost::asio::io_service * io_service, network::LinkManager * node_link_manager);
+
+  Manager * accessAssociatedInstance(NodePtr node);
 
   //
   inline RemoteDispatcher& getRemoteDispatcher()

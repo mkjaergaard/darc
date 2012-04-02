@@ -41,6 +41,7 @@
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <darc/node.h>
 #include <darc/component.h>
@@ -49,6 +50,7 @@
 #include <darc/pubsub/manager.h>
 #include <darc/procedure/manager.h>
 #include <darc/network/link_manager.h>
+#include <darc/primitive_manager_base.h>
 
 namespace darc
 {
@@ -70,6 +72,9 @@ private:
   pubsub::Manager publish_manager_;
   procedure::Manager procedure_manager_;
 
+  typedef std::map<int, boost::scoped_ptr<PrimitiveManagerBase> > PrimitiveManagerListType;
+  PrimitiveManagerListType primitive_manager_list_;
+
   typedef std::map<ID, ComponentPtr> ComponentInstancesList;
   ComponentInstancesList component_instances_;
 
@@ -81,6 +86,12 @@ public:
     procedure_manager_(&io_service_, &node_link_manager_)
   {
     DARC_INFO("Created node with ID: %s", node_id_.short_string().c_str() );
+  }
+
+  PrimitiveManagerBase * accessPrimitiveManager(int manager_id)
+  {
+    assert(false); //todo #18
+    return 0;
   }
 
 protected:

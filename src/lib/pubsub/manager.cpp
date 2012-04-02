@@ -52,6 +52,11 @@ Manager::Manager(boost::asio::io_service * io_service, network::LinkManager * no
 {
 }
 
+Manager * Manager::accessAssociatedInstance(NodePtr node)
+{
+  
+}
+
 void Manager::remoteMessageReceived(const std::string& topic, SharedBuffer msg_s)
 {
   LocalDispatcherListType::iterator elem = local_dispatcher_list_.find(topic);
