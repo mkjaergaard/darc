@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,65 +28,53 @@
  */
 
 /**
- * DARC LocalDispatcherManager class
+ * DARC Pubsub State Interface class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_PUBLISH_MANAGER_DECL_H_INCLUDED__
-#define __DARC_PUBLISH_MANAGER_DECL_H_INCLUDED__
+#pragma once
 
-#include <vector>
-#include <iostream>
-#include <boost/thread.hpp>
-#include <boost/asio.hpp>
-#include <boost/shared_ptr.hpp>
-#include <darc/pubsub/local_dispatcher_abstract.h>
-#include <darc/pubsub/local_dispatcher_fwd.h>
-#include <darc/pubsub/remote_dispatcher.h>
-#include <darc/pubsub/topic_info.h>
-#include <darc/network/link_manager_fwd.h>
-#include <darc/node_fwd.h>
+#include <boost/function.hpp>
+#include <boost/signals.hpp>
+#include <darc/primitive.h>
+#include <darc/enable_weak_from_static.h>
+#include <darc/owner.h>
 
 namespace darc
 {
 namespace pubsub
 {
 
-class Manager
+class StateInterface
 {
-private:
-  // Collection of LocalDispatcher instaces (Mapped to topic)
-  typedef std::map<const std::string, LocalDispatcherAbstractPtr > LocalDispatcherListType;
-  LocalDispatcherListType local_dispatcher_list_;
+public:
+  typedef boost::function<void(const std::string, const std::string, size_t)> RemoteSubscriberChangesCallbackType;
+  RemoteSubscriberChangesCallbackType remote_subscriber_changes_callback_;
 
-  // We hold the instance of RemoteDispatcher
-  RemoteDispatcher remote_dispatcher_;
+  typedef boost::function<void(const std::string, const std::string, size_t)> RemotePublisherChangesCallbackType;
+  RemotePublisherChangesCallbackType remote_publisher_changes_callback_;
+
+protected:
+  boost::signals::connection conn1_;
+  boost::signals::connection conn2_;
+  Owner * owner_;
 
 public:
-  // Constructor
-  Manager(boost::asio::io_service * io_service, network::LinkManager * node_link_manager);
+  StateInterface(darc::Owner* owner);
+  void onAttach();
 
-  Manager * accessAssociatedInstance(NodePtr node);
+  void getPublisherList();
 
-  void getTopicInfoList(TopicInfoListType list_out);
+  void remoteSubscriberChangesListen(RemoteSubscriberChangesCallbackType callback);
+  void postRemoteSubscriberChanges(const std::string& topic, const std::string& type_name, size_t remote_subscribers);
+  void triggerRemoteSubscriberChanges(const std::string topic, const std::string& type_name, size_t remote_subscribers);
 
-  //
-  inline RemoteDispatcher& getRemoteDispatcher()
-  {
-    return remote_dispatcher_;
-  }
-
-  // Called by RemoteDispatcher (Node Thread)
-  void remoteMessageReceived(const std::string& topic, SharedBuffer msg_s);
-
-  // Called by Publishers/Subscribers/RemoteDispatcher (Node and Component Threads)
-  template<typename T>
-  boost::shared_ptr<LocalDispatcher<T> > getLocalDispatcher(const std::string& topic);
+  void remotePublisherChangesListen(RemoteSubscriberChangesCallbackType callback);
+  void postRemotePublisherChanges(const std::string& topic, const std::string& type_name, size_t remote_publishers);
+  void triggerRemotePublisherChanges(const std::string topic, const std::string& type_name, size_t remote_publisher);
 
 };
 
 }
 }
-
-#endif

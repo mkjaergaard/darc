@@ -28,50 +28,30 @@
  */
 
 /**
- * DARC Event Listener class
+ *
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <boost/function.hpp>
-#include <boost/signals.hpp>
-#include <darc/primitive.h>
-#include <darc/enable_weak_from_static.h>
-#include <darc/owner.h>
+#include <string>
+#include <vector>
+#include <darc/pubsub/id_types.h>
 
 namespace darc
 {
 namespace pubsub
 {
 
-class EventListener : public darc::Primitive
+struct TopicInfo
 {
-public:
-  typedef boost::function<void(const std::string, const std::string, size_t)> RemoteSubscriberChangesCallbackType;
-  RemoteSubscriberChangesCallbackType remote_subscriber_changes_callback_;
-
-  typedef boost::function<void(const std::string, const std::string, size_t)> RemotePublisherChangesCallbackType;
-  RemotePublisherChangesCallbackType remote_publisher_changes_callback_;
-
-protected:
-  boost::signals::connection conn1_;
-  boost::signals::connection conn2_;
-
-public:
-  EventListener(darc::Owner* owner);
-  void onAttach();
-
-  void remoteSubscriberChangesListen(RemoteSubscriberChangesCallbackType callback);
-  void postRemoteSubscriberChanges(const std::string& topic, const std::string& type_name, size_t remote_subscribers);
-  void triggerRemoteSubscriberChanges(const std::string topic, const std::string& type_name, size_t remote_subscribers);
-
-  void remotePublisherChangesListen(RemoteSubscriberChangesCallbackType callback);
-  void postRemotePublisherChanges(const std::string& topic, const std::string& type_name, size_t remote_publishers);
-  void triggerRemotePublisherChanges(const std::string topic, const std::string& type_name, size_t remote_publisher);
-
+  NodeID owner_node;
+  std::string topic;
+  std::string type_name;
 };
+
+typedef std::vector<TopicInfo> TopicInfoListType;
 
 }
 }

@@ -52,6 +52,12 @@ Manager::Manager(boost::asio::io_service * io_service, network::LinkManager * no
 {
 }
 
+void Manager::getTopicInfoList(TopicInfoListType list_out)
+{
+  list_out.clear();
+  
+}
+
 Manager * Manager::accessAssociatedInstance(NodePtr node)
 {
   

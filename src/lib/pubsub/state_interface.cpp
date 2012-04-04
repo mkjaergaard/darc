@@ -33,7 +33,7 @@
  * \author Morten Kjaergaard
  */
 
-#include <darc/pubsub/event_listener.h>
+#include <darc/pubsub/state_interface.h>
 
 #include <darc/node.h>
 #include <darc/pubsub/manager.h>
@@ -43,36 +43,35 @@ namespace darc
 namespace pubsub
 {
 
-EventListener::EventListener(darc::Owner* owner) :
-  darc::Primitive(owner)
+StateInterface::StateInterface(darc::Owner* owner):
+  owner_(owner)
 {
-  owner->addPrimitive(this);
 }
 
-void EventListener::onAttach()
+void StateInterface::onAttach()
 {
   conn1_ = owner_->getNode()->getPublisherManager().getRemoteDispatcher().remoteSubscriberChangeSignal().
-    connect(boost::bind(&EventListener::postRemoteSubscriberChanges,
+    connect(boost::bind(&StateInterface::postRemoteSubscriberChanges,
 			this, _1, _2, _3));
   conn2_ = owner_->getNode()->getPublisherManager().getRemoteDispatcher().remotePublisherChangeSignal().
-    connect(boost::bind(&EventListener::postRemotePublisherChanges,
+    connect(boost::bind(&StateInterface::postRemotePublisherChanges,
 			this, _1, _2, _3));
 }
 
 // ******************
 // SubscriberChanges
 // ******************
-void EventListener::remoteSubscriberChangesListen(RemoteSubscriberChangesCallbackType callback)
+void StateInterface::remoteSubscriberChangesListen(RemoteSubscriberChangesCallbackType callback)
 {
   remote_subscriber_changes_callback_ = callback;
 }
 
-void EventListener::postRemoteSubscriberChanges(const std::string& topic, const std::string& type_name, size_t remote_subscribers)
+void StateInterface::postRemoteSubscriberChanges(const std::string& topic, const std::string& type_name, size_t remote_subscribers)
 {
-  owner_->getIOService()->post( boost::bind(&EventListener::triggerRemoteSubscriberChanges, this, topic, type_name, remote_subscribers) );
+  owner_->getIOService()->post( boost::bind(&StateInterface::triggerRemoteSubscriberChanges, this, topic, type_name, remote_subscribers) );
 }
 
-void EventListener::triggerRemoteSubscriberChanges(const std::string topic, const std::string& type_name, size_t remote_subscribers)
+void StateInterface::triggerRemoteSubscriberChanges(const std::string topic, const std::string& type_name, size_t remote_subscribers)
 {
   remote_subscriber_changes_callback_(topic, type_name, remote_subscribers);
 }
@@ -80,17 +79,17 @@ void EventListener::triggerRemoteSubscriberChanges(const std::string topic, cons
 // ******************
 // PublisherChanges
 // ******************
-void EventListener::remotePublisherChangesListen(RemotePublisherChangesCallbackType callback)
+void StateInterface::remotePublisherChangesListen(RemotePublisherChangesCallbackType callback)
 {
   remote_publisher_changes_callback_ = callback;
 }
 
-void EventListener::postRemotePublisherChanges(const std::string& topic, const std::string& type_name, size_t remote_publishers)
+void StateInterface::postRemotePublisherChanges(const std::string& topic, const std::string& type_name, size_t remote_publishers)
 {
-  owner_->getIOService()->post( boost::bind(&EventListener::triggerRemotePublisherChanges, this, topic, type_name, remote_publishers) );
+  owner_->getIOService()->post( boost::bind(&StateInterface::triggerRemotePublisherChanges, this, topic, type_name, remote_publishers) );
 }
 
-void EventListener::triggerRemotePublisherChanges(const std::string topic, const std::string& type_name, size_t remote_publishers)
+void StateInterface::triggerRemotePublisherChanges(const std::string topic, const std::string& type_name, size_t remote_publishers)
 {
   remote_subscriber_changes_callback_(topic, type_name, remote_publishers);
 }

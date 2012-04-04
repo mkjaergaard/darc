@@ -30,7 +30,7 @@ add_library(darc SHARED
   src/lib/timer/deadline_timer.cpp
   src/lib/pubsub/manager.cpp
   src/lib/pubsub/remote_dispatcher.cpp
-  src/lib/pubsub/event_listener.cpp
+  src/lib/pubsub/state_interface.cpp
   src/lib/procedure/manager.cpp
   src/lib/procedure/remote_dispatcher.cpp
   src/lib/procedure/system_state_interface.cpp

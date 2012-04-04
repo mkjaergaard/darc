@@ -39,7 +39,7 @@
 #include <darc/node.h>
 #include <darc/pubsub/publisher.h>
 #include <darc/pubsub/subscriber.h>
-#include <darc/pubsub/event_listener.h>
+#include <darc/pubsub/state_interface.h>
 #include <darc/timer/periodic_timer.h>
 #include <darc/procedure/client.h>
 #include <darc/procedure/server.h>
