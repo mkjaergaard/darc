@@ -26,6 +26,7 @@ add_library(darc SHARED
   src/lib/owner.cpp
   src/lib/id.cpp
   src/lib/log.cpp
+  src/lib/tag_manager.cpp
   src/lib/network/udp/protocol_manager.cpp
   src/lib/timer/deadline_timer.cpp
   src/lib/pubsub/manager.cpp

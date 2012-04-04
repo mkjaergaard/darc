@@ -28,32 +28,43 @@
  */
 
 /**
- * DARC ID definition
+ * DARC Tag Manager
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
+#include <map>
+#include <darc/id.h>
 
 namespace darc
 {
 
-class ID : public boost::uuids::uuid
+class TagManager
 {
+protected:
+  typedef std::map<std::string, std::string> TagRemapListType;
+  typedef std::map<std::string, TagID> TranslatorListType;
+  typedef std::map<TagID, TagID> IDChangeListType;
+
+  TagRemapListType tag_remap_list_;
+  TranslatorListType translator_list_;
+  IDChangeListType id_change_list_;
+
+protected:
+  const std::string& performRemappings(const std::string& tag);
+
 public:
-  ID();
-  ID(const boost::uuids::uuid& id);
+  const TagID& registerTag(const std::string& tag);
+  void remapTag(const std::string& original_tag, const std::string& remapped_tag);
+  void changeID(const TagID& original_id, const TagID& new_id);
 
-  const std::string short_string() const;
-  static ID create();
-  static const ID& null();
+  const TagID& lookup(const std::string& tag);
+  const TagID& verifyID(const TagID& id);
 
+  void list();
 };
 
-typedef ID NodeID;
-typedef ID TagID;
-
 }
+
