@@ -52,15 +52,18 @@ Manager::Manager(boost::asio::io_service * io_service, network::LinkManager * no
 {
 }
 
+// work in progress
 void Manager::getTopicInfoList(TopicInfoListType list_out)
 {
   list_out.clear();
-  
+  // ...
 }
 
+// work in progress
 Manager * Manager::accessAssociatedInstance(NodePtr node)
 {
-  
+  // ...
+  return 0;
 }
 
 void Manager::remoteMessageReceived(const std::string& topic, SharedBuffer msg_s)

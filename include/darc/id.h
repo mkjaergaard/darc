@@ -55,5 +55,6 @@ public:
 
 typedef ID NodeID;
 typedef ID TagID;
+typedef ID NamespaceID;
 
 }

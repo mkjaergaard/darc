@@ -28,7 +28,7 @@
  */
 
 /**
- * DARC Tag Manager
+ * DARC Tag Manager (This class is not used yet, its just for testing a distributed nameservice)
  *
  * \author Morten Kjaergaard
  */
@@ -36,14 +36,31 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include <darc/id.h>
 
 namespace darc
 {
 
+struct TagEntry
+{
+  std::string name;
+  int parent_levels;
+  TagID id;
+};
+
+struct NamespaceEntry
+{
+  std::string name;
+  std::vector<TagEntry> tags;
+  NamespaceID id;
+};
+
 class TagManager
 {
 protected:
+  typedef std::multimap<NamespaceID, NamespaceID> NamespaceTreeType;
+
   typedef std::map<std::string, std::string> TagRemapListType;
   typedef std::map<std::string, TagID> TranslatorListType;
   typedef std::map<TagID, TagID> IDChangeListType;
