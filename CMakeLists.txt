@@ -15,9 +15,6 @@ include_directories(include)
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${ROS_INCLUDE_DIRS})
 
-set(CMAKE_CXX_FLAGS "-Wall -g")
-#set(CMAKE_CXX_FLAGS "-Os")
-
 add_library(darc SHARED
   src/lib/component.cpp
   src/lib/primitive.cpp
