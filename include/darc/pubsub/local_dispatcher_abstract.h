@@ -49,6 +49,7 @@ public:
   virtual ~LocalDispatcherAbstract() {}
 
   virtual void dispatchMessageLocally( SharedBuffer msg_s ) = 0;
+  virtual void triggerStatusSignal() = 0;
 };
 
 typedef boost::shared_ptr<LocalDispatcherAbstract> LocalDispatcherAbstractPtr;

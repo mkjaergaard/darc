@@ -102,8 +102,7 @@ private:
   RemotePublishersType remote_publishers_;
 
   // Signals
-  boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_subscriber_change_;
-  boost::signal<void (const std::string&, const std::string&, size_t)> signal_remote_publisher_change_;
+  boost::signal<void (const std::string&, const std::string&, const size_t&, const size_t&)> remote_pubsub_change_signal_;
 
 private:
   void sendPacket(network::packet::Header::PayloadType type, const ID& recv_node_id, SharedBuffer buffer, std::size_t data_len);
@@ -111,14 +110,9 @@ private:
 public:
   RemoteDispatcher(boost::asio::io_service * io_service, Manager * manager, network::LinkManager * network_link_manager);
 
-  boost::signal<void (const std::string&, const std::string&, size_t)>& remoteSubscriberChangeSignal()
+  inline boost::signal<void (const std::string&, const std::string&, const size_t&, const size_t&)>& remotePubsubChangeSignal()
   {
-    return signal_remote_subscriber_change_;
-  }
-
-  boost::signal<void (const std::string&, const std::string&, size_t)>& remotePublisherChangeSignal()
-  {
-    return signal_remote_publisher_change_;
+    return remote_pubsub_change_signal_;
   }
 
   void messageReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len );

@@ -28,50 +28,59 @@
  */
 
 /**
- * DARC Event Listener class
+ * DARC State Interface Event
  *
  * \author Morten Kjaergaard
  */
 
-#include <darc/pubsub/state_interface.h>
+#pragma once
 
-#include <darc/node.h>
-#include <darc/pubsub/manager.h>
+#include <boost/function.hpp>
+#include <boost/signals.hpp>
+#include <boost/bind.hpp>
+#include <darc/owner.h>
 
 namespace darc
 {
-namespace pubsub
+
+template<typename T1, typename T2, typename T3, typename T4>
+class StateInterfaceEvent4
 {
+public:
+  typedef boost::function<void(const T1&, const T2&, const T3&, const T4&)> CallbackType;
+  CallbackType callback_;
 
-StateInterface::StateInterface(darc::Owner* owner) :
-  Primitive(owner),
-  remote_pubsub_changes_event_(owner),
-  local_pubsub_changes_event_(owner)
-{
-}
+protected:
+  boost::signals::connection connection_;
+  Owner * owner_;
 
-void StateInterface::onAttach()
-{
-  remote_pubsub_changes_event_
-    .connect(owner_->getNode()->getPublisherManager().getRemoteDispatcher().remotePubsubChangeSignal());
+public:
+  StateInterfaceEvent4(darc::Owner* owner) :
+    owner_(owner)
+  {
+  }
 
-  local_pubsub_changes_event_
-    .connect(owner_->getNode()->getPublisherManager().localPubsubChangeSignal());
+  void connect(boost::signal<void(const T1&, const T2&, const T3&, const T4&)>& signal)
+  {
+    connection_ = signal.connect(boost::bind(&StateInterfaceEvent4::postEvent, this, _1, _2, _3, _4));
+  }
 
-  //todo: make this optional
-  owner_->getNode()->getPublisherManager().triggerCurrentStatusSignals();
+  void addListener(CallbackType callback)
+  {
+    callback_ = callback;
+  }
 
-}
+  void postEvent(const T1& arg1, const T2& arg2, const T3& arg3, const T4& arg4)
+  {
+    owner_->getIOService()->post(boost::bind(&StateInterfaceEvent4::triggerEvent, this, arg1, arg2, arg3, arg4));
+  }
 
-void StateInterface::remotePubsubChangesListen(ChangesEventType::CallbackType callback)
-{
-  remote_pubsub_changes_event_.addListener(callback);
-}
+private:
+  void triggerEvent(const T1 arg1, const T2 arg2, const T3 arg3, const T4 arg4)
+  {
+    callback_(arg1, arg2, arg3, arg4);
+  }
 
-void StateInterface::localPubsubChangesListen(ChangesEventType::CallbackType callback)
-{
-  local_pubsub_changes_event_.addListener(callback);
-}
+};
 
-}
 }

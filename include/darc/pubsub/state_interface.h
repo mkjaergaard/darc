@@ -40,6 +40,7 @@
 #include <darc/primitive.h>
 #include <darc/enable_weak_from_static.h>
 #include <darc/owner.h>
+#include <darc/state_interface_event.h>
 
 namespace darc
 {
@@ -48,16 +49,11 @@ namespace pubsub
 
 class StateInterface : Primitive
 {
-public:
-  typedef boost::function<void(const std::string, const std::string, size_t)> RemoteSubscriberChangesCallbackType;
-  RemoteSubscriberChangesCallbackType remote_subscriber_changes_callback_;
-
-  typedef boost::function<void(const std::string, const std::string, size_t)> RemotePublisherChangesCallbackType;
-  RemotePublisherChangesCallbackType remote_publisher_changes_callback_;
-
 protected:
-  boost::signals::connection conn1_;
-  boost::signals::connection conn2_;
+  typedef StateInterfaceEvent4<std::string, std::string, size_t, size_t> ChangesEventType;
+
+  ChangesEventType remote_pubsub_changes_event_;
+  ChangesEventType local_pubsub_changes_event_;
 
 public:
   StateInterface(darc::Owner* owner);
@@ -65,13 +61,8 @@ public:
 
   void getPublisherList();
 
-  void remoteSubscriberChangesListen(RemoteSubscriberChangesCallbackType callback);
-  void postRemoteSubscriberChanges(const std::string& topic, const std::string& type_name, size_t remote_subscribers);
-  void triggerRemoteSubscriberChanges(const std::string topic, const std::string& type_name, size_t remote_subscribers);
-
-  void remotePublisherChangesListen(RemoteSubscriberChangesCallbackType callback);
-  void postRemotePublisherChanges(const std::string& topic, const std::string& type_name, size_t remote_publishers);
-  void triggerRemotePublisherChanges(const std::string topic, const std::string& type_name, size_t remote_publisher);
+  void remotePubsubChangesListen(ChangesEventType::CallbackType callback);
+  void localPubsubChangesListen(ChangesEventType::CallbackType callback);
 
 };
 

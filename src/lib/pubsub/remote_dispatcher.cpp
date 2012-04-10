@@ -86,7 +86,10 @@ void RemoteDispatcher::subscriptionReceiveHandler( const network::packet::Header
   remote_subscribers_.insert(RemoteSubscribersType::value_type(packet.topic, header.sender_node_id));
 
   // Trigger Signal
-  signal_remote_subscriber_change_(packet.topic, packet.type_name, remote_subscribers_.count(packet.topic));
+  remote_pubsub_change_signal_(packet.topic,
+			       packet.type_name,
+			       remote_subscribers_.count(packet.topic),
+			       remote_publishers_.count(packet.topic));
 }
 
 void RemoteDispatcher::publishInfoReceiveHandler( const network::packet::Header& header, SharedBuffer buffer, std::size_t data_len )
@@ -99,7 +102,10 @@ void RemoteDispatcher::publishInfoReceiveHandler( const network::packet::Header&
   remote_publishers_.insert(RemoteSubscribersType::value_type(packet.topic, header.sender_node_id));
 
   // Trigger Signal
-  signal_remote_publisher_change_(packet.topic, packet.type_name, remote_publishers_.count(packet.topic));
+  remote_pubsub_change_signal_(packet.topic,
+			       packet.type_name,
+			       remote_subscribers_.count(packet.topic),
+			       remote_publishers_.count(packet.topic));
 }
 
 void RemoteDispatcher::newRemoteNodeHandler(const ID& remote_node_id)

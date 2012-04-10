@@ -63,6 +63,9 @@ private:
   // We hold the instance of RemoteDispatcher
   RemoteDispatcher remote_dispatcher_;
 
+  // Signals
+  boost::signal<void (const std::string&, const std::string&, const size_t&, const size_t&)> local_pubsub_change_signal_;
+
 public:
   // Constructor
   Manager(boost::asio::io_service * io_service, network::LinkManager * node_link_manager);
@@ -75,6 +78,31 @@ public:
   inline RemoteDispatcher& getRemoteDispatcher()
   {
     return remote_dispatcher_;
+  }
+
+  inline boost::signal<void (const std::string&, const std::string&, const size_t&, const size_t&)>& localPubsubChangeSignal()
+  {
+    return local_pubsub_change_signal_;
+  }
+
+  // todo -> cpp
+  inline void triggerCurrentStatusSignals()
+  {
+    for(LocalDispatcherListType::iterator it = local_dispatcher_list_.begin();
+	it != local_dispatcher_list_.end();
+	it++)
+    {
+      it->second->triggerStatusSignal();
+    }
+  }
+
+  // todo -> cpp
+  inline void triggerLocalPubsubChangeSignal(const std::string& topic,
+					     const std::string& type_name,
+					     const size_t& num_sub,
+					     const size_t& num_pub)
+  {
+    local_pubsub_change_signal_(topic, type_name, num_sub, num_pub);
   }
 
   // Called by RemoteDispatcher (Node Thread)

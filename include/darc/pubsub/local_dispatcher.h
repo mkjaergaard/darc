@@ -82,6 +82,8 @@ public:
       manager_->getRemoteDispatcher().registerSubscription(topic_, ros::message_traits::DataType<T>::value());
     }
     subscriber_list_[sub->getID()] = sub;
+
+    triggerStatusSignal();
   }
 
   void unregisterSubscriber( Subscriber<T> * sub )
@@ -101,6 +103,7 @@ public:
       manager_->getRemoteDispatcher().registerPublisher(topic_, ros::message_traits::DataType<T>::value());
     }
     publisher_count_++;
+    triggerStatusSignal();
   }
 
   void unregisterPublisher()
@@ -116,6 +119,14 @@ public:
     dispatchMessageLocally(msg, info);
     // if remote subscribers
     manager_->getRemoteDispatcher().postRemoteDispatch<T>(topic_, msg);
+  }
+
+  void triggerStatusSignal()
+  {
+    manager_->triggerLocalPubsubChangeSignal(topic_,
+					     ros::message_traits::DataType<T>::value(),
+					     subscriber_list_.size(),
+					     publisher_count_);
   }
 
   void dispatchMessageLocally( boost::shared_ptr<const T> msg, CallbackInfo info )
