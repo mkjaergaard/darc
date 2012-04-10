@@ -178,7 +178,12 @@ public:
 
     // todo: to do an async send_to, msg must be kept alive until the send is finished. How to do this?
     //       Impl a object fulfilling the boost buffer interface which holds the smart pointer internally....
-    socket_.send_to(combined_buffers, outbound_connection_list_[outbound_id]);
+    boost::system::error_code err;
+    socket_.send_to(combined_buffers, outbound_connection_list_[outbound_id], 0, err);
+    if(err)
+    {
+      DARC_FATAL("UDP send_to error. You should probably handle this.");
+    }
   }
 
  public:
