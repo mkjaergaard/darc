@@ -44,7 +44,7 @@ namespace pubsub
 {
 
 StateInterface::StateInterface(darc::Owner* owner):
-  owner_(owner)
+  Primitive(owner)
 {
 }
 

@@ -53,6 +53,7 @@ protected:
 
 protected:
   Composition(Owner * parent):
+    Primitive(parent),
     parent_(parent)
   {
     parent->addPrimitive(this);
@@ -71,7 +72,7 @@ public:
 
   inline const bool& isAttached()
   {
-    return parent_->isAtatched();
+    return parent_->isAttached();
   }
 
   // impl of darc::Owner

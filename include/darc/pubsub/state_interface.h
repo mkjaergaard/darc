@@ -46,7 +46,7 @@ namespace darc
 namespace pubsub
 {
 
-class StateInterface
+class StateInterface : Primitive
 {
 public:
   typedef boost::function<void(const std::string, const std::string, size_t)> RemoteSubscriberChangesCallbackType;
@@ -58,7 +58,6 @@ public:
 protected:
   boost::signals::connection conn1_;
   boost::signals::connection conn2_;
-  Owner * owner_;
 
 public:
   StateInterface(darc::Owner* owner);
