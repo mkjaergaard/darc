@@ -60,6 +60,8 @@ protected:
   ID id_;
   Owner * owner_;
 
+  static std::string empty_string_;
+
   virtual void onPause() {}
   virtual void onUnpause() {}
   virtual void onStop() {}
@@ -119,6 +121,7 @@ public:
   virtual ~Primitive()
   {}
 
+  virtual const std::string& getInstanceName() { return empty_string_; }
   virtual const char * getTypeName() { return ""; }
   virtual const int getTypeID() { return 0; }
 

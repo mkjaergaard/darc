@@ -13,6 +13,7 @@
 #include <darc/python/proxy_base.h>
 #include <darc/parameter/parameter.h>
 #include <darc/log.h>
+#include <darc/component_loader.h>
 
 namespace bp = boost::python;
 
@@ -205,7 +206,12 @@ public:
 	int type_id = it->second.lock()->getTypeID();
 	if(type_id == item->second)
 	{
-	  l["hej"] = getPrimitiveObject(it->second);
+	  std::string name = it->second.lock()->getInstanceName();
+	  if(name == "")
+	  {
+	    name = it->second.lock()->getTypeName();
+	  }
+	  l[name] = getPrimitiveObject(it->second);
 	}
       }
       return l;
@@ -348,6 +354,10 @@ BOOST_PYTHON_MODULE(darc)
   bp::class_<darc::Registry>("Registry", bp::no_init)
     .def("instantiateComponent", &darc::Registry::instantiateComponent)
     .staticmethod("instantiateComponent");
+
+  bp::class_<darc::ComponentLoader>("ComponentLoader", bp::no_init)
+    .def("loadComponent", &darc::ComponentLoader::loadComponent)
+    .staticmethod("loadComponent");
 
   bp::class_<darc::Node, darc::NodePtr, boost::noncopyable>("Node", bp::no_init)
     .def("create", &darc::Node::create)

@@ -55,6 +55,11 @@ public:
   {
   }
 
+  const std::string& getInstanceName()
+  {
+    return name_;
+  }
+
   const std::string& getName() const
   {
     return name_;

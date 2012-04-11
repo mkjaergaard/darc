@@ -46,4 +46,6 @@ Primitive::Primitive(Owner * owner):
   owner->addPrimitive(this);
 }
 
+std::string Primitive::empty_string_ = "";
+
 }
