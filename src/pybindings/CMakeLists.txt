@@ -14,3 +14,7 @@ set_target_properties(darc-pybindings
 
 add_custom_target(pybindings)
 add_dependencies(pybindings darc-pybindings)
+
+
+#add_library(IPythonComponent ipython_component.cpp)
+#target_link_libraries(IPythonComponent ${PYTHON_LIBRARIES} darc -lreadline)
