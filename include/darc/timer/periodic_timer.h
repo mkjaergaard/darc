@@ -75,6 +75,7 @@ public:
     callback_(boost::bind(callback, owner)),
     period_(period)
   {
+    addConsumer("timer_event", &callback_consumer_);
   }
 
   const char * getTypeName()

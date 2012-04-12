@@ -39,18 +39,34 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <darc/statistics/cpu_usage.h>
+#include <darc/log.h>
 
 namespace darc
 {
 namespace statistics
 {
 
+struct CallbackStatistics
+{
+  int32_t total_sec;
+  int32_t total_usec;
+  int32_t count;
+
+  CallbackStatistics() :
+    total_sec(0),
+    total_usec(0),
+    count(0)
+  {
+  }
+};
+
 class Consumer
 {
 protected:
   CPUUsage cpu_usage_;
 
-  int32_t last_period_usec_; // this design handles max 32 seconds which should be ok
+  CallbackStatistics current_;
+  CallbackStatistics latched_;
 
 public:
   Consumer()
@@ -65,6 +81,7 @@ public:
   void stop()
   {
     cpu_usage_.stop();
+    current_.count++;
   }
 
   void latch(int32_t period_usec)
@@ -72,8 +89,15 @@ public:
     int32_t sec = 0;
     int32_t usec = 0;
     cpu_usage_.reset(sec, usec);
-    assert(sec < 32);
-    last_period_usec_ = sec * 1000 + usec;
+    latched_ = current_;
+    latched_.total_sec = sec;
+    latched_.total_usec = usec;
+    current_.count = 0;
+  }
+
+  void printStatistics()
+  {
+    DARC_INFO("- - - %u.06%u (%u)", latched_.total_sec, latched_.total_usec, latched_.count);
   }
 
 };

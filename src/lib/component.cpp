@@ -45,7 +45,7 @@ Component::Component() :
   name_(""),
   attached_(false),
   id_(ID::create()),
-  statistics_period_(boost::posix_time::seconds(1)),
+  statistics_period_(boost::posix_time::seconds(5)),
   statistics_timer_(io_service_, statistics_period_)
 {
 }
@@ -69,10 +69,11 @@ void Component::statisticsTimerHandler(const boost::system::error_code& error)
   }
 }
 
-void Component::onStart()
+void Component::triggerOnStart()
 {
   statistics_timer_.expires_from_now(statistics_period_);
   statistics_timer_.async_wait(boost::bind( &Component::statisticsTimerHandler, this, boost::asio::placeholders::error ));
+  onStart();
 }
 
 void Component::run()
@@ -102,7 +103,7 @@ void Component::work()
   DARC_INFO("Running Component: %s", name_.c_str());
   keep_alive_.reset( new boost::asio::io_service::work(io_service_) );
   startPrimitives();
-  onStart();
+  triggerOnStart();
   io_service_.reset();
   io_service_.run();
   DARC_INFO("Stopped Component: %s", name_.c_str());

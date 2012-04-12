@@ -71,6 +71,7 @@ public:
   void triggerPrimitivesOnAttach();
   void add(Primitive * item);
   void latchStatistics(int32_t period_usec);
+  void printStatistics();
 
   void addPrimitive(Primitive * prim)
   {

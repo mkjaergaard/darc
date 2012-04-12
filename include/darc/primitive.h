@@ -40,6 +40,7 @@
 //#include <darc/owner_fwd.h>
 #include <darc/id.h>
 #include <darc/statistics/consumer.h>
+#include <darc/log.h>
 
 namespace darc
 {
@@ -113,6 +114,23 @@ protected:
     {
       it->second->latch(period_usec);
     }
+  }
+
+  void printStatistics()
+  {
+    DARC_INFO("- Statistics for %s", this->getInstanceName().c_str());
+    for(ConsumerListType::iterator it = consumer_list_.begin();
+	it != consumer_list_.end();
+	it++)
+    {
+      DARC_INFO("- - Consumer %s", it->first.c_str());
+      it->second->printStatistics();
+    }
+  }
+
+  void addConsumer(const char * name, statistics::Consumer * consumer)
+  {
+    consumer_list_.insert(ConsumerListType::value_type(name, consumer));
   }
 
 public:
