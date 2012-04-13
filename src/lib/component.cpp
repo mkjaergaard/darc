@@ -62,6 +62,32 @@ void Component::triggerOnStart()
   onStart();
 }
 
+void Component::startProfiling()
+{
+  io_service_.post(boost::bind(&Component::startProfilingHandler, this));
+}
+
+void Component::stopProfiling()
+{
+  io_service_.post(boost::bind(&Component::stopProfilingHandler, this));
+}
+
+void Component::startProfilingHandler()
+{
+  cpu_usage_.start();
+  profiling_start_time_ = boost::posix_time::microsec_clock::universal_time();
+  Owner::startProfiling();
+}
+
+void Component::stopProfilingHandler()
+{
+  cpu_usage_.stop();
+  statistics_.user_cpu_time = cpu_usage_.getUserCPUTime();
+  statistics_.system_cpu_time = cpu_usage_.getSystemCPUTime();
+  statistics_.wall_time = boost::posix_time::microsec_clock::universal_time() - profiling_start_time_;
+  Owner::stopProfiling();
+}
+
 void Component::run()
 {
   assert(attached_);

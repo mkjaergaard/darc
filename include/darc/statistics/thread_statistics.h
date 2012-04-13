@@ -28,62 +28,40 @@
  */
 
 /**
- * DARC Owner class
+ * DARC
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_OWNER_H_INCLUDED__
-#define __DARC_OWNER_H_INCLUDED__
+#pragma once
 
-#include <boost/asio/io_service.hpp>
-#include <boost/weak_ptr.hpp>
-#include <darc/primitive.h>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
 namespace darc
 {
-
-namespace python
+namespace statistics
 {
-class OwnerProxy;
-}
 
-class Node;
-
-class Owner
+struct ThreadStatistics
 {
-  friend class darc::python::OwnerProxy;
+  boost::posix_time::time_duration user_cpu_time;
+  boost::posix_time::time_duration system_cpu_time;
+  boost::posix_time::time_duration wall_time;
 
-protected:
-  typedef std::map<ID, boost::weak_ptr<Primitive> > PrimitiveListType;
-  PrimitiveListType list_;
-
-  typedef std::map<int, int> PrimitiveTypeCountType;
-  PrimitiveTypeCountType type_count_;
-
-public:
-  virtual boost::asio::io_service * getIOService() = 0;
-  virtual const bool& isAttached() = 0;
-  virtual boost::shared_ptr<darc::Node> getNode() = 0;
-  virtual const ID& getComponentID() = 0;
-
-  void startPrimitives();
-  void stopPrimitives();
-  void pausePrimitives();
-  void unpausePrimitives();
-  void triggerPrimitivesOnAttach();
-  int add(Primitive * item);
-  virtual void startProfiling();
-  virtual void stopProfiling();
-
-  void addPrimitive(Primitive * prim)
+  ThreadStatistics():
+    user_cpu_time(boost::posix_time::seconds(0)),
+    system_cpu_time(boost::posix_time::seconds(0)),
+    wall_time(boost::posix_time::seconds(0))
   {
-    // todo: replace calls;
-    add(prim);
   }
 
+  void clear()
+  {
+    user_cpu_time = boost::posix_time::seconds(0);
+    system_cpu_time = boost::posix_time::seconds(0);
+    wall_time = boost::posix_time::seconds(0);
+  }
 };
 
 }
-
-#endif
+}

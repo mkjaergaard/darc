@@ -45,6 +45,8 @@
 #include <darc/node.h>
 #include <darc/id.h>
 #include <darc/registry.h>
+#include <darc/statistics/cpu_usage.h>
+#include <darc/statistics/thread_statistics.h>
 
 namespace darc
 {
@@ -63,6 +65,11 @@ private:
   boost::scoped_ptr<boost::asio::io_service::work> keep_alive_;
   ID id_;
 
+  // Statistics
+  statistics::CPUUsage cpu_usage_;
+  statistics::ThreadStatistics statistics_;
+  boost::posix_time::ptime profiling_start_time_;
+
 protected:
   Component();
   void attachNode(const std::string& instance_name, NodePtr node);
@@ -71,6 +78,11 @@ protected:
   virtual void onStart()
   {
   }
+
+  virtual void startProfiling();
+  virtual void stopProfiling();
+  void startProfilingHandler();
+  void stopProfilingHandler();
 
 public:
   void run();
@@ -113,6 +125,11 @@ public:
   inline const ID& getID()
   {
     return id_;
+  }
+
+  inline const statistics::ThreadStatistics& getStatistics()
+  {
+    return statistics_;
   }
 
   // Method to instantiate components

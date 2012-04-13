@@ -78,7 +78,7 @@ void Owner::triggerPrimitivesOnAttach()
   }
 }
 
-void Owner::add(Primitive * item)
+int Owner::add(Primitive * item)
 {
   list_.insert(PrimitiveListType::value_type(item->getID(), item->getWeakPtr()));
 
@@ -87,6 +87,19 @@ void Owner::add(Primitive * item)
   {
     item->onAttach();
   }
+
+  PrimitiveTypeCountType::iterator entry = type_count_.find(item->getTypeID());
+  if(entry != type_count_.end())
+  {
+    entry->second++;
+    return entry->second;
+  }
+  else
+  {
+    type_count_.insert(PrimitiveTypeCountType::value_type(item->getTypeID(), 1));
+    return 1;
+  }
+
 }
 
 void Owner::startProfiling()

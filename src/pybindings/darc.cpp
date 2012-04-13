@@ -280,6 +280,11 @@ public:
     return instance_.lock()->stopProfiling();
   }
 
+  const statistics::ThreadStatistics& getStatistics()
+  {
+    return instance_.lock()->getStatistics();
+  }
+
   boost::python::list dir()
   {
     return OwnerProxy::dir();
@@ -403,6 +408,11 @@ BOOST_PYTHON_MODULE(darc)
     .def_readonly("system_cpu_time", &darc::statistics::CallbackStatistics::system_cpu_time)
     .def_readonly("wall_time", &darc::statistics::CallbackStatistics::wall_time);
 
+  bp::class_<darc::statistics::ThreadStatistics>("ThreadStatistics", bp::no_init)
+    .def_readonly("user_cpu_time", &darc::statistics::ThreadStatistics::user_cpu_time)
+    .def_readonly("system_cpu_time", &darc::statistics::ThreadStatistics::system_cpu_time)
+    .def_readonly("wall_time", &darc::statistics::ThreadStatistics::wall_time);
+
   bp::class_<darc::statistics::AccumulatedTimeDuration>("AccumulatedTimeDuration", bp::no_init)
     .add_property("accumulated",
 		  bp::make_function(&darc::statistics::AccumulatedTimeDuration::getAccumulated,
@@ -425,8 +435,9 @@ BOOST_PYTHON_MODULE(darc)
     .def("startProfiling", &darc::python::ComponentProxy::startProfiling)
     .def("stopProfiling", &darc::python::ComponentProxy::stopProfiling)
     .def("run", &darc::python::ComponentProxy::run)
-    .def("__dir__", &darc::python::ComponentProxy::dir);
-
+    .def("__dir__", &darc::python::ComponentProxy::dir)
+    .add_property("statistics", bp::make_function(&darc::python::ComponentProxy::getStatistics,
+						  bp::return_value_policy<bp::copy_const_reference>()));
 
   bp::class_<darc::python::NodeProxy>("Node_", bp::init<boost::shared_ptr<darc::NodeImpl> >())
     .def("instantiateComponent", &darc::python::NodeProxy::instantiateComponent)
