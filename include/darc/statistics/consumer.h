@@ -40,64 +40,68 @@
 #include <boost/shared_ptr.hpp>
 #include <darc/statistics/cpu_usage.h>
 #include <darc/log.h>
+#include <darc/statistics/callback_statistics.h>
 
 namespace darc
 {
 namespace statistics
 {
 
-struct CallbackStatistics
-{
-  int32_t total_sec;
-  int32_t total_usec;
-  int32_t count;
-
-  CallbackStatistics() :
-    total_sec(0),
-    total_usec(0),
-    count(0)
-  {
-  }
-};
-
 class Consumer
 {
 protected:
+  bool enabled_;
+
   CPUUsage cpu_usage_;
+  boost::posix_time::ptime callback_start_time_;
 
   CallbackStatistics current_;
-  CallbackStatistics latched_;
 
 public:
-  Consumer()
+  Consumer():
+    enabled_(false)
   {
   }
 
-  void start()
+  void enable()
   {
-    cpu_usage_.start();
+    cpu_usage_.reset();
+    current_.clear();
+    enabled_ = true;
   }
 
-  void stop()
+  void disable()
   {
-    cpu_usage_.stop();
-    current_.count++;
+    enabled_ = false;
   }
 
-  void latch(int32_t period_usec)
+  void signalCallbackBegin()
   {
-    int32_t sec = 0;
-    int32_t usec = 0;
-    cpu_usage_.reset(sec, usec);
-    latched_ = current_;
-    latched_.total_sec = sec;
-    latched_.total_usec = usec;
-    current_.count = 0;
+    if(enabled_)
+    {
+      callback_start_time_ = boost::posix_time::microsec_clock::universal_time();
+      cpu_usage_.start();
+    }
   }
 
-  void printStatistics()
+  void signalCallbackEnd()
   {
-    DARC_INFO("- - - %u.06%u (%u)", latched_.total_sec, latched_.total_usec, latched_.count);
+    if(enabled_)
+    {
+      // Callback Count
+      current_.count++;
+      // CPU Time
+      cpu_usage_.stop();
+      current_.user_cpu_time.add(cpu_usage_.getUserCPUTime());
+      current_.system_cpu_time.add(cpu_usage_.getSystemCPUTime());
+      // Wall Time
+      current_.wall_time.add( boost::posix_time::microsec_clock::universal_time() - callback_start_time_ );
+    }
+  }
+
+  const CallbackStatistics& getStatistics()
+  {
+    return current_;
   }
 
 };

@@ -28,61 +28,57 @@
  */
 
 /**
- * DARC Owner class
+ * DARC
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_OWNER_H_INCLUDED__
-#define __DARC_OWNER_H_INCLUDED__
-
-#include <boost/asio/io_service.hpp>
-#include <boost/weak_ptr.hpp>
-#include <darc/primitive.h>
+#pragma once
 
 namespace darc
 {
-
-namespace python
+namespace statistics
 {
-class OwnerProxy;
-}
 
-class Node;
-
-class Owner
+template<typename T>
+class Accumulator
 {
-  friend class darc::python::OwnerProxy;
-
 protected:
-  typedef std::map<ID, boost::weak_ptr<Primitive> > PrimitiveListType;
-  PrimitiveListType list_;
+  T null_value_;
+  T last_;
+  T accumulated_;
 
 public:
-  virtual boost::asio::io_service * getIOService() = 0;
-  virtual const bool& isAttached() = 0;
-  virtual boost::shared_ptr<darc::Node> getNode() = 0;
-  virtual const ID& getComponentID() = 0;
-
-  void startPrimitives();
-  void stopPrimitives();
-  void pausePrimitives();
-  void unpausePrimitives();
-  void triggerPrimitivesOnAttach();
-  void add(Primitive * item);
-  void latchStatistics(int32_t period_usec);
-  void printStatistics();
-  void startProfiling();
-  void stopProfiling();
-
-  void addPrimitive(Primitive * prim)
+  Accumulator(const T null_value = T() ) :
+    null_value_(null_value),
+    last_(null_value),
+    accumulated_(null_value)
   {
-    // todo: replace calls;
-    add(prim);
+  }
+
+  void clear()
+  {
+    last_ = null_value_;
+    accumulated_ = null_value_;
+  }
+
+  void add(const T& value)
+  {
+    last_ = value;
+    accumulated_ += value;
+  }
+
+  const T& getLast()
+  {
+    return last_;
+  }
+
+  const T& getAccumulated()
+  {
+    return accumulated_;
   }
 
 };
 
 }
-
-#endif
+}

@@ -131,9 +131,9 @@ protected:
 
       if( state_ == RUNNING)
       {
-	callback_consumer_.start();
+	callback_consumer_.signalCallbackBegin();
 	callback_();
-	callback_consumer_.stop();
+	callback_consumer_.signalCallbackEnd();
       }
     }
   }

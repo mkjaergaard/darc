@@ -38,6 +38,7 @@
 // todo: This stuff only works on linux, just disable on windows
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
 namespace darc
 {
@@ -47,19 +48,15 @@ namespace statistics
 class CPUUsage
 {
 protected:
-  int32_t usage_sec_;
-  int32_t usage_usec_;
-
-  int32_t start_sec_;
-  int32_t start_usec_;
+  boost::posix_time::time_duration user_time_;
+  boost::posix_time::time_duration system_time_;
+  rusage start_usage_;
   bool measuring_;
 
 public:
   CPUUsage() :
-    usage_sec_(0),
-    usage_usec_(0),
-    start_sec_(0),
-    start_usec_(0),
+    user_time_(boost::posix_time::seconds(0)),
+    system_time_(boost::posix_time::seconds(0)),
     measuring_(false)
   {
   }
@@ -68,48 +65,44 @@ public:
   {
     assert(measuring_ == false);
     measuring_ = true;
+    getrusage(RUSAGE_THREAD, &start_usage_);
+    user_time_ = boost::posix_time::seconds(0);
+    system_time_ = boost::posix_time::seconds(0);
+  }
 
+  void measure()
+  {
+    assert(measuring_ == true);
     rusage usage;
     getrusage(RUSAGE_THREAD, &usage);
-    start_sec_ = usage.ru_utime.tv_sec;
-    start_usec_ = usage.ru_utime.tv_usec;
+
+    user_time_ = boost::posix_time::seconds(usage.ru_utime.tv_sec - start_usage_.ru_utime.tv_sec) +
+      boost::posix_time::microseconds(usage.ru_utime.tv_usec - start_usage_.ru_utime.tv_usec);
+    system_time_ = boost::posix_time::seconds(usage.ru_stime.tv_sec - start_usage_.ru_stime.tv_sec) +
+      boost::posix_time::microseconds(usage.ru_stime.tv_usec - start_usage_.ru_stime.tv_usec);
   }
 
   void stop()
   {
-    assert(measuring_ == true);
+    measure();
     measuring_ = false;
-
-    rusage usage;
-    getrusage(RUSAGE_THREAD, &usage);
-    usage_sec_ += usage.ru_utime.tv_sec - start_sec_;
-    int32_t usec = usage.ru_utime.tv_usec - start_usec_;
-    if( usec > 1000000 )
-    {
-      usage_sec_++;
-      usec -= 1000000;
-    }
-    usage_usec_ += usec;
   }
 
-  void reset(int32_t& sec, int32_t& usec)
+  void reset()
   {
-    if(measuring_)
-    {
-      stop();
-      sec = usage_sec_;
-      usec = usage_usec_;
-      usage_sec_ = 0;
-      usage_usec_ = 0;
-      start();
-    }
-    else
-    {
-      sec = usage_sec_;
-      usec = usage_usec_;
-      usage_sec_ = 0;
-      usage_usec_ = 0;
-    }
+    user_time_ = boost::posix_time::seconds(0);
+    system_time_ = boost::posix_time::seconds(0);
+    measuring_ = false;
+  }
+
+  boost::posix_time::time_duration getUserCPUTime()
+  {
+    return user_time_;
+  }
+
+  boost::posix_time::time_duration getSystemCPUTime()
+  {
+    return system_time_;
   }
 
 };

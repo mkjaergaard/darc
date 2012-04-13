@@ -89,20 +89,28 @@ void Owner::add(Primitive * item)
   }
 }
 
-void Owner::latchStatistics(int32_t period_usec)
+void Owner::startProfiling()
 {
   for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
   {
-    it->second.lock()->latchStatistics(period_usec);
+    it->second.lock()->startProfiling();
   }
+}
+
+void Owner::stopProfiling()
+{
+  for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
+  {
+    it->second.lock()->stopProfiling();
+  }
+}
+
+void Owner::latchStatistics(int32_t period_usec)
+{
 }
 
 void Owner::printStatistics()
 {
-  for(PrimitiveListType::iterator it = list_.begin(); it != list_.end(); it++)
-  {
-    it->second.lock()->printStatistics();
-  }
 }
 
 }

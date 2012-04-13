@@ -55,6 +55,38 @@ bp::object getPrimitiveObject(boost::weak_ptr<darc::Primitive> ptr)
   }
 }
 
+class ObjectList : public std::map<std::string, bp::object>
+{
+  typedef std::map<std::string, bp::object> MyType;
+
+public:
+  bp::object getitem(std::string text)
+  {
+    MyType::iterator item = this->find(text);
+    if(item != this->end())
+    {
+      return item->second;
+    }
+    else
+    {
+      PyErr_SetString(PyExc_AttributeError, "object has no attribute with that name" );
+      throw boost::python::error_already_set();
+    }
+  }
+
+  boost::python::list dir()
+  {
+    boost::python::list l;
+    for(MyType::iterator it = this->begin();
+         it != this->end();
+         it++)
+    {
+      l.insert(0, it->first);
+    }
+    return l;
+  }
+};
+
 class PeriodicTimerProxy : public ProxyBase<timer::PeriodicTimer>
 {
 public:
@@ -71,6 +103,18 @@ public:
   void setPeriod(double new_period)
   {
     instance_.lock()->period_ = boost::posix_time::milliseconds( new_period * 1000 );
+  }
+
+  ObjectList getConsumers()
+  {
+    ObjectList consumer_list;
+    for(darc::timer::PeriodicTimer::ConsumerListType::iterator it = instance_.lock()->consumer_list_.begin();
+	it != instance_.lock()->consumer_list_.end();
+	it++)
+    {
+      consumer_list.insert(ObjectList::value_type(it->first, bp::object(it->second)));
+    }
+    return consumer_list;
   }
 
 };
@@ -128,38 +172,6 @@ public:
   }
 
 
-};
-
-class ObjectList : public std::map<std::string, bp::object>
-{
-  typedef std::map<std::string, bp::object> MyType;
-
-public:
-  bp::object getitem(std::string text)
-  {
-    MyType::iterator item = this->find(text);
-    if(item != this->end())
-    {
-      return item->second;
-    }
-    else
-    {
-      PyErr_SetString(PyExc_AttributeError, "object has no attribute with that name" );
-      throw boost::python::error_already_set();
-    }
-  }
-
-  boost::python::list dir()
-  {
-    boost::python::list l;
-    for(MyType::iterator it = this->begin();
-         it != this->end();
-         it++)
-    {
-      l.insert(0, it->first);
-    }
-    return l;
-  }
 };
 
 class OwnerProxy
@@ -261,6 +273,16 @@ public:
   void run()
   {
     return instance_.lock()->run();
+  }
+
+  void startProfiling()
+  {
+    return instance_.lock()->startProfiling();
+  }
+
+  void stopProfiling()
+  {
+    return instance_.lock()->stopProfiling();
   }
 
   boost::python::list dir()
@@ -376,6 +398,24 @@ BOOST_PYTHON_MODULE(darc)
 
   bp::class_<darc::NodeImpl, bp::bases<darc::Node>, boost::noncopyable>("NodeImpl", bp::no_init);
 
+  bp::class_<darc::statistics::Consumer>("Consumer", bp::no_init)
+    .add_property("statistics",
+		  bp::make_function(&darc::statistics::Consumer::getStatistics, bp::return_value_policy<bp::copy_const_reference>()));
+
+  bp::class_<darc::statistics::CallbackStatistics>("CallbackStatistics", bp::no_init)
+    .def_readonly("count", &darc::statistics::CallbackStatistics::count)
+    .def_readonly("user_cpu_time", &darc::statistics::CallbackStatistics::user_cpu_time)
+    .def_readonly("system_cpu_time", &darc::statistics::CallbackStatistics::system_cpu_time)
+    .def_readonly("wall_time", &darc::statistics::CallbackStatistics::wall_time);
+
+  bp::class_<darc::statistics::AccumulatedTimeDuration>("AccumulatedTimeDuration", bp::no_init)
+    .add_property("accumulated",
+		  bp::make_function(&darc::statistics::AccumulatedTimeDuration::getAccumulated,
+				    bp::return_value_policy<bp::copy_const_reference>()))
+    .add_property("last",
+ 		  bp::make_function(&darc::statistics::AccumulatedTimeDuration::getLast,
+				    bp::return_value_policy<bp::copy_const_reference>()));
+
   // Proxys
   bp::class_<darc::python::ProxyBaseAbstract, boost::noncopyable >("Abstract_", bp::no_init );
 
@@ -388,6 +428,8 @@ BOOST_PYTHON_MODULE(darc)
     .def("instanceName", &darc::python::ComponentProxy::instanceName)
     .def("pause", &darc::python::ComponentProxy::pause)
     .def("unpause", &darc::python::ComponentProxy::unpause)
+    .def("startProfiling", &darc::python::ComponentProxy::startProfiling)
+    .def("stopProfiling", &darc::python::ComponentProxy::stopProfiling)
     .def("run", &darc::python::ComponentProxy::run)
     .def("__dir__", &darc::python::ComponentProxy::dir);
 
@@ -398,7 +440,8 @@ BOOST_PYTHON_MODULE(darc)
     .def("__getattr__", &darc::python::NodeProxy::getitem);
 
   bp::class_<darc::python::PeriodicTimerProxy>("PeriodicTimer_", bp::no_init)
-    .add_property("period", &darc::python::PeriodicTimerProxy::getPeriod, &darc::python::PeriodicTimerProxy::setPeriod);
+    .add_property("period", &darc::python::PeriodicTimerProxy::getPeriod, &darc::python::PeriodicTimerProxy::setPeriod)
+    .add_property("consumers", &darc::python::PeriodicTimerProxy::getConsumers);
 
   bp::class_<darc::python::ParameterProxy>("Parameter_", bp::no_init)
     .add_property("name", &darc::python::ParameterProxy::getName)
@@ -410,5 +453,9 @@ BOOST_PYTHON_MODULE(darc)
 
   bp::class_<std::vector<std::string> >("list")
     .def(bp::vector_indexing_suite<std::vector<std::string> >());
+
+  // do this here?
+  bp::class_<boost::posix_time::time_duration>("time_duration")
+    .add_property("useconds", &boost::posix_time::time_duration::total_microseconds);
 
 }

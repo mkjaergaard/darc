@@ -105,26 +105,23 @@ protected:
     }
   }
 
-  void latchStatistics(int32_t period_usec)
+  void startProfiling()
   {
-    assert(period_usec < 32000); // todo: fix this later if more time is required
     for(ConsumerListType::iterator it = consumer_list_.begin();
 	it != consumer_list_.end();
 	it++)
     {
-      it->second->latch(period_usec);
+      it->second->enable();
     }
   }
 
-  void printStatistics()
+  void stopProfiling()
   {
-    DARC_INFO("- Statistics for %s", this->getInstanceName().c_str());
     for(ConsumerListType::iterator it = consumer_list_.begin();
 	it != consumer_list_.end();
 	it++)
     {
-      DARC_INFO("- - Consumer %s", it->first.c_str());
-      it->second->printStatistics();
+      it->second->disable();
     }
   }
 
