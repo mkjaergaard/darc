@@ -105,12 +105,4 @@ void Owner::stopProfiling()
   }
 }
 
-void Owner::latchStatistics(int32_t period_usec)
-{
-}
-
-void Owner::printStatistics()
-{
-}
-
 }

@@ -204,11 +204,6 @@ public:
   {
   }
 
-  void printStatistics()
-  {
-    owner_instance_.lock()->printStatistics();
-  }
-
   ObjectList getitem(std::string text)
   {
     updateTypeList();
@@ -420,7 +415,6 @@ BOOST_PYTHON_MODULE(darc)
   bp::class_<darc::python::ProxyBaseAbstract, boost::noncopyable >("Abstract_", bp::no_init );
 
   bp::class_<darc::python::OwnerProxy, boost::noncopyable>("Owner_", bp::no_init)
-    .def("printStatistics", &darc::python::OwnerProxy::printStatistics)
     .def("__dir__", &darc::python::OwnerProxy::dir)
     .def("__getattr__", &darc::python::OwnerProxy::getitem);
 

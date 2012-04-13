@@ -44,9 +44,7 @@ namespace darc
 Component::Component() :
   name_(""),
   attached_(false),
-  id_(ID::create()),
-  statistics_period_(boost::posix_time::seconds(5)),
-  statistics_timer_(io_service_, statistics_period_)
+  id_(ID::create())
 {
 }
 
@@ -59,20 +57,8 @@ void Component::attachNode(const std::string& instance_name, NodePtr node)
   triggerPrimitivesOnAttach();
 }
 
-void Component::statisticsTimerHandler(const boost::system::error_code& error)
-{
-  if(!error)
-  {
-    statistics_timer_.expires_from_now(statistics_period_);
-    statistics_timer_.async_wait(boost::bind( &Component::statisticsTimerHandler, this, boost::asio::placeholders::error ));
-    latchStatistics( statistics_period_.total_milliseconds() );
-  }
-}
-
 void Component::triggerOnStart()
 {
-  statistics_timer_.expires_from_now(statistics_period_);
-  statistics_timer_.async_wait(boost::bind( &Component::statisticsTimerHandler, this, boost::asio::placeholders::error ));
   onStart();
 }
 

@@ -63,17 +63,9 @@ private:
   boost::scoped_ptr<boost::asio::io_service::work> keep_alive_;
   ID id_;
 
-  // Statistics Stuff
-  boost::posix_time::time_duration statistics_period_;
-  boost::asio::deadline_timer statistics_timer_;
-
 protected:
   Component();
   void attachNode(const std::string& instance_name, NodePtr node);
-
-  // Statistics Stuff
-  void statisticsTimerHandler(const boost::system::error_code& error);
-
   void triggerOnStart();
 
   virtual void onStart()
