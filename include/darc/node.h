@@ -45,6 +45,7 @@
 #include <darc/procedure/manager_fwd.h>
 #include <darc/network/link_manager_fwd.h>
 #include <darc/primitive_manager_base.h>
+#include <darc/statistics/thread_statistics.h>
 
 namespace darc
 {
@@ -64,6 +65,9 @@ public:
   virtual void stopComponent(const ID& id) = 0;
   virtual void attach(ComponentPtr component) = 0;
   virtual const ID& lookupComponentInstance(const std::string& instance_name) = 0;
+  virtual void startProfiling() = 0;
+  virtual void stopProfiling() = 0;
+  virtual const statistics::ThreadStatistics& getStatistics() = 0;
 
   virtual PrimitiveManagerBase * accessPrimitiveManager(int manager_id) = 0;
 

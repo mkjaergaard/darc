@@ -51,6 +51,7 @@
 #include <darc/procedure/manager.h>
 #include <darc/network/link_manager.h>
 #include <darc/primitive_manager_base.h>
+#include <darc/statistics/cpu_usage.h>
 
 namespace darc
 {
@@ -77,6 +78,9 @@ private:
 
   typedef std::map<ID, ComponentPtr> ComponentInstancesList;
   ComponentInstancesList component_instances_;
+
+  statistics::CPUUsage cpu_usage_;
+  statistics::ThreadStatistics statistics_;
 
 public:
   NodeImpl() :
@@ -171,6 +175,36 @@ protected:
       }
     }
     return ID::null();
+  }
+
+  void startProfiling()
+  {
+    cpu_usage_.start();
+    for(ComponentInstancesList::iterator it = component_instances_.begin();
+	it != component_instances_.end();
+	it++)
+    {
+      it->second->startProfiling();
+    }
+  }
+
+  void stopProfiling()
+  {
+    cpu_usage_.stop();
+    statistics_.user_cpu_time = cpu_usage_.getUserCPUTime();
+    statistics_.system_cpu_time = cpu_usage_.getSystemCPUTime();
+    statistics_.wall_time = cpu_usage_.getWallTime();
+    for(ComponentInstancesList::iterator it = component_instances_.begin();
+	it != component_instances_.end();
+	it++)
+    {
+      it->second->stopProfiling();
+    }
+  }
+
+  const statistics::ThreadStatistics& getStatistics()
+  {
+    return statistics_;
   }
 
 };

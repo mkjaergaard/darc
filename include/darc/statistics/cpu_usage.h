@@ -50,6 +50,8 @@ class CPUUsage
 protected:
   boost::posix_time::time_duration user_time_;
   boost::posix_time::time_duration system_time_;
+  boost::posix_time::ptime start_time_;
+  boost::posix_time::time_duration wall_time_;
   rusage start_usage_;
   bool measuring_;
 
@@ -57,6 +59,7 @@ public:
   CPUUsage() :
     user_time_(boost::posix_time::seconds(0)),
     system_time_(boost::posix_time::seconds(0)),
+    wall_time_(boost::posix_time::seconds(0)),
     measuring_(false)
   {
   }
@@ -66,8 +69,10 @@ public:
     assert(measuring_ == false);
     measuring_ = true;
     getrusage(RUSAGE_THREAD, &start_usage_);
+    start_time_ = boost::posix_time::microsec_clock::universal_time();
     user_time_ = boost::posix_time::seconds(0);
     system_time_ = boost::posix_time::seconds(0);
+    wall_time_ = boost::posix_time::seconds(0);
   }
 
   void measure()
@@ -78,8 +83,11 @@ public:
 
     user_time_ = boost::posix_time::seconds(usage.ru_utime.tv_sec - start_usage_.ru_utime.tv_sec) +
       boost::posix_time::microseconds(usage.ru_utime.tv_usec - start_usage_.ru_utime.tv_usec);
+
     system_time_ = boost::posix_time::seconds(usage.ru_stime.tv_sec - start_usage_.ru_stime.tv_sec) +
       boost::posix_time::microseconds(usage.ru_stime.tv_usec - start_usage_.ru_stime.tv_usec);
+
+    wall_time_ = boost::posix_time::microsec_clock::universal_time() - start_time_;
   }
 
   void stop()
@@ -103,6 +111,11 @@ public:
   boost::posix_time::time_duration getSystemCPUTime()
   {
     return system_time_;
+  }
+
+  boost::posix_time::time_duration getWallTime()
+  {
+    return wall_time_;
   }
 
 };

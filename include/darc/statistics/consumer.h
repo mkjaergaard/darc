@@ -53,7 +53,6 @@ protected:
   bool enabled_;
 
   CPUUsage cpu_usage_;
-  boost::posix_time::ptime callback_start_time_;
 
   CallbackStatistics current_;
 
@@ -79,7 +78,6 @@ public:
   {
     if(enabled_)
     {
-      callback_start_time_ = boost::posix_time::microsec_clock::universal_time();
       cpu_usage_.start();
     }
   }
@@ -95,7 +93,7 @@ public:
       current_.user_cpu_time.add(cpu_usage_.getUserCPUTime());
       current_.system_cpu_time.add(cpu_usage_.getSystemCPUTime());
       // Wall Time
-      current_.wall_time.add( boost::posix_time::microsec_clock::universal_time() - callback_start_time_ );
+      current_.wall_time.add(cpu_usage_.getWallTime());
     }
   }
 

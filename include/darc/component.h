@@ -68,7 +68,6 @@ private:
   // Statistics
   statistics::CPUUsage cpu_usage_;
   statistics::ThreadStatistics statistics_;
-  boost::posix_time::ptime profiling_start_time_;
 
 protected:
   Component();
@@ -79,8 +78,6 @@ protected:
   {
   }
 
-  virtual void startProfiling();
-  virtual void stopProfiling();
   void startProfilingHandler();
   void stopProfilingHandler();
 
@@ -92,6 +89,9 @@ public:
 
   void work();
   void stopWork();
+
+  virtual void startProfiling();
+  virtual void stopProfiling();
 
   // impl of darc::Owner
   inline boost::asio::io_service * getIOService()

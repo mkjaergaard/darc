@@ -218,10 +218,11 @@ public:
 	int type_id = it->second.lock()->getTypeID();
 	if(type_id == item->second)
 	{
+	  // Demo Hack
 	  std::string name = it->second.lock()->getInstanceName();
-	  if(name == "")
+	  if(name == "" && it->second.lock()->getTypeName() == std::string("PeriodicTimers"))
 	  {
-	    name = it->second.lock()->getTypeName();
+	    name = "Timer0";
 	  }
 	  l[name] = getPrimitiveObject(it->second);
 	}
@@ -308,6 +309,21 @@ public:
   void instantiateComponent(const std::string& instance_name)
   {
     instance_.lock()->instantiateComponent(instance_name);
+  }
+
+  void startProfiling()
+  {
+    return instance_.lock()->startProfiling();
+  }
+
+  void stopProfiling()
+  {
+    return instance_.lock()->stopProfiling();
+  }
+
+  const statistics::ThreadStatistics& getStatistics()
+  {
+    return instance_.lock()->getStatistics();
   }
 
   ComponentProxy getitem(std::string text)
@@ -441,6 +457,10 @@ BOOST_PYTHON_MODULE(darc)
 
   bp::class_<darc::python::NodeProxy>("Node_", bp::init<boost::shared_ptr<darc::NodeImpl> >())
     .def("instantiateComponent", &darc::python::NodeProxy::instantiateComponent)
+    .add_property("statistics", bp::make_function(&darc::python::NodeProxy::getStatistics,
+						  bp::return_value_policy<bp::copy_const_reference>()))
+    .def("startProfiling", &darc::python::NodeProxy::startProfiling)
+    .def("stopProfiling", &darc::python::NodeProxy::stopProfiling)
     .def("__dir__", &darc::python::NodeProxy::dir)
     .def("__getattr__", &darc::python::NodeProxy::getitem);
 

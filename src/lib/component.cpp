@@ -75,7 +75,6 @@ void Component::stopProfiling()
 void Component::startProfilingHandler()
 {
   cpu_usage_.start();
-  profiling_start_time_ = boost::posix_time::microsec_clock::universal_time();
   Owner::startProfiling();
 }
 
@@ -84,7 +83,7 @@ void Component::stopProfilingHandler()
   cpu_usage_.stop();
   statistics_.user_cpu_time = cpu_usage_.getUserCPUTime();
   statistics_.system_cpu_time = cpu_usage_.getSystemCPUTime();
-  statistics_.wall_time = boost::posix_time::microsec_clock::universal_time() - profiling_start_time_;
+  statistics_.wall_time = cpu_usage_.getWallTime();
   Owner::stopProfiling();
 }
 
