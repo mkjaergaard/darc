@@ -37,8 +37,10 @@
 #define __DARC_NETWORK_PROTOCOL_MANAGER_BASE_H__
 
 #include <string>
-#include <darc/network/link_base.h>
 #include <darc/network/link_manager_callback_if.h>
+#include <darc/network/id_types.h>
+
+#include <darc/network/packet/discover.h> 
 
 namespace darc
 {
@@ -58,8 +60,23 @@ protected:
 public:
   virtual ~ProtocolManagerBase() {}
 
-  virtual const ID& accept( const std::string& url ) = 0;
-  virtual void connect( const std::string& url ) = 0;
+  virtual const ID& accept(const std::string& protocol, const std::string& url) = 0;
+  virtual void connect(const std::string& protocol, const std::string& url) = 0;
+
+  virtual void sendPacket(const ConnectionID& outbound_id,
+			  packet::Header::PayloadType type, const NodeID& recv_node_id,
+			  SharedBuffer buffer, std::size_t data_len) = 0;
+
+  void sendDiscover(const ID& outbound_id)
+  {
+    std::size_t data_len = 1024*32;
+    SharedBuffer buffer = SharedBuffer::create(data_len);
+
+    // Create packet
+    network::packet::Discover discover(outbound_id);
+    std::size_t len = discover.write(buffer.data(), buffer.size());
+    sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
+  }
 
 };
 

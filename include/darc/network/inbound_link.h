@@ -28,13 +28,13 @@
  */
 
 /**
- * DARC LinkBase class
+ * DARC InboundLink class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_NETWORK_LINK_BASE_H_INCLUDED__
-#define __DARC_NETWORK_LINK_BASE_H_INCLUDED__
+#ifndef __DARC_NETWORK_INBOUND_LINK_H_INCLUDED__
+#define __DARC_NETWORK_INBOUND_LINK_H_INCLUDED__
 
 #include <boost/shared_ptr.hpp>
 #include <darc/shared_buffer.h>
@@ -46,17 +46,17 @@ namespace darc
 namespace network
 {
 
-class LinkBase
+class InboundLink
 {
 protected:
   LinkManagerCallbackIF * callback_;
 
-  LinkBase(LinkManagerCallbackIF * callback) :
+  InboundLink(LinkManagerCallbackIF * callback) :
     callback_(callback)
   {
   }
 
-  ~LinkBase()
+  ~InboundLink()
   {
   }
 
@@ -69,7 +69,7 @@ public:
 
 };
 
-typedef boost::shared_ptr<LinkBase> LinkBasePtr;
+typedef boost::shared_ptr<InboundLink> InboundLinkPtr;
 
 }
 }

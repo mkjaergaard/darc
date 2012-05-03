@@ -41,6 +41,7 @@
 #include <darc/network/packet/discover.h>
 #include <darc/network/packet/discover_reply.h>
 #include <darc/network/link_manager_callback_if.h>
+#include <darc/network/inbound_link.h>
 #include <darc/network/udp/protocol_manager.h>
 
 namespace darc
@@ -51,17 +52,21 @@ namespace network
 class LinkManager : public LinkManagerCallbackIF
 {
 private:
-  ID node_id_;
-
-  // Protocol handlers
-  typedef std::map<const std::string, ProtocolManagerBase*> ManagerMapType;
-  ManagerMapType manager_map_;
+  NodeID node_id_;
 
   // Protocol Managers
   udp::ProtocolManager udp_manager_;
 
+  // Map "protocol" -> Manager
+  typedef std::map<const std::string, ProtocolManagerBase*> ManagerProtocolMapType;
+  ManagerProtocolMapType manager_protocol_map_;
+
+  // Map "Inbound ConnectionID" -> Manager
+  typedef std::map<const ConnectionID, ProtocolManagerBase*> ManagerConnectionMapType;
+  ManagerConnectionMapType manager_connection_map_; 
+
   // Node -> Outbound connection map (handle this a little more intelligent, more connections per nodes, timeout etc)
-  typedef std::map<const ID, const ID> NeighbourNodesType; // NodeID -> OutboundID
+  typedef std::map<const NodeID, const ConnectionID> NeighbourNodesType; // NodeID -> OutboundID
   NeighbourNodesType neighbour_nodes_;
 
   // Callbacks to handlers of certain packet types
@@ -74,12 +79,12 @@ private:
   NewRemoteNodeListenerListType new_remote_node_listeners_;
 
 public:
-  LinkManager( boost::asio::io_service * io_service, ID& node_id ) :
+  LinkManager(boost::asio::io_service * io_service, NodeID& node_id) :
     node_id_(node_id),
     udp_manager_(io_service, this)
   {
     // Link protocol names and protocol managers
-    manager_map_["udp"] = &udp_manager_;
+    manager_protocol_map_["udp"] = &udp_manager_;
   }
 
   void addNewRemoteNodeListener(NewRemoteNodeListenerType listener)
@@ -88,7 +93,7 @@ public:
   }
 
   // Impl of CallbackIF
-  const ID& getNodeID()
+  const NodeID& getNodeID()
   {
     return node_id_;
   }
@@ -104,9 +109,9 @@ public:
     }
   }
 
-  void sendPacket( packet::Header::PayloadType type, const ID& recv_node_id, SharedBuffer buffer, std::size_t data_len )
+  void sendPacket(packet::Header::PayloadType type, const NodeID& recv_node_id, SharedBuffer buffer, std::size_t data_len)
   {
-    // todo: right now we can only send to all nodes.... should add routing functionality instead
+    // ID::null means we send to all nodes
     if( recv_node_id == ID::null() )
     {
       for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
@@ -128,7 +133,7 @@ public:
     }
   }
 
-  void registerPacketReceivedHandler( packet::Header::PayloadType type, PacketReceivedHandlerType handler )
+  void registerPacketReceivedHandler(packet::Header::PayloadType type, PacketReceivedHandlerType handler)
   {
     packet_received_handlers_[type] = handler;
   }
@@ -138,12 +143,13 @@ public:
     try
     {
       boost::smatch what;
-      if( boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ) )
+      if(boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ))
       {
 	ProtocolManagerBase * mngr = getManager(what[1]);
-	if( mngr )
+	if(mngr)
 	{
-	  mngr->accept(what[2]);
+	  ConnectionID inbound_id = mngr->accept(what[1], what[2]);
+	  manager_connection_map_.insert(ManagerConnectionMapType::value_type(inbound_id, mngr));
 	}
 	else
 	{
@@ -169,9 +175,9 @@ public:
       if( boost::regex_match(url, what, boost::regex("^(.+)://(.+)$")) )
       {
 	ProtocolManagerBase * mngr = getManager(what[1]);
-	if( mngr )
+	if(mngr)
 	{
-	  mngr->connect(what[2]);
+	  mngr->connect(what[1], what[2]);
 	}
 	else
 	{
@@ -190,7 +196,7 @@ public:
   }
 
 private:
-  void handleDiscoverPacket(const ID& sender_node_id, LinkBase * source_link, SharedBuffer buffer, std::size_t data_len)
+  void handleDiscoverPacket(const NodeID& sender_node_id, InboundLink * source_link, SharedBuffer buffer, std::size_t data_len)
   {
     packet::Discover discover;
     discover.read(buffer.data(), data_len);
@@ -202,7 +208,7 @@ private:
     }
   }
 
-  void handleDiscoverReplyPacket(const ID& sender_node_id, const ID& inbound_id, SharedBuffer buffer, std::size_t data_len)
+  void handleDiscoverReplyPacket(const NodeID& sender_node_id, const ConnectionID& inbound_id, SharedBuffer buffer, std::size_t data_len)
   {
     // todo: check that we have such inbound link!
     packet::DiscoverReply discover_reply;
@@ -219,7 +225,7 @@ private:
 
   }
 
-  void receiveHandler( const ID& inbound_id, LinkBase * source_link, SharedBuffer buffer, std::size_t data_len )
+  void receiveHandler(const ConnectionID& inbound_id, InboundLink * source_link, SharedBuffer buffer, std::size_t data_len)
   {
     packet::Header header;
     header.read( buffer.data(), data_len );
@@ -269,8 +275,8 @@ private:
   // Get the protocol manager from a protocol name
   ProtocolManagerBase * getManager(const std::string& protocol)
   {
-    ManagerMapType::iterator elem = manager_map_.find(protocol);
-    if( elem != manager_map_.end() )
+    ManagerProtocolMapType::iterator elem = manager_protocol_map_.find(protocol);
+    if( elem != manager_protocol_map_.end() )
     {
       return elem->second;
     }

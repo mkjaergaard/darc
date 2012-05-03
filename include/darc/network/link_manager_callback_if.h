@@ -36,7 +36,7 @@
 #ifndef __DARC_LINK_MANAGER_CALLBACK_IF_H_INCLUDED__
 #define __DARC_LINK_MANAGER_CALLBACK_IF_H_INCLUDED__
 
-#include <darc/id.h>
+#include <darc/id_types.h>
 #include <darc/network/packet/header.h>
 #include <darc/shared_buffer.h>
 
@@ -46,13 +46,16 @@ namespace network
 {
 
 //fwd
-class LinkBase;
+class InboundLink;
 
 class LinkManagerCallbackIF
 {
 public:
-  virtual void receiveHandler( const ID& inbound_id, LinkBase * source_link, SharedBuffer buffer, std::size_t data_len ) = 0;
-  virtual const ID& getNodeID() = 0;
+  virtual void receiveHandler(const ID& inbound_id,
+			      InboundLink * source_link,
+			      SharedBuffer buffer,
+			      std::size_t data_len) = 0;
+  virtual const NodeID& getNodeID() = 0;
 };
 
 }

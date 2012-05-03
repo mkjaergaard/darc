@@ -44,7 +44,7 @@
 #include <darc/network/packet/header.h>
 #include <darc/network/packet/discover.h>
 #include <darc/network/packet/discover_reply.h>
-#include <darc/network/link_base.h>
+#include <darc/network/inbound_link.h>
 
 namespace darc
 {
@@ -53,7 +53,7 @@ namespace network
 namespace udp
 {
 
-class Link : public darc::network::LinkBase
+class Link : public darc::network::InboundLink
 {
 private:
   boost::asio::io_service * io_service_;
@@ -69,7 +69,7 @@ private:
 
 public:
   Link(network::LinkManagerCallbackIF * callback, boost::asio::io_service * io_service):
-    LinkBase(callback),
+    InboundLink(callback),
     io_service_(io_service),
     socket_(*io_service),
     opened_(false),

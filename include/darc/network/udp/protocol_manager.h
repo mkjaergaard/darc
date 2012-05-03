@@ -68,8 +68,8 @@ public:
 		  packet::Header::PayloadType type, const ID& recv_node_id,
 		  SharedBuffer buffer, std::size_t data_len );
 
-  const ID& accept(const std::string& url);
-  void connect(const std::string& url);
+  const ID& accept(const std::string& protocol, const std::string& url);
+  void connect(const std::string& protocol, const std::string& url);
 
 private:
   const ID& accept_(boost::asio::ip::address &host, uint16_t port_begin, uint16_t port_end);

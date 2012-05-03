@@ -78,7 +78,7 @@ void ProtocolManager::sendPacket(const ID& outbound_id,
   outbound_connection_list_[outbound_id]->sendPacket(outbound_id, type, recv_node_id, buffer, data_len);
 }
 
-const ID& ProtocolManager::accept( const std::string& url )
+const ID& ProtocolManager::accept(const std::string& protocol, const std::string& url)
 {
   boost::smatch what;
   if( boost::regex_match( url, what, boost::regex("^(.+):(\\d+)$") ) ) //single port
@@ -100,7 +100,7 @@ const ID& ProtocolManager::accept( const std::string& url )
   }
 }
 
-void ProtocolManager::connect(const std::string& url)
+void ProtocolManager::connect(const std::string& protocol, const std::string& url)
 {
   boost::smatch what;
   if( boost::regex_match( url, what, boost::regex("^(.+):(|\\d+)$") ) ) //single port
