@@ -5,6 +5,12 @@ set(CMAKE_PREFIX_PATH /opt/ros/fuerte)
 find_package(catkin)
 catkin_stack()
 
+catkin_project(darc
+  INCLUDE_DIRS include
+  LIBRARIES darc
+  DEPENDS cpp_common roscpp_serialization roscpp_traits rostime
+  CFG_EXTRAS darc-macros.cmake)
+
 SET(CMAKE_BUILD_TYPE Debug)
 
 find_package(Boost COMPONENTS system thread regex signals)
@@ -34,12 +40,15 @@ add_library(darc SHARED
 #  src/lib/network/zmq/protocol_manager.cpp
 )
 
-target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES} -lzmq)
+install(DIRECTORY include/
+  DESTINATION include
+        FILES_MATCHING PATTERN "*.h")
 
-catkin_project(darc
-  INCLUDE_DIRS include
-  LIBRARIES darc
-  DEPENDS cpp_common roscpp_serialization roscpp_traits rostime
-  CFG_EXTRAS darc-macros.cmake)
+install(TARGETS darc
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+)
+
+target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES} -lzmq)
 
 add_subdirectory(src/pybindings)
