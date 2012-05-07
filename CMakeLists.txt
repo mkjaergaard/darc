@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
 project(darc)
 
+set(CMAKE_PREFIX_PATH /opt/ros/fuerte)
+find_package(catkin)
 catkin_stack()
 
 SET(CMAKE_BUILD_TYPE Debug)
 
-set(CMAKE_PREFIX_PATH /opt/ros/fuerte)
-
-find_package(catkin)
 find_package(Boost COMPONENTS system thread regex signals)
 find_package(ROS REQUIRED COMPONENTS cpp_common rostime roscpp_traits roscpp_serialization)
 
