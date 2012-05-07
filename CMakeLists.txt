@@ -24,7 +24,6 @@ add_library(darc SHARED
   src/lib/id.cpp
   src/lib/log.cpp
   src/lib/tag_manager.cpp
-  src/lib/network/udp/protocol_manager.cpp
   src/lib/timer/deadline_timer.cpp
   src/lib/pubsub/manager.cpp
   src/lib/pubsub/remote_dispatcher.cpp
@@ -32,9 +31,11 @@ add_library(darc SHARED
   src/lib/procedure/manager.cpp
   src/lib/procedure/remote_dispatcher.cpp
   src/lib/procedure/system_state_interface.cpp
+  src/lib/network/udp/protocol_manager.cpp
+#  src/lib/network/zmq/protocol_manager.cpp
 )
 
-target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES})
+target_link_libraries(darc ${Boost_LIBRARIES} ${ROS_LIBRARIES} -lzmq)
 
 catkin_project(darc
   INCLUDE_DIRS include
