@@ -37,45 +37,82 @@
 #define __DARC_SHARED_BUFFER_H_INCLUDED__
 
 #include <stdint.h>
-#include <boost/shared_array.hpp>
+#include <boost/shared_ptr.hpp>
 
-class SharedBuffer : private boost::shared_array<uint8_t>
+class SharedBufferImpl
 {
-private:
+protected:
   size_t size_;
   size_t start_offset_;
 
-  SharedBuffer( size_t size ) :
-    boost::shared_array<uint8_t>( new uint8_t[size] ),
+  SharedBufferImpl(size_t size) :
     size_(size),
     start_offset_(0)
   {
   }
 
+  virtual ~SharedBufferImpl()
+  {
+  }
+  
+  virtual uint8_t * _data() const = 0;
+  virtual size_t _size() const = 0;
+
 public:
-  uint8_t * data() const
+  virtual uint8_t * data() const
   {
-    return boost::shared_array<uint8_t>::get() + start_offset_;
+    return _data() + start_offset_;
   }
 
-  size_t size() const
+  virtual size_t size() const
   {
-    return size_ - start_offset_;
-  }
+    return _size() - start_offset_;
+  }  
 
-  void addOffset(size_t offset)
+  virtual void addOffset(size_t offset)
   {
     start_offset_ += offset;
   }
 
-  void resetOffset()
+  virtual void resetOffset()
   {
     start_offset_ = 0;
   }
 
-  static SharedBuffer create( size_t size )
+};
+
+class SharedBuffer
+{
+public:
+  typedef boost::shared_ptr<SharedBufferImpl> ImplType;
+
+protected:
+  ImplType impl_;
+
+public:
+  SharedBuffer(ImplType impl) :
+    impl_(impl)
   {
-    return SharedBuffer( size );
+  }
+
+  uint8_t * data() const
+  {
+    return impl_->data();
+  }
+
+  size_t size() const
+  {
+    return impl_->size();
+  }
+
+  void addOffset(size_t offset)
+  {
+    return impl_->addOffset(offset);
+  }
+
+  void resetOffset()
+  {
+    return impl_->resetOffset();
   }
 
 };

@@ -50,6 +50,7 @@
 #include <darc/network/packet/message_subscribe.h>
 #include <darc/network/packet/message_publish_info.h>
 #include <darc/log.h>
+#include <darc/shared_buffer_array.h>
 
 namespace darc
 {
@@ -140,7 +141,7 @@ public:
       + 16/*MD5*/
       + strlen(ros::message_traits::DataType<T>::value()) + 1;
 
-    SharedBuffer buffer = SharedBuffer::create(data_len);
+    SharedBuffer buffer = SharedBufferArray::create(data_len);
 
     std::size_t pos = msg_header.write( buffer.data(), buffer.size() );
 

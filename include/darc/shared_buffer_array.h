@@ -28,60 +28,39 @@
  */
 
 /**
- * DARC ProtocolManagerBase class
+ * DARC SharedBufferArray class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_NETWORK_PROTOCOL_MANAGER_BASE_H__
-#define __DARC_NETWORK_PROTOCOL_MANAGER_BASE_H__
+#pragma once
 
-#include <string>
-#include <darc/network/link_manager_callback_if.h>
-#include <darc/network/id_types.h>
-#include <darc/shared_buffer_array.h>
+#include <darc/shared_buffer.h>
+#include <boost/shared_array.hpp>
 
-#include <darc/network/packet/discover.h> 
-
-namespace darc
+class SharedBufferArray : public SharedBufferImpl, private boost::shared_array<uint8_t>
 {
-namespace network
-{
-
-class ProtocolManagerBase
-{
-protected:
-  LinkManagerCallbackIF * callback_;
-
-  ProtocolManagerBase(LinkManagerCallbackIF * callback) :
-    callback_(callback)
+private:
+  SharedBufferArray(size_t size) :
+    SharedBufferImpl(size),
+    boost::shared_array<uint8_t>(new uint8_t[size])
   {
   }
 
 public:
-  virtual ~ProtocolManagerBase() {}
-
-  virtual const ID& accept(const std::string& protocol, const std::string& url) = 0;
-  virtual void connect(const std::string& protocol, const std::string& url) = 0;
-
-  virtual void sendPacket(const ConnectionID& outbound_id,
-			  packet::Header::PayloadType type, const NodeID& recv_node_id,
-			  SharedBuffer buffer, std::size_t data_len) = 0;
-
-  void sendDiscover(const ID& outbound_id)
+  uint8_t * _data() const
   {
-    std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBufferArray::create(data_len);
+    return boost::shared_array<uint8_t>::get() + start_offset_;
+  }
 
-    // Create packet
-    network::packet::Discover discover(outbound_id);
-    std::size_t len = discover.write(buffer.data(), buffer.size());
-    sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
+  size_t _size() const
+  {
+    return size_ - start_offset_;
+  }
+
+  static SharedBuffer create(size_t size)
+  {
+    return SharedBuffer(SharedBuffer::ImplType(new SharedBufferArray(size)));
   }
 
 };
-
-} // namespace network
-} // namespace darc
-
-#endif

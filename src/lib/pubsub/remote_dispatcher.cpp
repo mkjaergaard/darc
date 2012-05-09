@@ -146,7 +146,7 @@ void RemoteDispatcher::sendSubscription(const std::string& topic, const std::str
 
   // Allocate buffer. todo: derive required size?
   std::size_t data_len = 1024;
-  SharedBuffer buffer = SharedBuffer::create(data_len);
+  SharedBuffer buffer = SharedBufferArray::create(data_len);
 
   // Message Subscription Packet
   network::packet::MessageSubscribe packet;
@@ -163,7 +163,7 @@ void RemoteDispatcher::sendPublish(const std::string& topic, const std::string& 
 
   // Allocate buffer. todo: derive required size?
   std::size_t data_len = 1024;
-  SharedBuffer buffer = SharedBuffer::create(data_len);
+  SharedBuffer buffer = SharedBufferArray::create(data_len);
 
   // Message Subscription Packet
   network::packet::MessagePublishInfo packet;

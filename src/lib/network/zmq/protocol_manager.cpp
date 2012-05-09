@@ -109,6 +109,7 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
 
 void ProtocolManager::work()
 {
+/*
   // Fix this stuf, it is ugly
   zmq::message_t update;
   while(1)
@@ -118,13 +119,11 @@ void ProtocolManager::work()
 
     int64_t data_len = 0;
 
-    bool last = false;
-    while (!last)
-    {
-      zmq::message_t message;
-      subscriber_socket_.recv(&message);
-      memcpy(buf.data(), message.data(), message.size());
-      buf.addOffset(message.size());
+    SharedBuffer buf1;
+    SharedBuffer buf2;
+
+    zmq::message_t message1;
+    subscriber_socket_.recv(&message1);
       data_len += message.size();
 
       //
@@ -142,6 +141,7 @@ void ProtocolManager::work()
 			      SharedBuffer buffer,
 			      std::size_t data_len) = 0;
   }
+*/
 }
 
 } // namespace udp

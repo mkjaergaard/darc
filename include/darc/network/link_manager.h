@@ -43,6 +43,7 @@
 #include <darc/network/link_manager_callback_if.h>
 #include <darc/network/inbound_link.h>
 #include <darc/network/udp/protocol_manager.h>
+#include <darc/network/zmq/protocol_manager.h>
 
 namespace darc
 {
@@ -56,6 +57,7 @@ private:
 
   // Protocol Managers
   udp::ProtocolManager udp_manager_;
+  zeromq::ProtocolManager zmq_manager_;
 
   // Map "protocol" -> Manager
   typedef std::map<const std::string, ProtocolManagerBase*> ManagerProtocolMapType;
@@ -81,10 +83,12 @@ private:
 public:
   LinkManager(boost::asio::io_service * io_service, NodeID& node_id) :
     node_id_(node_id),
-    udp_manager_(io_service, this)
+    udp_manager_(io_service, this),
+    zmq_manager_(io_service, this)
   {
     // Link protocol names and protocol managers
     manager_protocol_map_["udp"] = &udp_manager_;
+    manager_protocol_map_["zmq+tcp"] = &zmq_manager_;
   }
 
   void addNewRemoteNodeListener(NewRemoteNodeListenerType listener)
@@ -201,6 +205,11 @@ private:
     packet::Discover discover;
     discover.read(buffer.data(), data_len);
     source_link->sendDiscoverReply(discover.link_id, sender_node_id);
+    DARC_INFO("DISCOVER from node %s (%s) on inbound %s",
+	      sender_node_id.short_string().c_str(),
+	      discover.link_id.short_string().c_str(),
+	      "todo");
+	       
     // If we received a DISCOVER from a node we dont know that we have a direct link to, send a DISCOVER back
     if(neighbour_nodes_.count(sender_node_id) == 0)
     {

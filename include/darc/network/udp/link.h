@@ -101,7 +101,7 @@ public:
 
   void startReceive()
   {
-    SharedBuffer recv_buffer = SharedBuffer::create(4098);
+    SharedBuffer recv_buffer = SharedBufferArray::create(4098);
     socket_.async_receive_from( boost::asio::buffer(recv_buffer.data(), recv_buffer.size()), received_from_endpoint_,
                                 boost::bind(&Link::handleReceive, this,
 				recv_buffer,
@@ -121,8 +121,9 @@ public:
 
   void sendDiscover(const ID& outbound_id)
   {
+    DARC_INFO("Outbound %s", outbound_id.short_string().c_str());
     std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBuffer::create(data_len);
+    SharedBuffer buffer = SharedBufferArray::create(data_len);
 
     // Create packet
     network::packet::Discover discover(outbound_id);
@@ -134,7 +135,7 @@ public:
   {
     // Create packet
     std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBuffer::create(data_len);
+    SharedBuffer buffer = SharedBufferArray::create(data_len);
     network::packet::DiscoverReply discover_reply(remote_outbound_id);
     std::size_t len = discover_reply.write( buffer.data(), buffer.size() );
 
@@ -195,6 +196,7 @@ public:
     }
     else
     {
+      DARC_INFO("%s", inbound_id_.short_string().c_str());
       callback_->receiveHandler(inbound_id_, this, recv_buffer, size);
     }
     startReceive();

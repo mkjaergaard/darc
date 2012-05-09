@@ -75,7 +75,15 @@ void ProtocolManager::sendPacket(const ID& outbound_id,
 				 packet::Header::PayloadType type, const ID& recv_node_id,
 				 SharedBuffer buffer, std::size_t data_len )
 {
-  outbound_connection_list_[outbound_id]->sendPacket(outbound_id, type, recv_node_id, buffer, data_len);
+  OutboundConnectionListType::iterator item = outbound_connection_list_.find(outbound_id);
+  if(item != outbound_connection_list_.end())
+  {
+    item->second->sendPacket(outbound_id, type, recv_node_id, buffer, data_len);
+  }
+  else
+  {
+    DARC_WARNING("UDPManager: sendPacket to unknown outbound_id: %s", outbound_id.short_string().c_str());
+  }
 }
 
 const ID& ProtocolManager::accept(const std::string& protocol, const std::string& url)

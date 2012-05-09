@@ -50,6 +50,7 @@
 #include <darc/network/packet/procedure_advertise.h>
 #include <darc/network/packet/procedure_feedback.h>
 #include <darc/network/packet/procedure_result.h>
+#include <darc/shared_buffer_array.h>
 #include <darc/log.h>
 
 namespace darc
@@ -165,7 +166,7 @@ private:
     call_packet.call_id = call_id;
 
     std::size_t data_len = call_packet.size() + Serialization::size(arg);
-    SharedBuffer buffer = SharedBuffer::create(data_len);
+    SharedBuffer buffer = SharedBufferArray::create(data_len);
 
     buffer.addOffset( call_packet.write(buffer.data(), buffer.size()) );
     Serialization::serialize<T_Arg>(buffer, arg);
@@ -188,7 +189,7 @@ private:
     feedback_packet.call_id = call_id;
 
     std::size_t data_len = feedback_packet.size() + Serialization::size(msg);
-    SharedBuffer buffer = SharedBuffer::create(data_len);
+    SharedBuffer buffer = SharedBufferArray::create(data_len);
 
     buffer.addOffset( feedback_packet.write(buffer.data(), buffer.size()) );
     Serialization::serialize<T_Feedback>(buffer, msg);
@@ -211,7 +212,7 @@ private:
     packet.call_id = call_id;
 
     std::size_t data_len = packet.size() + Serialization::size(msg);
-    SharedBuffer buffer = SharedBuffer::create(data_len);
+    SharedBuffer buffer = SharedBufferArray::create(data_len);
 
     buffer.addOffset( packet.write(buffer.data(), buffer.size()) );
     Serialization::serialize<T_Result>(buffer, msg);

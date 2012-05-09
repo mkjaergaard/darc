@@ -37,7 +37,7 @@ add_library(darc SHARED
   src/lib/procedure/remote_dispatcher.cpp
   src/lib/procedure/system_state_interface.cpp
   src/lib/network/udp/protocol_manager.cpp
-#  src/lib/network/zmq/protocol_manager.cpp
+  src/lib/network/zmq/protocol_manager.cpp
 )
 
 install(DIRECTORY include/
