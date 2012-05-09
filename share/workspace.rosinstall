@@ -4,6 +4,16 @@
     version: master
 
 - git:
+    uri: 'git://github.com/mkjaergaard/darc.git'
+    local-name: darc
+    version: master
+
+- git:
+    uri: 'git://github.com/mkjaergaard/darc_examples.git'
+    local-name: darc_examples
+    version: master
+
+- git:
     uri: 'git://github.com/ros/genmsg.git'
     local-name: genmsg
     version: master
@@ -11,16 +21,6 @@
 - git:
     uri: 'git://github.com/ros/gencpp.git'
     local-name: gencpp
-    version: master
-
-- git:
-    uri: 'git://github.com/ros/genpy.git'
-    local-name: genpy
-    version: master
-
-- git:
-    uri: 'git://github.com/ros/genpybindings.git'
-    local-name: genpybindings
     version: master
 
 - git:
