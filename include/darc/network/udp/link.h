@@ -119,30 +119,6 @@ public:
     }
   }
 
-  void sendDiscover(const ID& outbound_id)
-  {
-    DARC_INFO("Outbound %s", outbound_id.short_string().c_str());
-    std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBufferArray::create(data_len);
-
-    // Create packet
-    network::packet::Discover discover(outbound_id);
-    std::size_t len = discover.write( buffer.data(), buffer.size() );
-    sendPacket( outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len );
-  }
-
-  void sendDiscoverReply(const ID& remote_outbound_id, const ID& remote_node_id)
-  {
-    // Create packet
-    std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBufferArray::create(data_len);
-    network::packet::DiscoverReply discover_reply(remote_outbound_id);
-    std::size_t len = discover_reply.write( buffer.data(), buffer.size() );
-
-    // Send packet
-    sendPacketToAll(network::packet::Header::DISCOVER_REPLY_PACKET, remote_node_id, buffer, len );
-  }
-
   const ID& addOutboundConnection(const boost::asio::ip::udp::endpoint& remote_endpoint)
   {
     ID outbound_id = ID::create();

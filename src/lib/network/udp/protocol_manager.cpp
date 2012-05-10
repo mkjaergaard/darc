@@ -50,9 +50,10 @@ namespace udp
 {
 
 ProtocolManager::ProtocolManager(boost::asio::io_service * io_service, network::LinkManagerCallbackIF * callback) :
-  network::ProtocolManagerBase(callback),
+  network::ProtocolManagerBase(),
   io_service_(io_service),
-  resolver_(*io_service)
+  resolver_(*io_service),
+  callback_(callback)
 {
 }
 

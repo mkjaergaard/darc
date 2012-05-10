@@ -41,19 +41,22 @@
 class SharedBufferArray : public SharedBufferImpl, private boost::shared_array<uint8_t>
 {
 private:
+  size_t size_;
+
+private:
   SharedBufferArray(size_t size) :
-    SharedBufferImpl(size),
+    size_(size),
     boost::shared_array<uint8_t>(new uint8_t[size])
   {
   }
 
 public:
-  uint8_t * _data() const
+  uint8_t * _data()
   {
     return boost::shared_array<uint8_t>::get() + start_offset_;
   }
 
-  size_t _size() const
+  size_t _size()
   {
     return size_ - start_offset_;
   }

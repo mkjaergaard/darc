@@ -39,6 +39,7 @@
 #include <boost/make_shared.hpp>
 #include <darc/log.h>
 #include <darc/network/invalid_url_exception.h>
+#include <darc/network/zmq/shared_buffer_zmq.h>
 
 using namespace boost::asio;
 
@@ -51,7 +52,8 @@ namespace zeromq
 
 ProtocolManager::ProtocolManager(boost::asio::io_service * io_service,
 				 network::LinkManagerCallbackIF * callback) :
-  network::ProtocolManagerBase(callback),
+  network::ProtocolManagerBase(),
+  network::InboundLink(callback),
   io_service_(io_service),
   context_(1),
   inbound_id_(ConnectionID::create()),
@@ -109,39 +111,34 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
 
 void ProtocolManager::work()
 {
-/*
-  // Fix this stuf, it is ugly
-  zmq::message_t update;
+
   while(1)
   {
     DARC_INFO("ZeroMQ Waiting");
-    SharedBuffer buf = SharedBuffer::create(4096);
 
-    int64_t data_len = 0;
+    int64_t more;
+    size_t more_size = sizeof(more);
 
-    SharedBuffer buf1;
-    SharedBuffer buf2;
+    // Expect two part message
+    SharedBufferZmqPtr message1 = SharedBufferZmq::create();
+    SharedBufferZmqPtr message2 = SharedBufferZmq::create();
+    
+    subscriber_socket_.recv(message1->message());
+    subscriber_socket_.getsockopt (ZMQ_RCVMORE, &more, &more_size);
+    assert(more != 0);
 
-    zmq::message_t message1;
-    subscriber_socket_.recv(&message1);
-      data_len += message.size();
-
-      //
-      int64_t more;
-      size_t more_size = sizeof(more);
-      subscriber_socket_.getsockopt (ZMQ_RCVMORE, &more, &more_size);
-
-      last = (more == 0);
-    }
-
-    DARC_INFO("ZeroMQ message of size %u", data_len);
+    subscriber_socket_.recv(message2->message());
+    subscriber_socket_.getsockopt (ZMQ_RCVMORE, &more, &more_size);
+    assert(more == 0);
+    
+    DARC_INFO("ZeroMQ message of size %u + %u", message1->size(), message2->size());
 
     callback_->receiveHandler(inbound_id_,
 			      this,
-			      SharedBuffer buffer,
-			      std::size_t data_len) = 0;
+			      SharedBuffer(message1),
+			      0);
   }
-*/
+
 }
 
 } // namespace udp

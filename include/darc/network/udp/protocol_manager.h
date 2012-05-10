@@ -54,6 +54,8 @@ private:
   boost::asio::io_service * io_service_;
   boost::asio::ip::udp::resolver resolver_;
 
+  LinkManagerCallbackIF * callback_;
+
   typedef std::map<const ID, udp::LinkPtr> OutboundConnectionListType;
   typedef std::map<const ID, udp::LinkPtr> InboundConnectionListType;
 

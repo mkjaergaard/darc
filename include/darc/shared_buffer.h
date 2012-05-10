@@ -42,11 +42,9 @@
 class SharedBufferImpl
 {
 protected:
-  size_t size_;
   size_t start_offset_;
 
-  SharedBufferImpl(size_t size) :
-    size_(size),
+  SharedBufferImpl(size_t s = 0) :
     start_offset_(0)
   {
   }
@@ -55,16 +53,16 @@ protected:
   {
   }
   
-  virtual uint8_t * _data() const = 0;
-  virtual size_t _size() const = 0;
+  virtual uint8_t * _data() = 0;
+  virtual size_t _size() = 0;
 
 public:
-  virtual uint8_t * data() const
+  virtual uint8_t * data()
   {
     return _data() + start_offset_;
   }
 
-  virtual size_t size() const
+  virtual size_t size()
   {
     return _size() - start_offset_;
   }  

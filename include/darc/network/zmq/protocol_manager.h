@@ -40,6 +40,7 @@
 #include <boost/asio.hpp> // do we really need asio is this?
 #include <boost/thread.hpp>
 #include <darc/network/protocol_manager_base.h>
+#include <darc/network/inbound_link.h>
 #include <darc/log.h>
 
 namespace darc
@@ -49,7 +50,7 @@ namespace network
 namespace zeromq
 {
 
-class ProtocolManager : public darc::network::ProtocolManagerBase
+class ProtocolManager : public darc::network::ProtocolManagerBase, public darc::network::InboundLink
 {
 private:
   boost::asio::io_service * io_service_;
@@ -73,6 +74,28 @@ public:
 
   const ConnectionID& accept(const std::string& protocol, const std::string& url);
   void connect(const std::string& protocol, const std::string& url);
+
+  // **************
+  // Impl of InboundLink, this could be done smarter
+  void sendPacketToAll(packet::Header::PayloadType type, const ID& recv_node_id, SharedBuffer buffer, std::size_t data_len)
+  {
+    for(OutboundConnectionListType::iterator it = outbound_connection_list_.begin();
+	it != outbound_connection_list_.end();
+	it++ )
+    {
+      sendPacket(it->first, type, recv_node_id, buffer, data_len);
+    }
+  }
+
+  void sendDiscoverToAll()
+  {
+    for(OutboundConnectionListType::iterator it = outbound_connection_list_.begin();
+	it != outbound_connection_list_.end();
+	it++)
+    {
+      sendDiscover(it->first);
+    }
+  }
 
 private:
   void work();

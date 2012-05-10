@@ -37,9 +37,12 @@
 #define __DARC_NETWORK_INBOUND_LINK_H_INCLUDED__
 
 #include <boost/shared_ptr.hpp>
-#include <darc/shared_buffer.h>
+#include <darc/shared_buffer_array.h>
 #include <darc/network/packet/header.h>
+#include <darc/network/packet/discover.h>
+#include <darc/network/packet/discover_reply.h>
 #include <darc/network/link_manager_callback_if.h>
+#include <darc/log.h>
 
 namespace darc
 {
@@ -65,7 +68,35 @@ public:
 			  packet::Header::PayloadType type, const ID& recv_node_id,
 			  SharedBuffer buffer, std::size_t data_len) = 0;
   virtual void sendDiscoverToAll() = 0;
-  virtual void sendDiscoverReply(const ID& remote_outbound_id, const ID& remote_node_id) = 0;
+  virtual void sendPacketToAll(packet::Header::PayloadType type,
+			       const ID& recv_node_id,
+			       SharedBuffer buffer,
+			       std::size_t data_len) = 0;
+
+  // Move around
+  void sendDiscover(const ID& outbound_id)
+  {
+    DARC_INFO("Outbound %s", outbound_id.short_string().c_str());
+    std::size_t data_len = 1024*32;
+    SharedBuffer buffer = SharedBufferArray::create(data_len);
+
+    // Create packet
+    network::packet::Discover discover(outbound_id);
+    std::size_t len = discover.write( buffer.data(), buffer.size() );
+    sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
+  }
+
+  void sendDiscoverReply(const ID& remote_outbound_id, const ID& remote_node_id)
+  {
+    // Create packet
+    std::size_t data_len = 1024*32;
+    SharedBuffer buffer = SharedBufferArray::create(data_len);
+    network::packet::DiscoverReply discover_reply(remote_outbound_id);
+    std::size_t len = discover_reply.write( buffer.data(), buffer.size() );
+
+    // Send packet
+    sendPacketToAll(network::packet::Header::DISCOVER_REPLY_PACKET, remote_node_id, buffer, len );
+  }
 
 };
 

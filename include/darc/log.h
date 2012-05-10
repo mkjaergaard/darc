@@ -72,6 +72,7 @@ public:
 
 #define DARC_AUTOTRACE() darc::Log::report(darc::Log::LOG_TRACE, __PRETTY_FUNCTION__)
 #define DARC_DEBUG(...) darc::Log::report(darc::Log::LOG_DEBUG, __VA_ARGS__)
+#define DARC_TRACE(...) darc::Log::report(darc::Log::LOG_TRACE, __VA_ARGS__)
 #define DARC_INFO(...) darc::Log::report(darc::Log::LOG_INFO, __VA_ARGS__)
 #define DARC_WARNING(...) darc::Log::report(darc::Log::LOG_WARNING, __VA_ARGS__)
 #define DARC_ERROR(...) darc::Log::report(darc::Log::LOG_ERROR, __VA_ARGS__)
