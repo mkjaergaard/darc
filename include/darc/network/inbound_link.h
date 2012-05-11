@@ -76,13 +76,13 @@ public:
   // Move around
   void sendDiscover(const ID& outbound_id)
   {
-    DARC_INFO("Outbound %s", outbound_id.short_string().c_str());
+    DARC_INFO("Sending DISCOVER on Outbound %s", outbound_id.short_string().c_str());
     std::size_t data_len = 1024*32;
     SharedBuffer buffer = SharedBufferArray::create(data_len);
 
     // Create packet
     network::packet::Discover discover(outbound_id);
-    std::size_t len = discover.write( buffer.data(), buffer.size() );
+    std::size_t len = discover.write(buffer.data(), buffer.size());
     sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
   }
 

@@ -72,6 +72,8 @@ void RemoteDispatcher::messageReceiveHandler( const network::packet::Header& hea
   size_t msg_header_size = msg_packet.read( buffer.data(), data_len );
   buffer.addOffset( msg_header_size );
 
+  DARC_TRACE("Received message for topic: %s, %u", msg_packet.topic.c_str(), msg_header_size);
+
   // Dispatch to local subscribers
   manager_->remoteMessageReceived(msg_packet.topic, buffer);
 }

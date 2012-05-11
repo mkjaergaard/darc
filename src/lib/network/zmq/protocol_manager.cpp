@@ -136,7 +136,9 @@ void ProtocolManager::work()
     callback_->receiveHandler(inbound_id_,
 			      this,
 			      SharedBuffer(message1),
-			      0);
+			      message1->size(),
+			      SharedBuffer(message2),
+			      message2->size());
   }
 
 }

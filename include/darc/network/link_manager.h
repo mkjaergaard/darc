@@ -120,7 +120,7 @@ public:
     {
       for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
       {
-	udp_manager_.sendPacket(it->second, type, it->first, buffer, data_len );
+	zmq_manager_.sendPacket(it->second, type, it->first, buffer, data_len );
       }
     }
     else
@@ -128,7 +128,7 @@ public:
       NeighbourNodesType::iterator item = neighbour_nodes_.find(recv_node_id);
       if(item != neighbour_nodes_.end())
       {
-	udp_manager_.sendPacket(item->second, type, item->first, buffer, data_len );
+	zmq_manager_.sendPacket(item->second, type, item->first, buffer, data_len );
       }
       else
       {
@@ -236,10 +236,19 @@ private:
 
   void receiveHandler(const ConnectionID& inbound_id, InboundLink * source_link, SharedBuffer buffer, std::size_t data_len)
   {
+    assert(false);
+  }
+
+  void receiveHandler(const ConnectionID& inbound_id,
+		      InboundLink * source_link,
+		      SharedBuffer header_buffer,
+		      std::size_t header_data_len,
+		      SharedBuffer buffer,
+		      std::size_t data_len)
+
+  {
     packet::Header header;
-    header.read( buffer.data(), data_len );
-    buffer.addOffset( packet::Header::size() );
-    data_len -= packet::Header::size();
+    header.read(header_buffer.data(), header_data_len);
 
     // Discard packages not to us, or from self, e.g. due to multicasting
     if((header.recv_node_id != ID::null() && header.recv_node_id != getNodeID()) ||

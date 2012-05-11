@@ -55,6 +55,14 @@ public:
 			      InboundLink * source_link,
 			      SharedBuffer buffer,
 			      std::size_t data_len) = 0;
+
+  virtual void receiveHandler(const ID& inbound_id,
+			      InboundLink * source_link,
+			      SharedBuffer header_buffer,
+			      std::size_t header_data_len,
+			      SharedBuffer buffer,
+			      std::size_t data_len) = 0;
+
   virtual const NodeID& getNodeID() = 0;
 };
 

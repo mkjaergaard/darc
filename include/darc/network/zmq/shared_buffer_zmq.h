@@ -65,12 +65,12 @@ public:
 
   uint8_t * _data()
   {
-    return (uint8_t*)message_.data() + start_offset_;
+    return (uint8_t*)message_.data();
   }
 
   size_t _size()
   {
-    return message_.size() - start_offset_;
+    return message_.size();
   }
 
   static boost::shared_ptr<SharedBufferZmq> create()
