@@ -1,0 +1,13 @@
+Catkin-ProjectName: asmsg
+Description:
+Author: Morten Kjaergaard <mkjargaard@willowgarage.com>
+Maintainer: Morten Kjaergaard <mkjargaard@willowgarage.com>
+Homepage:
+Vcs-Git: git://github.com/mkjargaard/asmsg.git
+
+Version: 0.0.1
+
+Depends: catkin
+
+Catkin-CopyrightType:
+Catkin-DebRulesType:
