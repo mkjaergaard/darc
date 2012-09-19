@@ -47,6 +47,7 @@ struct control_packet
   const static uint32_t subscribe = 0;
   const static uint32_t unsubscribe = 1;
   const static uint32_t resend = 2;
+  const static uint32_t connect = 3;
 
   ID client_id;
   uint32_t command;

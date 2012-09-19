@@ -4,6 +4,11 @@ project(darc_common)
 find_package(catkin)
 catkin_stack()
 
+catkin_project(darc_common
+  INCLUDE_DIRS include
+  LIBRARIES darc_common
+)
+
 find_package(Boost COMPONENTS system thread regex signals serialization)
 find_package(llog)
 
@@ -25,5 +30,9 @@ catkin_add_gtest(darc_common_gtest_buffer test/buffer_gtest.cpp)
 target_link_libraries(darc_common_gtest_buffer darc_common ${GTEST_BOTH_LIBRARIES})
 
 # Add test cpp file
-add_gtest(darc_common_gtest_distributed test/distributed_gtest.cpp)
+catkin_add_gtest(darc_common_gtest_distributed test/distributed_gtest.cpp)
 target_link_libraries(darc_common_gtest_distributed darc_common ${GTEST_BOTH_LIBRARIES})
+
+# Add test cpp file
+catkin_add_gtest(darc_common_gtest_shared_set test/shared_set_gtest.cpp)
+target_link_libraries(darc_common_gtest_shared_set darc_common ${GTEST_BOTH_LIBRARIES})
