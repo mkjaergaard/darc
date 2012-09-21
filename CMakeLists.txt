@@ -9,15 +9,16 @@ catkin_project(asmsg
 #  LIBRARIES asmsg
 )
 
-SET(CMAKE_BUILD_TYPE Debug)
-
-find_package(Boost COMPONENTS system thread regex signals)
+find_package(Boost COMPONENTS system signals thread)
+find_package(catkin COMPONENTS darc_common)
 
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${catkin_INCLUDE_DIRS})
 
-add_executable(asmsg_test
-  src/main.cpp
-)
-
-target_link_libraries(asmsg_test ${Boost_LIBRARIES})
+catkin_add_gtest(asmsg_gtest test/asmsg_gtest.cpp)
+target_link_libraries(asmsg_gtest
+  ${GTEST_BOTH_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  -pthread)

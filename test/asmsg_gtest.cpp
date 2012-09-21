@@ -1,26 +1,24 @@
+#include <gtest/gtest.h>
+
 #include <asmsg/publisher.hpp>
 #include <asmsg/subscriber.hpp>
 #include <asmsg/local_dispatcher.hpp>
 #include <asmsg/message_service.hpp>
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-
-#include <boost/bind.hpp>
-#include <boost/make_shared.hpp>
-
-typedef asmsg::Publisher<int, boost::uuids::uuid> MyPub;
-typedef asmsg::Subscriber<int, boost::uuids::uuid> MySub;
+#include <darc/id.hpp>
 
 void handler(const boost::shared_ptr<const int> &data)
 {
   std::cout << "hej" << std::endl;
 }
 
-int main()
+TEST(asmsgTest, PubSub)
 {
-  boost::uuids::uuid id1 = boost::uuids::random_generator()();
-  asmsg::MessageService<boost::uuids::uuid> my_service;
+  typedef asmsg::Publisher<int, darc::ID> MyPub;
+  typedef asmsg::Subscriber<int, darc::ID> MySub;
+
+  darc::ID id1 = darc::ID::create();
+  asmsg::MessageService<darc::ID> my_service;
   boost::asio::io_service io_service;
 
   MyPub test_pub(io_service, my_service);
@@ -37,4 +35,4 @@ int main()
 
   io_service.run();
 
-}
+};
