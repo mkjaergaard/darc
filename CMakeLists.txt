@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 2.8)
-project(asmsg)
+project(darc_pubsub)
 
 find_package(catkin)
 catkin_stack()
 
-catkin_project(asmsg
+catkin_project(darc_pubsub
   INCLUDE_DIRS include
 #  LIBRARIES asmsg
 )
 
 find_package(Boost COMPONENTS system signals thread)
-find_package(catkin COMPONENTS darc_common)
+find_package(catkin COMPONENTS darc_common hns beam)
 
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIRS})

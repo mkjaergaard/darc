@@ -3,7 +3,7 @@
 namespace asmsg
 {
 
-template<typename T, class IDType>
+template<typename T>
 class LocalDispatcher;
 
 }

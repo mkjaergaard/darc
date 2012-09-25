@@ -7,31 +7,33 @@
 
 #include <asmsg/message_service__decl.hpp>
 
+#include <darc/id.hpp>
+
 namespace asmsg
 {
 
-template<typename T, class IDType>
+template<typename T>
 class SubscriberImpl
 {
 private:
   boost::asio::io_service &io_service_;
-  MessageService<IDType> &message_service_;
+  MessageService &message_service_;
 
-  LocalDispatcher<T, IDType> * dispatcher_; // ptr type?
+  LocalDispatcher<T> * dispatcher_; // ptr type?
 
   boost::signal<void(const boost::shared_ptr<const T>&)> callback_;
 
 public:
   SubscriberImpl(boost::asio::io_service &io_service,
-		 MessageService<IDType> &message_service) :
+		 MessageService &message_service) :
     io_service_(io_service),
     message_service_(message_service)
   {
   }
 
-  void attach(const IDType& topic_id)
+  void attach(const std::string& topic)
   {
-    dispatcher_ = message_service_.attach(*this, topic_id);
+    dispatcher_ = message_service_.attach(*this, topic);
   }
 
   void detach()
@@ -57,23 +59,23 @@ public:
 
 };
 
-template<typename T, class IDType>
+template<typename T>
 class Subscriber
 {
 private:
-  boost::scoped_ptr<SubscriberImpl<T, IDType> > impl_;
+  boost::scoped_ptr<SubscriberImpl<T> > impl_;
 
 public:
   Subscriber(boost::asio::io_service &io_service,
-	     MessageService<IDType> &message_service) :
-    impl_(new SubscriberImpl<T, IDType>(io_service,
+	     MessageService &message_service) :
+    impl_(new SubscriberImpl<T>(io_service,
 					message_service))
   {
   }
 
-  void attach(const IDType& topic_id)
+  void attach(const std::string& topic)
   {
-    impl_->attach(topic_id);
+    impl_->attach(topic);
   }
 
   void detach()

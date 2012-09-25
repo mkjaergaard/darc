@@ -2,7 +2,7 @@
 
 namespace asmsg
 {
-  
+
 class BasicLocalDispatcher;
 
 }

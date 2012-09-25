@@ -4,10 +4,14 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/signals.hpp>
 
+#inlcude <darc/id.hpp>
+
 namespace asmsg
 {
 
-template<typename T, class IDType>
+typedef IDType darc::ID;
+
+template<typename T>
 class PublisherImpl
 {
 private:

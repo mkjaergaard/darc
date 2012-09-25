@@ -4,10 +4,14 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/signals.hpp>
 
+#include <darc/id.hpp>
+
 namespace asmsg
 {
 
-template<typename T, class IDType>
+typedef IDType darc::ID;
+
+template<typename T>
 class PublisherImpl
 {
 private:
@@ -33,19 +37,19 @@ public:
 
 };
 
-template<typename T, class IDType>
+template<typename T>
 class Publisher
 {
 private:
-  boost::scoped_ptr<PublisherImpl<T, IDType> > impl_;
+  boost::scoped_ptr<PublisherImpl<T> > impl_;
 
 public:
   Publisher(boost::asio::io_service &io_service,
 	    const IDType& topic_id,
 	    MessageService &message_service) :
-    impl_(new PublisherImpl<T, IDType, MessageServiceType>(io_service,
-							   topic_id,
-							   message_service) )
+    impl_(new PublisherImpl<T, MessageServiceType>(io_service,
+						   topic_id,
+						   message_service) )
   {
     impl_->attach();
   }

@@ -1,12 +1,13 @@
 <stack>
-  <name>asmsg</name>
+  <name>darc_pubsub</name>
   <version>0.0.1</version>
-  <description>Async Messaging</description>
+  <description>DARC Publisher/Subscriber pattern</description>
   <author>Morten Kjaergaard</author>
   <maintainer>Morten Kjaergaard</maintainer>
   <license>BSD</license>
   <copyright></copyright>
   <build_depends>beam</build_depends>
   <build_depends>darc_common</build_depends>
+  <build_depends>hns</build_depends>
   <depends>libboost-signals</depends>
 </stack>
