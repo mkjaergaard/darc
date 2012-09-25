@@ -69,6 +69,32 @@ public:
   }
 };
 
+template<typename S, typename T>
+class outbound_list : public outbound_data_base, boost::noncopyable
+{
+protected:
+  const T& begin_;
+  const T& end_;
+
+public:
+  outbound_list(const T& begin, const T& end) :
+    begin_(begin),
+    end_(end)
+  {
+  }
+
+  virtual void pack(buffer::shared_buffer& buffer) const
+  {
+    for(T it = begin_;
+	it != end_;
+	it++)
+    {
+      S::template pack<typename T::value_type>(buffer, *it);
+    }
+  }
+
+};
+
 class outbound_pair : public outbound_data_base
 {
 protected:

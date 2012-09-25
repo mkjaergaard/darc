@@ -83,9 +83,13 @@ class shared_set;
 template<typename Key, typename T>
 class connection
 {
+
+public:
+  typedef std::pair<ID/*origin*/, T> entry_type;
+  typedef std::map<Key, entry_type> list_type;
+
 protected:
 
-  typedef std::pair<ID/*origin*/, T> entry_type;
   typedef std::pair<Key, entry_type> transfer_type;
 
   ID remote_location_id_; // location we are connected to
@@ -96,7 +100,6 @@ protected:
   uint32_t last_sent_index_;
   uint32_t last_received_index_;
 
-  typedef std::map<Key, entry_type> list_type;
   list_type list_;
 
 public:
@@ -168,6 +171,40 @@ public:
 		     const update_packet& update,
 		     buffer::shared_buffer data);
 
+  void full_update(typename list_type::iterator begin,
+		   typename list_type::iterator end,
+		   uint32_t state_index)
+  {
+    if(begin != end)
+    {
+      update_packet update;
+      update.start_index = 0;
+      update.end_index = state_index;
+      update.type = update_packet::complete;
+      update.num_entries = 0;
+
+      // todo: smarter iterator count
+      for(typename list_type::iterator it = begin;
+	  it != end;
+	  it++)
+      {
+	++update.num_entries;
+      }
+
+      outbound_data<serializer::boost_serializer, update_packet> o_update(update);
+
+      outbound_list<serializer::boost_serializer, typename list_type::iterator> o_item(begin, end);
+
+      outbound_pair o_data(o_update, o_item);
+
+      manager_->send_to_location(parent_->id(),
+				 remote_location_id_,
+				 remote_instance_id_,
+				 header_packet::update,
+				 o_data);
+    }
+  }
+
 };
 
 }
@@ -183,35 +220,32 @@ class shared_set : public container_base
 {
 protected:
   typedef connection<Key, T> connection_type;
+
+public:
+  typedef typename connection_type::entry_type entry_type;
+  typedef typename connection_type::list_type list_type;
+
+protected:
   typedef boost::shared_ptr<connection_type> connection_ptr;
 
   typedef std::map</*informer_instance*/ID, connection_ptr> connection_list_type;
   connection_list_type connection_list_;
 
   // todo: does the entry_type need an informer?
-  struct entry_type
-  {
-    ID origin;
-    ID informer;
-    T value;
 
-    entry_type(const ID& origin, const ID& informer, const T& value) :
-      origin(origin),
-      informer(informer),
-      value(value)
-    {
-    }
-  };
 
-  typedef std::map<Key, entry_type> entry_list_type;
-
-  entry_list_type entry_list_;
+  list_type entry_list_;
   uint32_t state_index_;
 
 public:
   shared_set() :
     state_index_(0)
   {
+  }
+
+  const list_type& list() const
+  {
+    return entry_list_;
   }
 
   void insert(const Key& key, const T& value)
@@ -224,9 +258,9 @@ public:
 		     const ID& origin, // origin
 		     const T& value) // entry
   {
-    entry_type entry(origin, informer, value);
+    entry_type entry(origin, value);
     entry_list_.insert(
-      typename entry_list_type::value_type(key, entry));
+      typename list_type::value_type(key, entry));
     state_index_++;
 
     beam::glog<beam::Info>("remote_insert",
@@ -242,6 +276,16 @@ public:
     }
   }
 
+  void full_update(const ID& remote_instance_id)
+  {
+    typename connection_list_type::iterator item = connection_list_.find(remote_instance_id);
+    assert(item != connection_list_.end());
+    item->second->full_update(entry_list_.begin(),
+			      entry_list_.end(),
+			      state_index_);
+
+  }
+
   void connect(const ID& remote_location_id,
 	       const ID& remote_instance_id)
   {
@@ -254,6 +298,7 @@ public:
     connection_list_.insert(
       typename connection_list_type::value_type(remote_instance_id, c));
     c->do_connect();
+    full_update(remote_instance_id);
   }
 
   void recv(const ID& src_location_id, const header_packet& hdr, darc::buffer::shared_buffer data)
@@ -291,6 +336,7 @@ public:
       header.src_instance_id);
     connection_list_.insert(
       typename connection_list_type::value_type(header.src_instance_id, c));
+    full_update(header.src_instance_id);
   }
 
   void handle_update(const ID& src_location_id,
@@ -312,15 +358,18 @@ void connection<Key, T>::handle_update(const header_packet& header,
 				       const update_packet& update,
 				       buffer::shared_buffer data)
   {
-    assert(update.num_entries == 1);
-    inbound_data<serializer::boost_serializer, transfer_type> i_item(data);
-    typename list_type::value_type value(i_item.get().first, i_item.get().second);
-    list_.insert(value);
-    parent_->remote_insert(remote_instance_id_, //informer
-			   value.first, // Key
-			   value.second.first, // origin
-			   value.second.second); // entry
-    //todo:  verify index
+//    assert(update.num_entries == 1);
+    for(size_t i = 0; i < update.num_entries; i++)
+    {
+      inbound_data<serializer::boost_serializer, transfer_type> i_item(data);
+      typename list_type::value_type value(i_item.get().first, i_item.get().second);
+      list_.insert(value);
+      parent_->remote_insert(remote_instance_id_, //informer
+			     value.first, // Key
+			     value.second.first, // origin
+			     value.second.second); // entry
+    }
+//todo:  verify index
   }
 
 

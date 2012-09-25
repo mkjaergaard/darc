@@ -35,6 +35,30 @@ public:
   }
 };
 
+bool equal_(const darc::distributed_container::shared_set<std::string, uint32_t>& set1,
+	   const darc::distributed_container::shared_set<std::string, uint32_t>& set2)
+{
+  typedef darc::distributed_container::shared_set<std::string, uint32_t> set_type;
+  typedef set_type::list_type::const_iterator i_type;
+  for(i_type it = set1.list().begin();
+      it != set1.list().end();
+      it++)
+  {
+    i_type item = set2.list().find(it->first);
+    if(item == set2.list().end())
+    {
+      return false;
+    }
+  }
+  return true;
+}
+bool equal(const darc::distributed_container::shared_set<std::string, uint32_t>& set1,
+	   const darc::distributed_container::shared_set<std::string, uint32_t>& set2)
+{
+  return equal_(set1, set2) && equal_(set2, set1);
+}
+
+
 TEST_F(SharedSetTest, Subscribe)
 {
   darc::distributed_container::shared_set<std::string, uint32_t> my_set1;
@@ -49,10 +73,20 @@ TEST_F(SharedSetTest, Subscribe)
   my_set1.attach(&mngr1);
   my_set2.attach(&mngr2);
 
+  my_set1.insert("key3", 3);
+  my_set1.insert("key4", 4);
+
   my_set1.connect(node2_id, my_set2.id());
 
-  my_set2.insert("key2", 2);
+  EXPECT_EQ(equal(my_set1, my_set2), true);
+
   my_set1.insert("key1", 1);
+
+  EXPECT_EQ(equal(my_set1, my_set2), true);
+
+  my_set2.insert("key2", 2);
+
+  EXPECT_EQ(equal(my_set1, my_set2), true);
 
 }
 
