@@ -10,12 +10,11 @@ catkin_project(darc_common
 )
 
 find_package(Boost COMPONENTS system thread regex signals serialization)
-find_package(llog)
+find_package(beam)
 
-include_directories(/usr/include/c++/4.6)
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${llog_INCLUDE_DIRS})
+include_directories(${beam_INCLUDE_DIRS})
 
 add_library(darc_common
   src/id.cpp
@@ -23,7 +22,7 @@ add_library(darc_common
   src/container_base.cpp
 )
 
-target_link_libraries(darc_common ${Boost_LIBRARIES} ${llog_LIBRARIES} -lstdc++)
+target_link_libraries(darc_common ${Boost_LIBRARIES} ${beam_LIBRARIES} -lstdc++)
 
 # Add test cpp file
 catkin_add_gtest(darc_common_gtest_buffer test/buffer_gtest.cpp)

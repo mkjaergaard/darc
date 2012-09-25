@@ -44,7 +44,7 @@
 
 #include <boost/make_shared.hpp>
 
-#include <llog/logger.hpp>
+#include <beam/glog.hpp>
 
 namespace darc
 {
@@ -80,16 +80,17 @@ void container_manager::recv(const ID& src_location_id, buffer::shared_buffer da
   list_type::iterator item = list_.find(i_hdr.get().dest_instance_id);
   if(item != list_.end())
   {
-    llog::llog<llog::Severity::Trace>(
+    beam::glog<beam::Trace>(
       "DistributedManager",
-      "Data recv for", llog::Argument<ID>(i_hdr.get().dest_instance_id));
-    item->second->recv(i_hdr.get(), data);
+      "Data recv for", beam::arg<ID>(i_hdr.get().dest_instance_id));
+
+    item->second->recv(src_location_id, i_hdr.get(), data);
   }
   else
   {
-    llog::llog<llog::Severity::Warning>(
+    beam::glog<beam::Warning>(
       "DistributedManager: Data recv for unknown instance ID",
-      "Data recv for", llog::Argument<ID>(i_hdr.get().dest_instance_id));
+      "Data recv for", beam::arg<ID>(i_hdr.get().dest_instance_id));
   }
 }
 
@@ -109,9 +110,9 @@ void container_manager::send_to_instance(const ID& src_instance_id,
   }
   else
   {
-    llog::llog<llog::Severity::Warning>(
+    beam::glog<beam::Warning>(
       "DistributedManager: Unknown node",
-      "InstanceID", llog::Argument<ID>(dest_instance_id));
+      "InstanceID", beam::arg<ID>(dest_instance_id));
   }
 }
 
@@ -121,10 +122,11 @@ void container_manager::send_to_location(const ID& src_instance_id,
 					 const uint32_t payload_type,
 					 const outbound_data_base& data)
 {
-  llog::llog<llog::Severity::Trace>(
+  beam::glog<beam::Trace>(
     "Send To Location",
-    "Src Inst", llog::Argument<ID>(src_instance_id),
-    "Dst Inst", llog::Argument<ID>(dest_instance_id));
+    "Src Inst", beam::arg<ID>(src_instance_id),
+    "Dst Loca", beam::arg<ID>(dest_location_id),
+    "Dst Inst", beam::arg<ID>(dest_instance_id));
 
   buffer::shared_buffer buffer = boost::make_shared<buffer::const_size_buffer>(2048);
 

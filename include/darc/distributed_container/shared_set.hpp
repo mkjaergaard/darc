@@ -33,8 +33,11 @@
  * \author Morten Kjaergaard
  */
 
+#pragma once
+
 #include <map>
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 
 #include <darc/id.hpp>
 
@@ -44,13 +47,38 @@
 #include <darc/distributed_container/header_packet.hpp>
 #include <darc/distributed_container/control_packet.hpp>
 #include <darc/distributed_container/update_packet.hpp>
+#include <darc/inbound_data.hpp>
+#include <darc/outbound_data.hpp>
 
 #include <darc/serializer/boost.hpp>
+
+#include <beam/glog.hpp>
+#include <darc/id_arg.hpp>
+
+namespace boost
+{
+namespace serialization
+{
+
+template<class Archive, class Key, class T>
+void serialize(Archive & ar, std::pair<Key, T>& set, const unsigned int version)
+{
+  ar & set.first;
+  ar & set.second;
+}
+
+}
+}
+
+
 
 namespace darc
 {
 namespace distributed_container
 {
+
+template<typename Key, typename T>
+class shared_set;
 
 template<typename Key, typename T>
 class connection
@@ -60,10 +88,10 @@ protected:
   typedef std::pair<ID/*origin*/, T> entry_type;
   typedef std::pair<Key, entry_type> transfer_type;
 
-  ID instance_id_;
-  ID remote_location_id_;
-  ID remote_instance_id_;
+  ID remote_location_id_; // location we are connected to
+  ID remote_instance_id_; // instance we are connected to
   container_manager * manager_;
+  shared_set<Key, T> * parent_;
 
   uint32_t last_sent_index_;
   uint32_t last_received_index_;
@@ -73,13 +101,13 @@ protected:
 
 public:
   connection(container_manager * manager,
-        const ID& instance_id,
+	     shared_set<Key, T> * parent,
 	     const ID& remote_location_id,
 	     const ID& remote_instance_id) :
-	  instance_id_(instance_id),
     remote_location_id_(remote_location_id),
     remote_instance_id_(remote_instance_id),
     manager_(manager),
+    parent_(parent),
     last_sent_index_(0),
     last_received_index_(0)
   {
@@ -90,15 +118,21 @@ public:
     control_packet ctrl;
     ctrl.command = control_packet::connect;
     outbound_data<serializer::boost_serializer, control_packet> o_ctrl(ctrl);
+
+    beam::glog<beam::Info>("do_connect",
+			   "instance", beam::arg<ID>(parent_->id()),
+			   "remote_instance", beam::arg<ID>(remote_instance_id_));
+
     manager_->send_to_location(
-          instance_id_,
-          remote_location_id_,
-		     remote_instance_id_,
-		     header_packet::control,
-		     o_ctrl);
+      parent_->id(),
+      remote_location_id_,
+      remote_instance_id_,
+      header_packet::control,
+      o_ctrl);
   }
 
-  void increment(const ID& informer,
+  // called when we have a new map entry to send to remote
+  void increment(const ID& informer, // where we got the info from
 		 const Key& key,
 		 const ID& origin,
 		 const T& value,
@@ -107,7 +141,7 @@ public:
     entry_type entry(origin, value);
 
     last_sent_index_ = state_index;
-    if(informer != remote_instance_id_)
+    if(informer != remote_instance_id_) // dont send to informer
     {
       update_packet update;
       update.start_index = state_index;
@@ -116,31 +150,33 @@ public:
       update.num_entries = 1;
 
       outbound_data<serializer::boost_serializer, update_packet> o_update(update);
-      transfer_type item(key, entry);
 
+      transfer_type item(key, entry);
       outbound_data<serializer::boost_serializer, transfer_type> o_item(item);
 
       outbound_pair o_data(o_update, o_item);
 
-      manager_->send_to_location(instance_id_,
-          remote_location_id_,
-		       remote_instance_id_,
-		       header_packet::update,
-		       o_data);
+      manager_->send_to_location(parent_->id(),
+				 remote_location_id_,
+				 remote_instance_id_,
+				 header_packet::update,
+				 o_data);
     }
   }
 
-  void handle_update(const header_packet& header, const update_packet& update, buffer::shared_buffer data)
-  {
-    assert(update.num_entries == 1);
-    inbound_data<serializer::boost_serializer, transfer_type> i_item(data);
-    list_.insert(list_type::value_type(
-		   i_item.get().first,
-		   i_item.get().second));
-  }
+  void handle_update(const header_packet& header,
+		     const update_packet& update,
+		     buffer::shared_buffer data);
 
 };
 
+}
+}
+
+namespace darc
+{
+namespace distributed_container
+{
 
 template<typename Key, typename T>
 class shared_set : public container_base
@@ -152,6 +188,7 @@ protected:
   typedef std::map</*informer_instance*/ID, connection_ptr> connection_list_type;
   connection_list_type connection_list_;
 
+  // todo: does the entry_type need an informer?
   struct entry_type
   {
     ID origin;
@@ -162,48 +199,60 @@ protected:
       origin(origin),
       informer(informer),
       value(value)
+    {
+    }
   };
 
   typedef std::map<Key, entry_type> entry_list_type;
 
   entry_list_type entry_list_;
-  ID instance_id_;
   uint32_t state_index_;
 
+public:
   shared_set() :
-    instance_id_(ID::create()),
     state_index_(0)
   {
   }
 
   void insert(const Key& key, const T& value)
   {
-    entry_type entry(instance_id_, instance_id, T);
-    entry_list_.insert(
-      entry_list_type::value_type(Key, entry));
-    state_index_++;
-
-    // do it in flush instead
-    for(connection_list_type::iterator it = connection_list_.begin();
-	it != connection_list_.end();
-	it++)
-    {               /*informer*/
-      it->increment(instance_id, key, entry.origin, entry.value, state_index_);
-    }
+    remote_insert(id(), key, id(), value);
   }
 
-  //void remote_insert
+  void remote_insert(const ID& informer, //informer
+		     const Key& key, // Key
+		     const ID& origin, // origin
+		     const T& value) // entry
+  {
+    entry_type entry(origin, informer, value);
+    entry_list_.insert(
+      typename entry_list_type::value_type(key, entry));
+    state_index_++;
+
+    beam::glog<beam::Info>("remote_insert",
+			   "key", beam::arg<Key>(key),
+			   "value", beam::arg<T>(value));
+
+    // do it in flush instead
+    for(typename connection_list_type::iterator it = connection_list_.begin();
+	it != connection_list_.end();
+	it++)
+    {
+      it->second->increment(informer, key, origin, value, state_index_);
+    }
+  }
 
   void connect(const ID& remote_location_id,
 	       const ID& remote_instance_id)
   {
-    assert(connection_list_.find(remote_instance_id == connection_list_.end()));
-    connection_ptr c = boost::make_shared<connection>(
+    assert(connection_list_.find(remote_instance_id) == connection_list_.end());
+    connection_ptr c = boost::make_shared<connection_type >(
       manager_,
+      this,
       remote_location_id,
       remote_instance_id);
     connection_list_.insert(
-      connection_list_type::value_type(remote_instance_id, c));
+      typename connection_list_type::value_type(remote_instance_id, c));
     c->do_connect();
   }
 
@@ -220,25 +269,28 @@ protected:
     case header_packet::update:
     {
       inbound_data<serializer::boost_serializer, update_packet> i_update(data);
-      handle_uodate(src_location_id, hdr, i_update.get(), data);
+      handle_update(src_location_id, hdr, i_update.get(), data);
     }
     break;
     default:
+    {
       assert(false);
+    }
     }
   }
 
   void handle_ctrl(const ID& src_location_id, const header_packet& header, const control_packet& ctrl)
   {
     assert(ctrl.command == control_packet::connect);
-    assert(connection_list_.find(header.src_instance_id) != connection_list_.end());
+    assert(connection_list_.find(header.src_instance_id) == connection_list_.end());
 
-    connection_ptr c = boost::make_shared<connection>(
+    connection_ptr c = boost::make_shared<connection_type>(
       manager_,
+      this,
       src_location_id,
       header.src_instance_id);
     connection_list_.insert(
-      connection_list_type::value_type(remote_instance_id, c));
+      typename connection_list_type::value_type(header.src_instance_id, c));
   }
 
   void handle_update(const ID& src_location_id,
@@ -246,12 +298,34 @@ protected:
 		     const update_packet& update,
 		     darc::buffer::shared_buffer data)
   {
-    connection_list_type::iterator item = connection_list_.find(src_location_id);
+    typename connection_list_type::iterator item = connection_list_.find(header.src_instance_id);
     assert(item != connection_list_.end());
-    item->handle_update(header, update, data);
+    item->second->handle_update(header, update, data);
   }
 
 };
 
+
+// Connection impl
+template<typename Key, typename T>
+void connection<Key, T>::handle_update(const header_packet& header,
+				       const update_packet& update,
+				       buffer::shared_buffer data)
+  {
+    assert(update.num_entries == 1);
+    inbound_data<serializer::boost_serializer, transfer_type> i_item(data);
+    typename list_type::value_type value(i_item.get().first, i_item.get().second);
+    list_.insert(value);
+    parent_->remote_insert(remote_instance_id_, //informer
+			   value.first, // Key
+			   value.second.first, // origin
+			   value.second.second); // entry
+    //todo:  verify index
+  }
+
+
 }
 }
+
+// steps: 1) check index
+//        2) make it possible to send existing entries on connect

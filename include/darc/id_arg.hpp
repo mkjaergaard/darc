@@ -35,14 +35,14 @@
 
 #pragma once
 
-#include <llog/argument.hpp>
+#include <beam/arg.hpp>
 #include <darc/id.hpp>
 
-namespace llog
+namespace beam
 {
 
 template<>
-std::string to_string(const Argument<darc::ID>& id)
+std::string to_string(const arg<darc::ID>& id)
 {
   return id->short_string();
 }

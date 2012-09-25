@@ -62,13 +62,15 @@ public:
   {
   }
 
-  virtual void recv(const header_packet& hdr, darc::buffer::shared_buffer data) = 0;
+  virtual void recv(const ID& src_location_id,
+		    const header_packet& hdr,
+		    darc::buffer::shared_buffer data) = 0;
 
   virtual ~container_base()
   {
   }
 
-  ID& id()
+  const ID& id() const
   {
     return id_;
   }

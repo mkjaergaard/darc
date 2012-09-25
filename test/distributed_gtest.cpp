@@ -5,7 +5,7 @@
 #include <darc/distributed_container/subscribed_set.hpp>
 
 #include <boost/bind.hpp>
-#include <llog/logger.hpp>
+#include <beam/glog.hpp>
 
 class DistributedTest : public testing::Test
 {
@@ -25,13 +25,13 @@ public:
 
   void send_to_client_node(const darc::ID& destination, darc::buffer::shared_buffer data)
   {
-    llog::llog<llog::Severity::Info>("Data Received from Server");
+    beam::glog<beam::Info>("Data Received from Server");
     my_client_mngr.recv(client_node_id, data);
   }
 
   void send_to_server_node(const darc::ID& destination, darc::buffer::shared_buffer data)
   {
-    llog::llog<llog::Severity::Info>("Data Received from Client");
+    beam::glog<beam::Info>("Data Received from Client");
     my_server_mngr.recv(server_node_id, data);
   }
 };

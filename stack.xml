@@ -7,7 +7,7 @@
   <license>BSD</license>
   <copyright></copyright>
 
-  <build_depends>llog</build_depends>
+  <build_depends>beam</build_depends>
   <depends>libboost-system</depends>
   <depends>libboost-thread</depends>
   <depends>libboost-regex</depends>
