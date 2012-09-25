@@ -6,7 +6,7 @@
 
 #inlcude <darc/id.hpp>
 
-namespace asmsg
+namespace darc
 {
 
 typedef IDType darc::ID;

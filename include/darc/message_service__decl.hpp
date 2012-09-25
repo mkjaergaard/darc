@@ -2,15 +2,15 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
-#include <asmsg/basic_local_dispatcher__fwd.hpp>
-//#include <asmsg/dispatcher_group__fwd.hpp>
+#include <darc/basic_local_dispatcher__fwd.hpp>
+//#include <darc/dispatcher_group__fwd.hpp>
 
 #include <darc/id.hpp>
 #include <hns/server_entity.hpp>
 
 #include <boost/bind.hpp>
 
-namespace asmsg
+namespace darc
 {
 
 // fwd

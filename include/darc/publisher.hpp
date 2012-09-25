@@ -4,11 +4,11 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/signals.hpp>
 
-#include <asmsg/message_service__decl.hpp>
+#include <darc/message_service__decl.hpp>
 
 #include <darc/id.hpp>
 
-namespace asmsg
+namespace darc
 {
 
 template<typename T>

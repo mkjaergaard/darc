@@ -16,8 +16,8 @@ include_directories(include)
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${catkin_INCLUDE_DIRS})
 
-catkin_add_gtest(asmsg_gtest test/asmsg_gtest.cpp)
-target_link_libraries(asmsg_gtest
+catkin_add_gtest(darc_pubsub_gtest test/darc_pubsub_gtest.cpp)
+target_link_libraries(darc_pubsub_gtest
   ${GTEST_BOTH_LIBRARIES}
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}

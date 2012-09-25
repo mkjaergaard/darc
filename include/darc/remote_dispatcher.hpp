@@ -5,10 +5,10 @@
 #include <darc/inbound_data.hpp>
 #include <darc/serializer/boost.hpp>
 
-#include <asmsg/message_packet.hpp>
-#include <asmsg/subscribe_packet.hpp>
+#include <darc/message_packet.hpp>
+#include <darc/subscribe_packet.hpp>
 
-namespace asmsg
+namespace darc
 {
 
 class RemoteDispatcher : public darc::peer_service

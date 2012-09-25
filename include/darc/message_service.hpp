@@ -1,15 +1,15 @@
 #pragma once
 
-#include <asmsg/message_service__decl.hpp>
+#include <darc/message_service__decl.hpp>
 
 #include <boost/make_shared.hpp>
-#include <asmsg/dispatcher_group.hpp>
+#include <darc/dispatcher_group.hpp>
 
 #include <darc/id.hpp>
 
 typedef darc::ID IDType;
 
-namespace asmsg
+namespace darc
 {
 
 void MessageService::doTagEvent(ID tag_id,

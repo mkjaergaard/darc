@@ -2,16 +2,16 @@
 
 #include <darc/id.hpp>
 
-namespace asmsg
+namespace darc
 {
 
-struct subscribe_packet
+struct message_packet
 {
-  const static uint32_t payload_id = 0x01;
+  const static uint32_t payload_id = 0x02;
 
   darc::ID topic_id;
 
-  subscribe_packet(const darc::ID& topic_id) :
+  message_packet(const darc::ID& topic_id) :
     topic_id(topic_id)
   {
   }

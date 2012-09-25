@@ -1,10 +1,10 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <asmsg/subscriber.hpp>
-#include <asmsg/publisher.hpp>
+#include <darc/subscriber.hpp>
+#include <darc/publisher.hpp>
 
-namespace asmsg
+namespace darc
 {
 
 template<typename T>

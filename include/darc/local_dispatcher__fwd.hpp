@@ -1,6 +1,6 @@
 #pragma once
 
-namespace asmsg
+namespace darc
 {
 
 template<typename T>

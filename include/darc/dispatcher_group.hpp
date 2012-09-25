@@ -1,13 +1,13 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <asmsg/local_dispatcher.hpp>
+#include <darc/local_dispatcher.hpp>
 
 #include <hns/tag_handle.hpp>
 
 #include <beam/glog.hpp>
 
-namespace asmsg
+namespace darc
 {
 
 class BasicDispatcherGroup

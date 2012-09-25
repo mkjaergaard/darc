@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include <asmsg/publisher.hpp>
-#include <asmsg/subscriber.hpp>
-#include <asmsg/local_dispatcher.hpp>
-#include <asmsg/message_service.hpp>
+#include <darc/publisher.hpp>
+#include <darc/subscriber.hpp>
+#include <darc/local_dispatcher.hpp>
+#include <darc/message_service.hpp>
 
 #include <darc/id.hpp>
 
@@ -12,15 +12,15 @@ void handler(const boost::shared_ptr<const int> &data)
   std::cout << "hej" << std::endl;
 }
 
-TEST(asmsgTest, PubSub)
+TEST(darcTest, PubSub)
 {
-  typedef asmsg::Publisher<int> MyPub;
-  typedef asmsg::Subscriber<int> MySub;
+  typedef darc::Publisher<int> MyPub;
+  typedef darc::Subscriber<int> MySub;
 
   darc::ID id1 = darc::ID::create();
   boost::asio::io_service io_service;
 
-  asmsg::MessageService my_service(io_service);
+  darc::MessageService my_service(io_service);
   MyPub test_pub(io_service, my_service);
   MySub test_sub(io_service, my_service);
 
