@@ -1,0 +1,16 @@
+<stack>
+  <name>darc_ns</name>
+  <version>0.0.1</version>
+  <description>DARC Name Server</description>
+  <author>Morten Kjaergaard</author>
+  <maintainer>Morten Kjaergaard</maintainer>
+  <license>BSD</license>
+  <copyright></copyright>
+
+  <build_depends>beam</build_depends>
+  <build_depends>darc_common</build_depends>
+  <depends>libboost-system</depends>
+  <depends>libboost-thread</depends>
+  <depends>libboost-regex</depends>
+  <depends>libboost-signals</depends>
+</stack>
