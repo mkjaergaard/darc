@@ -14,7 +14,13 @@ include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 
+add_library(darc_ns
+  src/ns_service.cpp
+  src/entry.cpp
+  src/local_tag.cpp)
+
 set(my_LIBRARIES
+  darc_ns
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   -lstdc++)
