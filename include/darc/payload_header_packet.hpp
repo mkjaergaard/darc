@@ -35,13 +35,21 @@
 
 #pragma once
 
-#include <beam/arg.hpp>
 #include <darc/id.hpp>
 
-namespace beam
+namespace darc
 {
 
-template<>
-std::string to_string(const arg<darc::ID>& id);
+struct payload_header_packet
+{
+  uint32_t payload_type;
+
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+    ar & payload_type;
+  }
+
+};
 
 }

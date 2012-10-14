@@ -33,15 +33,15 @@
  * \author Morten Kjaergaard
  */
 
-#pragma once
-
-#include <beam/arg.hpp>
-#include <darc/id.hpp>
+#include <darc/id_arg.hpp>
 
 namespace beam
 {
 
 template<>
-std::string to_string(const arg<darc::ID>& id);
+std::string to_string(const arg<darc::ID>& id)
+{
+  return id->short_string();
+}
 
 }

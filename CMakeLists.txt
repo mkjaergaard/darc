@@ -18,6 +18,7 @@ include_directories(${beam_INCLUDE_DIRS})
 
 add_library(darc_common
   src/id.cpp
+  src/id_arg.cpp
   src/container_manager.cpp
   src/container_base.cpp
 )

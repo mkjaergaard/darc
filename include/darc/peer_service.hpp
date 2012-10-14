@@ -31,6 +31,7 @@ protected:
   peer_service() {}
   peer_service(darc::peer& p) {}
 
+public:
   void set_send_to_function(send_to_function_type send_to_function)
   {
     send_to_function_ = send_to_function;

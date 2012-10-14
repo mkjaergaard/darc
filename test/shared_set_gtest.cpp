@@ -9,6 +9,8 @@
 class SharedSetTest : public testing::Test
 {
 public:
+//  boost::asio::io_service io_service_;
+
   darc::distributed_container::container_manager mngr1;
   darc::distributed_container::container_manager mngr2;
   darc::ID node1_id;
@@ -58,6 +60,15 @@ bool equal(const darc::distributed_container::shared_set<std::string, uint32_t>&
   return equal_(set1, set2) && equal_(set2, set1);
 }
 
+template<typename Key, typename T>
+void callback(const darc::ID& instance, const darc::ID& owner, const Key& key, const T& value)
+{
+  beam::glog<beam::Info>("New Item Callback",
+			 "instance", beam::arg<darc::ID>(instance),
+			 "owner", beam::arg<darc::ID>(owner),
+			 "key", beam::arg<Key>(key),
+			 "value", beam::arg<T>(value));
+}
 
 TEST_F(SharedSetTest, Subscribe)
 {
@@ -72,6 +83,8 @@ TEST_F(SharedSetTest, Subscribe)
 
   my_set1.attach(&mngr1);
   my_set2.attach(&mngr2);
+
+  my_set1.signal_.connect(boost::bind(&callback<std::string, uint32_t>, _1, _2, _3, _4));
 
   my_set1.insert("key3", 3);
   my_set1.insert("key4", 4);
