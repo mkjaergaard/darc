@@ -19,16 +19,15 @@ class ns_service : public darc::peer_service
 protected:
   const static int service_type_id = 55;
 
-  typedef distributed_container::shared_set<ID, entry> list_type;
+
 
   typedef std::map<ID, local_tag_ptr> local_tag_list_type;
   local_tag_list_type local_tag_list_;
 
-  typedef std::map<ID, ID> remap_list_type;
-  remap_list_type remap_list;
+  
 
 public:
-  list_type list_; // root ns list
+
 
   distributed_container::container_manager * container_manager_;
 
@@ -38,37 +37,16 @@ public:
   ///////////////////////
   // Debug thingy
 public:
-  void print_tree()
-  {
-    std::cout << " - " << root_id_.short_string() << std::endl;
-    print_tree_(0, check_remap(root_id_));
-  }
-
-  const ID& check_remap(const ID& id)
-  {
-    list_type::iterator item = list_.list().find(id);
-    if(item == list_.list().end() ||
-       item->second.second.type != entry::remap_type)
-    {
-      return id;
-    }
-    else
-    {
-      return check_remap(item->second.second.target_id);
-    }
-  }
 
   // søger på den hårde måde....
-  local_tag_ptr has_local_tag(const ID& ns_id, const std::string& name)
+  local_tag_ptr has_local_tag(const ID& list_id, const std::string& name)
   {
     for(local_tag_list_type::iterator it = local_tag_list_.begin();
 	it != local_tag_list_.end();
 	it++)
     {
       const local_tag_ptr& lt = it->second;
-      std::cout << lt->namespace_id().short_string() << " " << name << std::endl;
-      if(lt->namespace_id() == ns_id &&
-	 lt->name() == name)
+      if(lt->name() == name)
       {
 	return it->second;
       }
@@ -76,31 +54,28 @@ public:
     return local_tag_ptr();
   }
 
-protected:
-  void print_tree_(int depth, const ID& ns_id)
+
+  void print_tree()
   {
+    std::cout << " . " << root_id_.short_string() << std::endl;
     for(list_type::iterator it = list_.list().begin();
 	it != list_.list().end();
 	it++)
     {
       entry& e = it->second.second;
-      if(e.parent_id == ns_id)
+      if(e.type == entry::namespace_type)
       {
-	if(e.type == entry::namespace_type)
-	{
-	  std::cout << depth << " N " <<
-	    it->first.short_string() << " " <<
-	    e.parent_id.short_string() << " " <<
-	    e.name << std::endl;
-	  print_tree_(depth+1, it->first);
-	}
-	else if(e.type == entry::tag_type)
-	{
-	  std::cout << depth << " T " <<
-	    it->first.short_string() << " " <<
-	    e.parent_id.short_string() << " " <<
-	    e.name << std::endl;
-	}
+	std::cout << " N " <<
+	  it->first.short_string() << " " <<
+	  it->second.first.short_string() << " " <<
+	  e.name << std::endl;
+      }
+      else if(e.type == entry::tag_type)
+      {
+	std::cout << " T " <<
+	  it->first.short_string() << " " <<
+	  it->second.first.short_string() << " " <<
+	  e.name << std::endl;
       }
     }
   }
@@ -119,7 +94,7 @@ protected:
     case entry::tag_type:
     {
       beam::glog<beam::Info>("New Tag");
-      local_tag_ptr tag = has_local_tag(value.parent_id, value.name);
+      local_tag_ptr tag = has_local_tag(instance, value.name);
       if(tag.get() != 0)
       {
 	beam::glog<beam::Info>("Trigger New Tag");
@@ -149,23 +124,23 @@ public:
   // used by local_tag
   void add_entry(const ID& id, const entry& e)
   {
-    list_.insert(id, e);
+    list_.insert(id, e); // select from ns id
   }
 
   void remove_entry(const ID&)
   {
   }
 
-  tag_handle register_tag(const ID& parent_ns_id, const std::string& name)
+  tag_handle register_tag(const ID& ns_id, const std::string& name)
   {
     // todo: Check for existing
-    local_tag_ptr my_tag = boost::make_shared<local_tag>(this, name, parent_ns_id);
+    local_tag_ptr my_tag = boost::make_shared<local_tag>(this, name, ns_id);
     local_tag_list_.insert(local_tag_list_type::value_type(my_tag->id(),
 							   my_tag));
 
     return boost::make_shared<tag_handle_impl>(boost::ref(my_tag));
   }
-
+/*
   void register_tag_link(const ID& parent_ns_id1, const std::string& name1,
 			 const ID& parent_ns_id2, const std::string& name2)
   {
@@ -185,38 +160,20 @@ public:
     list_.insert(id1, e1);
     list_.insert(id2, e2);
   }
-
-  const ID register_namespace(const ID& parent_ns_id, const std::string& name)
+*/
+  const ID register_namespace(const ID& ns_id, const std::string& name)
   {
     // todo: Check for existing
     entry e(entry::namespace_type);
     e.name = name;
-    e.parent_id = parent_ns_id;
     ID id = ID::create();
     list_.insert(id, e);
     return id;
   }
 
-  void remap(const ID& old_id, const ID& new_id)
-  {
-    remap_list.insert(remap_list_type::value_type(old_id, new_id));
-    // update all tags?
-    // todo: send to others?
-
-    // Check for existing
-    /*
-    entry e(entry::remap_type);
-    e.target_id = new_id;
-    list_.insert(old_id, e);
-    */
-  }
-
   void handle_connect(const ID& src_peer_id, darc::buffer::shared_buffer data)
   {
     inbound_data<serializer::boost_serializer, ns_connect_packet> i_connect(data);
-    std::cout << "ROot ID" << root_id_.short_string() << std::endl;
-    root_id_ = i_connect.get().root_ns_id;
-    std::cout << "ROot ID" << root_id_.short_string() << std::endl;
     connect_list(src_peer_id, i_connect.get().root_ns_list_id);
   }
 

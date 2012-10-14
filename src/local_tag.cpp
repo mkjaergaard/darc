@@ -14,7 +14,6 @@ local_tag::local_tag(ns_service * ns_service,
 {
   entry e(entry::tag_type);
   e.name = name;
-  e.parent_id = parent_ns_id;
   ID id = ID::create();
 
   ns_service_->add_entry(id_, e);
