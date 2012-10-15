@@ -1,0 +1,10 @@
+<package>
+  <name>darc_ns</name>
+  <version>0.0.1</version>
+  <description>DARC Name Server</description>
+  <author>Morten Kjaergaard</author>
+  <maintainer email="none@none.com">Morten Kjaergaard</maintainer>
+  <license>BSD</license>
+  <build_depend>beam</build_depend>
+  <build_depend>darc_common</build_depend>
+</package>

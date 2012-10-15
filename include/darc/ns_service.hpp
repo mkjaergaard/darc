@@ -10,6 +10,7 @@
 #include <darc/ns_connect_reply_packet.hpp>
 #include <darc/payload_header_packet.hpp>
 #include <darc/buffer/const_size_buffer.hpp>
+#include <darc/local_ns.hpp>
 
 namespace darc
 {
@@ -19,20 +20,13 @@ class ns_service : public darc::peer_service
 protected:
   const static int service_type_id = 55;
 
-
-
   typedef std::map<ID, local_tag_ptr> local_tag_list_type;
   local_tag_list_type local_tag_list_;
 
-  
+  local_ns_ptr root_ns_;
 
 public:
-
-
   distributed_container::container_manager * container_manager_;
-
-public:
-  ID root_id_; // used for anything?
 
   ///////////////////////
   // Debug thingy
@@ -57,6 +51,7 @@ public:
 
   void print_tree()
   {
+/*
     std::cout << " . " << root_id_.short_string() << std::endl;
     for(list_type::iterator it = list_.list().begin();
 	it != list_.list().end();
@@ -78,6 +73,7 @@ public:
 	  e.name << std::endl;
       }
     }
+*/
   }
 
   void callback(const darc::ID& instance, const darc::ID& owner, const ID& key, const entry& value)
@@ -110,21 +106,21 @@ public:
 public:
   ns_service(distributed_container::container_manager * container_manager) :
     container_manager_(container_manager),
-    root_id_(ID::create())
+    root_ns_(boost::make_shared<local_ns>(this, (local_ns*)0, std::string(".")))
   {
-    list_.attach(container_manager);
-    list_.signal_.connect(boost::bind(&ns_service::callback, this, _1, _2, _3, _4));
+//    list_.attach(container_manager);
+//    list_.signal_.connect(boost::bind(&ns_service::callback, this, _1, _2, _3, _4));
   }
 
   void connect_list(const ID& location_id, const ID& instance_id)
   {
-    list_.connect(location_id, instance_id);
+//    list_.connect(location_id, instance_id);
   }
 
   // used by local_tag
   void add_entry(const ID& id, const entry& e)
   {
-    list_.insert(id, e); // select from ns id
+//    list_.insert(id, e); // select from ns id
   }
 
   void remove_entry(const ID&)
@@ -163,12 +159,14 @@ public:
 */
   const ID register_namespace(const ID& ns_id, const std::string& name)
   {
+/*
     // todo: Check for existing
     entry e(entry::namespace_type);
     e.name = name;
     ID id = ID::create();
     list_.insert(id, e);
     return id;
+*/
   }
 
   void handle_connect(const ID& src_peer_id, darc::buffer::shared_buffer data)
@@ -207,6 +205,7 @@ public:
 
   void connect(const ID& dest_peer_id)
   {
+/*
     buffer::shared_buffer buffer = boost::make_shared<buffer::const_size_buffer>(2048); // todo
 
     payload_header_packet hdr;
@@ -224,7 +223,7 @@ public:
 
     send_to_function_(dest_peer_id, service_type_id, buffer);
     // send
-
+    */
   }
 
 };

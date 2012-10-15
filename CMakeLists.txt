@@ -2,13 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 project(darc_ns)
 
 find_package(catkin)
-catkin_stack()
 
 find_package(Boost COMPONENTS system thread regex signals serialization)
 find_package(catkin COMPONENTS beam darc_common)
 
-catkin_project(darc_ns
-  INCLUDE_DIRS include)
+catkin_package(INCLUDE_DIRS include)
 
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})

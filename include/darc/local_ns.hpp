@@ -5,17 +5,19 @@
 #include <boost/signals/connection.hpp>
 #include <darc/id.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace darc
 {
+
 class ns_service;
-class local_ns
+class local_ns;
 typedef boost::shared_ptr<local_ns> local_ns_ptr;
 
 // manages lifetime of a local namespace
 class local_ns : public boost::enable_shared_from_this<local_ns>
 {
-protected
+protected:
   typedef distributed_container::shared_set<ID, entry> list_type;
   list_type list_; // the shared list!
 
@@ -47,7 +49,7 @@ public:
   {
   }
 
-  void attach_child_ns(local_ns_ptr& child)
+  void attach_child_ns(local_ns_ptr child)
   {
     local_ns_list_.insert(
       local_ns_list_type::value_type(child->id(),
@@ -56,7 +58,7 @@ public:
     // configure the shared list id!
   }
 
-  void attach_child_tag(local_tag_ptr& child)
+  void attach_child_tag(local_tag_ptr child)
   {
     local_tag_list_.insert(
       local_tag_list_type::value_type(child->id(),
