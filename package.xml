@@ -1,15 +1,9 @@
-<stack>
+<package>
   <name>darc_common</name>
   <version>0.0.1</version>
   <description>DARC Common Functionality</description>
   <author>Morten Kjaergaard</author>
-  <maintainer>Morten Kjaergaard</maintainer>
+  <maintainer email="none@none.com">Morten Kjaergaard</maintainer>
   <license>BSD</license>
-  <copyright></copyright>
-
-  <build_depends>beam</build_depends>
-  <depends>libboost-system</depends>
-  <depends>libboost-thread</depends>
-  <depends>libboost-regex</depends>
-  <depends>libboost-signals</depends>
-</stack>
+  <build_depend>beam</build_depend>
+</package>

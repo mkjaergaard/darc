@@ -2,9 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 project(darc_common)
 
 find_package(catkin)
-catkin_stack()
 
-catkin_project(darc_common
+catkin_package(
   INCLUDE_DIRS include
   LIBRARIES darc_common
 )
