@@ -1,0 +1,11 @@
+<package>
+  <name>darc_pubsub</name>
+  <version>0.0.1</version>
+  <description>DARC Publisher Subscribe Patterns</description>
+  <author>Morten Kjaergaard</author>
+  <maintainer email="none@none.com">Morten Kjaergaard</maintainer>
+  <license>BSD</license>
+  <build_depend>beam</build_depend>
+  <build_depend>darc_common</build_depend>
+  <build_depend>darc_ns</build_depend>
+</package>

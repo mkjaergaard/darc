@@ -6,7 +6,7 @@
 //#include <darc/dispatcher_group__fwd.hpp>
 
 #include <darc/id.hpp>
-#include <hns/server_entity.hpp>
+#include <darc/ns_service.hpp>
 
 #include <boost/bind.hpp>
 
@@ -36,24 +36,25 @@ private:
   boost::asio::io_service& io_service_;
 
 public:
-  hns::ServerEntity nameserver_;
+  ns_service& nameserver_;
 
 public:
-  MessageService(boost::asio::io_service& io_service) :
-    io_service_(io_service)
+  MessageService(boost::asio::io_service& io_service, ns_service& ns_service) :
+    io_service_(io_service),
+    nameserver_(ns_service)
   {
   }
 
-  void tagEvent(ID tag_id,
-		ID alias_id,
-		hns::TagEvent event)
+  void post_new_tag_event(ID tag_id,
+			  ID alias_id,
+			  ID peer_id)
   {
-    io_service_.post(boost::bind(&MessageService::doTagEvent, this, tag_id, alias_id, event));
+    io_service_.post(boost::bind(&MessageService::new_tag_event, this, tag_id, alias_id, peer_id));
   }
 
-  void doTagEvent(ID tag_id,
-		  ID alias_id,
-		  hns::TagEvent event);
+  void new_tag_event(ID tag_id,
+		     ID alias_id,
+		     ID peer_id);
 
   template<typename T>
   LocalDispatcher<T>* attach(PublisherImpl<T> &publisher, const std::string &topic);
@@ -70,7 +71,7 @@ public:
   DispatcherGroup<T>* getDispatcherGroup(const std::string& topic);
 
   template<typename T>
-  DispatcherGroup<T>* getDispatcherGroup(const hns::TagHandle& tag);
+  DispatcherGroup<T>* getDispatcherGroup(const tag_handle& tag);
 
 };
 

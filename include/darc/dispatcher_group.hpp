@@ -3,7 +3,7 @@
 #include <boost/asio.hpp>
 #include <darc/local_dispatcher.hpp>
 
-#include <hns/tag_handle.hpp>
+#include <darc/tag_handle.hpp>
 
 #include <beam/glog.hpp>
 
@@ -32,27 +32,27 @@ private:
 
   DispatcherListType dispatcher_list_;
 
-  hns::Tag::TagListenerType listener_;
+  tag_handle_impl::listener_type listener_;
 
 public:
-  DispatcherGroup(hns::Tag::TagListenerType listener) :
+  DispatcherGroup(tag_handle_impl::listener_type listener) :
     listener_(listener)
   {
   }
 
-  LocalDispatcher<T>* getDispatcher(const hns::TagHandle& tag)
+  LocalDispatcher<T>* getDispatcher(const tag_handle& tag)
   {
-    typename DispatcherListType::iterator elem = dispatcher_list_.find(tag.id());
+    typename DispatcherListType::iterator elem = dispatcher_list_.find(tag->id());
     if(elem == dispatcher_list_.end())
     {
       boost::shared_ptr<LocalDispatcher<T> > dispatcher
 	= boost::make_shared<LocalDispatcher<T> >(this, tag);
 
       dispatcher_list_.insert(
-	typename DispatcherListType::value_type(tag.id(), dispatcher));
+	typename DispatcherListType::value_type(tag->id(), dispatcher));
 
       // todo: put somewhere else?
-      dispatcher->tag_.addSubscriber(listener_);
+      dispatcher->tag_->connect_listener(listener_);
 
       return dispatcher.get();
     }

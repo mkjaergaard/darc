@@ -3,6 +3,7 @@
 #include <boost/asio.hpp>
 #include <darc/subscriber.hpp>
 #include <darc/publisher.hpp>
+#include <darc/tag_handle.hpp>
 
 namespace darc
 {
@@ -23,10 +24,10 @@ private:
   DispatcherGroup<T> * group_;
 
 public: //todo:
-  hns::TagHandle tag_;
+  tag_handle tag_;
 
 public:
-  LocalDispatcher(DispatcherGroup<T> * group, const hns::TagHandle& tag) :
+  LocalDispatcher(DispatcherGroup<T> * group, const tag_handle& tag) :
     group_(group),
     tag_(tag)
   {

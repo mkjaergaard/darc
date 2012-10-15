@@ -12,14 +12,14 @@ typedef darc::ID IDType;
 namespace darc
 {
 
-void MessageService::doTagEvent(ID tag_id,
-		ID alias_id,
-		hns::TagEvent event)
+void MessageService::new_tag_event(ID tag_id,
+				   ID alias_id,
+				   ID peer_id)
 {
   beam::glog<beam::Info>("tagEvent",
 			 "tag_id", beam::arg<darc::ID>(tag_id),
 			 "alias_id", beam::arg<darc::ID>(alias_id),
-			 "event", beam::arg<int>(event));
+			 "peer_id", beam::arg<darc::ID>(peer_id));
 
   DispatcherGroupListType::iterator elem1 = dispatcher_group_list_.find(tag_id);
   DispatcherGroupListType::iterator elem2 = dispatcher_group_list_.find(alias_id);
@@ -48,7 +48,7 @@ template<typename T>
 LocalDispatcher<T>* MessageService::attach(PublisherImpl<T> &publisher,
 					   const std::string& topic)
 {
-  hns::TagHandle tag = nameserver_.registerTag(topic);
+  tag_handle tag = nameserver_.register_tag(nameserver_.root(), topic);
   DispatcherGroup<T>* group = getDispatcherGroup<T>(tag);
   LocalDispatcher<T>* dispatcher = group->getDispatcher(tag);
   dispatcher->attach(publisher);
@@ -59,7 +59,7 @@ template<typename T>
 LocalDispatcher<T>* MessageService::attach(SubscriberImpl<T> &subscriber,
 					   const std::string& topic)
 {
-  hns::TagHandle tag = nameserver_.registerTag(topic);
+  tag_handle tag = nameserver_.register_tag(nameserver_.root(), topic);
   DispatcherGroup<T>* group = getDispatcherGroup<T>(tag);
   LocalDispatcher<T>* dispatcher = group->getDispatcher(tag);
   dispatcher->attach(subscriber);
@@ -67,17 +67,17 @@ LocalDispatcher<T>* MessageService::attach(SubscriberImpl<T> &subscriber,
 }
 
 template<typename T>
-DispatcherGroup<T>* MessageService::getDispatcherGroup(const hns::TagHandle& tag)
+DispatcherGroup<T>* MessageService::getDispatcherGroup(const tag_handle& tag)
 {
-  typename DispatcherGroupListType::iterator elem = dispatcher_group_list_.find(tag.id());
+  typename DispatcherGroupListType::iterator elem = dispatcher_group_list_.find(tag->id());
   if(elem == dispatcher_group_list_.end())
   {
     boost::shared_ptr<DispatcherGroup<T> > dispatcher_group
       = boost::make_shared<DispatcherGroup<T> >(
-	boost::bind(&MessageService::tagEvent, this, _1, _2, _3));
+	boost::bind(&MessageService::new_tag_event, this, _1, _2, _3));
 
     dispatcher_group_list_.insert(
-      typename DispatcherGroupListType::value_type(tag.id(), dispatcher_group));
+      typename DispatcherGroupListType::value_type(tag->id(), dispatcher_group));
 
     return dispatcher_group.get();
   }
