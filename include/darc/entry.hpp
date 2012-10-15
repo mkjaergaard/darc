@@ -13,13 +13,17 @@ struct entry
 
   uint32_t type;
   std::string name;
+  ID list_instance_id;
 
-  entry()
+  entry() :
+    type(0),
+    list_instance_id(ID::null())
   {
   }
 
   entry(uint32_t type) :
-    type(type)
+    type(type),
+    list_instance_id(ID::null())
   {
   }
 
@@ -28,6 +32,7 @@ struct entry
   {
     ar & type;
     ar & name;
+    ar & list_instance_id;
   }
 };
 

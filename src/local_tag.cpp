@@ -1,27 +1,33 @@
 #include <darc/local_tag.hpp>
+#include <darc/local_ns.hpp>
 #include <darc/ns_service.hpp>
+#include <boost/make_shared.hpp>
 
 namespace darc
 {
 
 local_tag::local_tag(ns_service * ns_service,
 		     const std::string name,
-		     const ID& parent_ns_id) :
+		     local_ns * parent) :
   ns_service_(ns_service),
+  parent_(parent),
   id_(ID::create()),
-  parent_ns_id_(parent_ns_id),
   name_(name)
 {
-  entry e(entry::tag_type);
-  e.name = name;
-  ID id = ID::create();
-
-  ns_service_->add_entry(id_, e);
 }
+
+local_tag_ptr local_tag::create(ns_service * ns_service,
+				const std::string name,
+				local_ns * parent)
+{
+  local_tag_ptr tag = boost::make_shared<local_tag>(ns_service, name, parent);
+  parent->attach_child_tag(tag);
+  return tag;
+}
+
 
 local_tag::~local_tag()
 {
-  ns_service_->remove_entry(id_);
 }
 
 }

@@ -5,12 +5,14 @@
 #include <darc/distributed_container/shared_set.hpp>
 #include <darc/local_tag.hpp>
 #include <darc/tag_handle.hpp>
+#include <darc/namespace_handle.hpp>
 #include <darc/entry.hpp>
 #include <darc/ns_connect_packet.hpp>
 #include <darc/ns_connect_reply_packet.hpp>
 #include <darc/payload_header_packet.hpp>
 #include <darc/buffer/const_size_buffer.hpp>
 #include <darc/local_ns.hpp>
+#include <darc/tag_parser.hpp>
 
 namespace darc
 {
@@ -20,122 +22,95 @@ class ns_service : public darc::peer_service
 protected:
   const static int service_type_id = 55;
 
-  typedef std::map<ID, local_tag_ptr> local_tag_list_type;
-  local_tag_list_type local_tag_list_;
-
   local_ns_ptr root_ns_;
+  namespace_handle root_handle_;
 
-public:
   distributed_container::container_manager * container_manager_;
 
   ///////////////////////
   // Debug thingy
 public:
-
-  // søger på den hårde måde....
-  local_tag_ptr has_local_tag(const ID& list_id, const std::string& name)
+  namespace_handle& root()
   {
-    for(local_tag_list_type::iterator it = local_tag_list_.begin();
-	it != local_tag_list_.end();
-	it++)
-    {
-      const local_tag_ptr& lt = it->second;
-      if(lt->name() == name)
-      {
-	return it->second;
-      }
-    }
-    return local_tag_ptr();
+    return root_handle_;
   }
-
 
   void print_tree()
   {
-/*
-    std::cout << " . " << root_id_.short_string() << std::endl;
-    for(list_type::iterator it = list_.list().begin();
-	it != list_.list().end();
+    print_ns(root_ns_, 1);
+  }
+
+  void print_ns(local_ns_ptr ns, int depth)
+  {
+    std::cout << depth - 1 << " N: " << ns->id().short_string() << " " << ns->name() << std::endl;
+
+    for(local_ns::list_type::iterator it = ns->list_.list().begin();
+	it != ns->list_.list().end();
 	it++)
     {
       entry& e = it->second.second;
       if(e.type == entry::namespace_type)
       {
-	std::cout << " N " <<
+	std::cout << depth << " n: " <<
 	  it->first.short_string() << " " <<
 	  it->second.first.short_string() << " " <<
 	  e.name << std::endl;
       }
       else if(e.type == entry::tag_type)
       {
-	std::cout << " T " <<
+	std::cout << depth << " t: " <<
 	  it->first.short_string() << " " <<
 	  it->second.first.short_string() << " " <<
 	  e.name << std::endl;
       }
     }
-*/
-  }
 
-  void callback(const darc::ID& instance, const darc::ID& owner, const ID& key, const entry& value)
-  {
-/*
-    beam::glog<beam::Info>("New Item Callback",
-			   "instance", beam::arg<darc::ID>(instance),
-			   "owner", beam::arg<darc::ID>(owner),
-			   "key", beam::arg<ID>(key),
-			   "value", beam::arg<entry>(value));
-*/
-    switch(value.type)
+    for(local_ns::local_ns_list_type::iterator it = ns->local_ns_list_.begin();
+	it != ns->local_ns_list_.end();
+	it++)
     {
-    case entry::tag_type:
+      print_ns(it->second, depth+1);
+    }
+    for(local_ns::local_tag_list_type::iterator it = ns->local_tag_list_.begin();
+	it != ns->local_tag_list_.end();
+	it++)
     {
-      beam::glog<beam::Info>("New Tag");
-      local_tag_ptr tag = has_local_tag(instance, value.name);
-      if(tag.get() != 0)
-      {
-	beam::glog<beam::Info>("Trigger New Tag");
-	tag->trigger_new_tag(key, instance);
-      }
+      std::cout << depth << " T: " << it->second->id().short_string() << " " << it->second->name() << std::endl;
     }
-    break;
-
-    }
-
   }
 
 public:
   ns_service(distributed_container::container_manager * container_manager) :
     container_manager_(container_manager),
-    root_ns_(boost::make_shared<local_ns>(this, (local_ns*)0, std::string(".")))
-  {
-//    list_.attach(container_manager);
-//    list_.signal_.connect(boost::bind(&ns_service::callback, this, _1, _2, _3, _4));
-  }
-
-  void connect_list(const ID& location_id, const ID& instance_id)
-  {
-//    list_.connect(location_id, instance_id);
-  }
-
-  // used by local_tag
-  void add_entry(const ID& id, const entry& e)
-  {
-//    list_.insert(id, e); // select from ns id
-  }
-
-  void remove_entry(const ID&)
+    root_ns_(local_ns::create(this, container_manager, ".")),
+    root_handle_(boost::make_shared<namespace_handle_impl>(boost::ref(root_ns_)))
   {
   }
 
-  tag_handle register_tag(const ID& ns_id, const std::string& name)
+  tag_handle register_tag(namespace_handle ns, const std::string& full_name)
   {
-    // todo: Check for existing
-    local_tag_ptr my_tag = boost::make_shared<local_tag>(this, name, ns_id);
-    local_tag_list_.insert(local_tag_list_type::value_type(my_tag->id(),
-							   my_tag));
+    tag_parser p(full_name);
 
+    for(tag_parser::namespace_list_type::const_iterator it = p.get_namespaces().begin();
+	it != p.get_namespaces().end();
+	it++)
+    {
+      ns = register_namespace_(ns, *it);
+    }
+
+    return register_tag_(ns, p.get_tag());
+  }
+
+  tag_handle register_tag_(namespace_handle ns, const std::string& name)
+  {
+    local_tag_ptr my_tag = ns->instance()->find_local_tag(name);
+    if(my_tag.get() == 0)
+    {
+      my_tag = local_tag::create(this, name, ns->instance().get());
+    }
     return boost::make_shared<tag_handle_impl>(boost::ref(my_tag));
   }
+
 /*
   void register_tag_link(const ID& parent_ns_id1, const std::string& name1,
 			 const ID& parent_ns_id2, const std::string& name2)
@@ -143,8 +118,6 @@ public:
     ID id1 = ID::create();
     ID id2 = ID::create();
 
-    entry e1(entry::tag_link_type);
-    e1.name = name1;
     e1.parent_id = parent_ns_id1;
     e1.target_id = id2;
 
@@ -157,22 +130,35 @@ public:
     list_.insert(id2, e2);
   }
 */
-  const ID register_namespace(const ID& ns_id, const std::string& name)
+
+  namespace_handle register_namespace(namespace_handle ns, const std::string& full_name)
   {
-/*
-    // todo: Check for existing
-    entry e(entry::namespace_type);
-    e.name = name;
-    ID id = ID::create();
-    list_.insert(id, e);
-    return id;
-*/
+    tag_parser p(full_name);
+
+    for(tag_parser::namespace_list_type::const_iterator it = p.get_namespaces().begin();
+	it != p.get_namespaces().end();
+	it++)
+    {
+      ns = register_namespace_(ns, *it);
+    }
+
+    return register_namespace_(ns, p.get_tag());
+  }
+
+  namespace_handle register_namespace_(namespace_handle ns, const std::string& name)
+  {
+    local_ns_ptr my_ns = ns->instance()->find_local_ns(name);
+    if(my_ns.get() == 0)
+    {
+      my_ns = local_ns::create(this, container_manager_, name, ns->instance().get());
+    }
+    return boost::make_shared<namespace_handle_impl>(boost::ref(my_ns));
   }
 
   void handle_connect(const ID& src_peer_id, darc::buffer::shared_buffer data)
   {
     inbound_data<serializer::boost_serializer, ns_connect_packet> i_connect(data);
-    connect_list(src_peer_id, i_connect.get().root_ns_list_id);
+    root_ns_->connect_list_instance(src_peer_id, i_connect.get().root_ns_list_id);
   }
 
   void handle_connect_reply(const ID& src_peer_id, darc::buffer::shared_buffer data)
@@ -205,7 +191,6 @@ public:
 
   void connect(const ID& dest_peer_id)
   {
-/*
     buffer::shared_buffer buffer = boost::make_shared<buffer::const_size_buffer>(2048); // todo
 
     payload_header_packet hdr;
@@ -213,8 +198,7 @@ public:
     outbound_data<serializer::boost_serializer, payload_header_packet> o_hdr(hdr);
 
     ns_connect_packet cnt;
-    cnt.root_ns_id = root_id_;
-    cnt.root_ns_list_id = list_.id();
+    cnt.root_ns_list_id = root_ns_->list_instance_id();
     outbound_data<serializer::boost_serializer, ns_connect_packet> o_cnt(cnt);
 
     outbound_pair o_pair(o_hdr, o_cnt);
@@ -222,8 +206,6 @@ public:
     o_pair.pack(buffer);
 
     send_to_function_(dest_peer_id, service_type_id, buffer);
-    // send
-    */
   }
 
 };
