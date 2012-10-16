@@ -61,7 +61,7 @@ public:
 
   void dispatchFromPublisher(const boost::shared_ptr<const T> &msg)
   {
-    group_->dispatchToGroup(msg);
+    group_->dispatchToGroup(tag_->id(), msg);
   }
 
 };

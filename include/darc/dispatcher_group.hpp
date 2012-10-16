@@ -4,6 +4,7 @@
 #include <darc/local_dispatcher.hpp>
 
 #include <darc/tag_handle.hpp>
+#include <darc/remote_dispatcher.hpp>
 
 #include <beam/glog.hpp>
 
@@ -33,10 +34,12 @@ private:
   DispatcherListType dispatcher_list_;
 
   tag_handle_impl::listener_type listener_;
+  RemoteDispatcher * remote_dispatcher_;
 
 public:
-  DispatcherGroup(tag_handle_impl::listener_type listener) :
-    listener_(listener)
+  DispatcherGroup(tag_handle_impl::listener_type listener, RemoteDispatcher * remote_dispatcher) :
+    listener_(listener),
+    remote_dispatcher_(remote_dispatcher)
   {
   }
 
@@ -81,7 +84,7 @@ public:
 
   }
 
-  void dispatchToGroup(const boost::shared_ptr<const T> &msg)
+  void dispatchToGroup(const ID& tag_id, const boost::shared_ptr<const T> &msg)
   {
     beam::glog<beam::Info>("dispatchToGroup");
     for(typename DispatcherListType::iterator it = dispatcher_list_.begin();
@@ -91,6 +94,7 @@ public:
       beam::glog<beam::Info>("dispatchLocally");
       it->second->dispatchLocally(msg);
     }
+    remote_dispatcher_->dispatch_remotely(tag_id, msg);
   }
 
 

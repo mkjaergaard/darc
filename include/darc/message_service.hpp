@@ -11,7 +11,6 @@ typedef darc::ID IDType;
 
 namespace darc
 {
-
 void MessageService::new_tag_event(ID tag_id,
 				   ID alias_id,
 				   ID peer_id)
@@ -21,26 +20,29 @@ void MessageService::new_tag_event(ID tag_id,
 			 "alias_id", beam::arg<darc::ID>(alias_id),
 			 "peer_id", beam::arg<darc::ID>(peer_id));
 
-  DispatcherGroupListType::iterator elem1 = dispatcher_group_list_.find(tag_id);
-  DispatcherGroupListType::iterator elem2 = dispatcher_group_list_.find(alias_id);
-
-  if(elem1 == dispatcher_group_list_.end() ||
-     elem2 == dispatcher_group_list_.end())
+  // Local alias
+  if(peer_id == peer_service::peer_.id())
   {
-    beam::glog<beam::Warning>("tagEvent, but no dispatcher_group");
-    return;
+    DispatcherGroupListType::iterator elem1 = dispatcher_group_list_.find(tag_id);
+    DispatcherGroupListType::iterator elem2 = dispatcher_group_list_.find(alias_id);
+
+    if(elem1 == dispatcher_group_list_.end() ||
+       elem2 == dispatcher_group_list_.end())
+    {
+      beam::glog<beam::Warning>("tagEvent, but no dispatcher_group");
+      return;
+    }
+
+    if(elem1->second.get() != elem2->second.get())
+    {
+      elem1->second->join(elem2->second);
+      elem2->second = elem1->second;
+    }
   }
-
-  beam::glog<beam::Info>("pointers",
-			 "1", beam::arg<void*>(elem1->second.get()),
-			 "2", beam::arg<void*>(elem2->second.get()));
-
-  if(elem1->second.get() != elem2->second.get())
+  else
   {
-    elem1->second->join(elem2->second);
-    elem2->second = elem1->second;
+    remote_dispatcher_.new_tag_event(tag_id, alias_id, peer_id);
   }
-
 }
 
 
@@ -74,7 +76,8 @@ DispatcherGroup<T>* MessageService::getDispatcherGroup(const tag_handle& tag)
   {
     boost::shared_ptr<DispatcherGroup<T> > dispatcher_group
       = boost::make_shared<DispatcherGroup<T> >(
-	boost::bind(&MessageService::new_tag_event, this, _1, _2, _3));
+	boost::bind(&MessageService::new_tag_event, this, _1, _2, _3),
+	&remote_dispatcher_);
 
     dispatcher_group_list_.insert(
       typename DispatcherGroupListType::value_type(tag->id(), dispatcher_group));
