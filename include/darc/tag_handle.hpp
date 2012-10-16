@@ -9,6 +9,8 @@ namespace darc
 class tag_handle_impl
 {
 public:
+  typedef local_tag::functor_type listener_type;
+
   boost::signals::connection connection_;
 
 protected:
@@ -30,7 +32,7 @@ public:
     return local_tag_->name();
   }
 
-  void connect(local_tag::functor_type callback)
+  void connect_listener(local_tag::functor_type callback)
   {
     local_tag_->connect_listener(callback);
   }

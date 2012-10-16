@@ -78,7 +78,7 @@ public:
       if(tag.get() != 0)
       {
 	beam::glog<beam::Info>("Trigger New Tag");
-	tag->trigger_new_tag(key, instance);
+	tag->trigger_new_tag(key, list_.get_peer_id(owner));
       }
     }
     break;

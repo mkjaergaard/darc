@@ -26,7 +26,7 @@ protected:
   std::string name_;
 
 public:
-  typedef void (callback_type)(const ID&, const ID&);
+  typedef void (callback_type)(const ID&, const ID&, const ID&);
   typedef boost::function<callback_type> functor_type;
 
 protected:
@@ -43,10 +43,10 @@ public:
 			      local_ns * parent);
  ~local_tag();
 
-  void trigger_new_tag(const ID& tag_id, const ID& remote_instance)
+  void trigger_new_tag(const ID& tag_id, const ID& peer_id)
   {
     // Original tag ID, Remote tag ID, Remote Peer ID
-    listeners_signal_(id_, tag_id);
+    listeners_signal_(id_, tag_id, peer_id);
   }
 
   boost::signals::connection connect_listener(boost::function<callback_type> listener)
