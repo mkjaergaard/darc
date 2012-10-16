@@ -80,7 +80,8 @@ public:
   }
 
 public:
-  ns_service(distributed_container::container_manager * container_manager) :
+  ns_service(peer& p, distributed_container::container_manager * container_manager) :
+    peer_service(p),
     container_manager_(container_manager),
     root_ns_(local_ns::create(this, container_manager, ".")),
     root_handle_(boost::make_shared<namespace_handle_impl>(boost::ref(root_ns_)))
@@ -205,7 +206,7 @@ public:
 
     o_pair.pack(buffer);
 
-    send_to_function_(dest_peer_id, service_type_id, buffer);
+    send_to(dest_peer_id, service_type_id, buffer);
   }
 
 };

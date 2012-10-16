@@ -9,22 +9,20 @@ public:
 
   darc::distributed_container::container_manager mngr1;
   darc::distributed_container::container_manager mngr2;
-  darc::ID node1_id;
-  darc::ID node2_id;
+  darc::peer peer1;
+  darc::peer peer2;
   darc::ns_service ns1;
   darc::ns_service ns2;
 
   NameServerTest() :
     mngr1(boost::bind(&NameServerTest::send_to_node2_, this, _1, _2)),
     mngr2(boost::bind(&NameServerTest::send_to_node1_, this, _1, _2)),
-    node1_id(darc::ID::create()),
-    node2_id(darc::ID::create()),
-    ns1(&mngr1),
-    ns2(&mngr2)
+    ns1(peer1, &mngr1),
+    ns2(peer2, &mngr2)
   {
-    ns1.set_send_to_function(
+    peer1.set_send_to_function(
       boost::bind(&NameServerTest::send_to_node2, this, _1, _2, _3));
-    ns2.set_send_to_function(
+    peer2.set_send_to_function(
       boost::bind(&NameServerTest::send_to_node1, this, _1, _2, _3));
   }
 
@@ -33,7 +31,7 @@ public:
 		     darc::buffer::shared_buffer data)
   {
     beam::glog<beam::Info>("Data Received from node 2---");
-    ns1.recv(node2_id, service, data);
+    ns1.recv(peer2.id(), service, data);
   }
 
   void send_to_node2(const darc::ID& destination,
@@ -41,19 +39,19 @@ public:
 		     darc::buffer::shared_buffer data)
   {
     beam::glog<beam::Info>("Data Received from node 1---");
-    ns2.recv(node1_id, service, data);
+    ns2.recv(peer1.id(), service, data);
   }
 
   void send_to_node1_(const darc::ID& destination, darc::buffer::shared_buffer data)
   {
     beam::glog<beam::Info>("Data Received from node 2");
-    mngr1.recv(node2_id, data);
+    mngr1.recv(peer2.id(), data);
   }
 
   void send_to_node2_(const darc::ID& destination, darc::buffer::shared_buffer data)
   {
     beam::glog<beam::Info>("Data Received from node 1");
-    mngr2.recv(node1_id, data);
+    mngr2.recv(peer1.id(), data);
   }
 };
 
@@ -78,10 +76,10 @@ TEST_F(NameServerTest, Create)
   ns1.print_tree();
 
   Step("Set Tag Callback");
-  t1->connect(boost::bind(callback, _1, _2));
+  t1->connect_listener(boost::bind(callback, _1, _2));
 
   Step("Connect NS1<->NS2");
-  ns1.connect(node2_id);
+  ns1.connect(peer2.id());
 
   Step("NS2 Content");
   ns2.print_tree();
