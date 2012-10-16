@@ -201,6 +201,11 @@ public:
     last_sent_index_ = 0;
   }
 
+  const ID& peer_id()
+  {
+    return remote_location_id_;
+  }
+
 };
 
 template<typename Key, typename T>
@@ -272,6 +277,13 @@ public:
       typename connection_list_type::value_type(remote_instance_id, c));
     c->do_connect();
     full_update(remote_instance_id);
+  }
+
+  const ID& get_peer_id(const ID& instance_id)
+  {
+    typename connection_list_type::iterator item = connection_list_.find(instance_id);
+    assert(item != connection_list_.end());
+    return item->second->peer_id();
   }
 
 protected:
