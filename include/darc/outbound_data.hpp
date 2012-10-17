@@ -70,6 +70,24 @@ public:
 };
 
 template<typename S, typename T>
+class outbound_ptr: public outbound_data_base, boost::noncopyable
+{
+protected:
+  const boost::shared_ptr<const T> data_;
+
+public:
+  outbound_ptr(const boost::shared_ptr<const T> data) :
+    data_(data)
+  {
+  }
+
+  virtual void pack(buffer::shared_buffer& buffer) const
+  {
+    S::template pack<T>(buffer, *data_);
+  }
+};
+
+template<typename S, typename T>
 class outbound_list : public outbound_data_base, boost::noncopyable
 {
 protected:

@@ -39,8 +39,6 @@
 #include <darc/outbound_data.hpp>
 #include <darc/inbound_data.hpp>
 #include <darc/id_arg.hpp>
-#include <darc/serializer/boost.hpp>
-#include <darc/buffer/const_size_buffer.hpp>
 
 #include <boost/make_shared.hpp>
 
@@ -51,8 +49,8 @@ namespace darc
 namespace distributed_container
 {
 
-container_manager::container_manager(send_to_function_type send_to_function) :
-  send_to_function_(send_to_function)
+container_manager::container_manager(darc::peer& p) :
+  darc::peer_service(p, 15)
 {
 }
 
@@ -66,7 +64,7 @@ void container_manager::detatch(container_base* entry)
   list_.erase(entry->id());
 }
 
-void container_manager::recv(const ID& src_location_id, buffer::shared_buffer data)
+void container_manager::recv(const ID& peer_id, buffer::shared_buffer data)
 {
   inbound_data<serializer::boost_serializer, header_packet> i_hdr(data);
 
@@ -74,7 +72,7 @@ void container_manager::recv(const ID& src_location_id, buffer::shared_buffer da
   if(item1 == instance_location_map.end())
   {
     instance_location_map.insert(
-      instance_location_map_type::value_type(i_hdr.get().src_instance_id, src_location_id));
+      instance_location_map_type::value_type(i_hdr.get().src_instance_id, peer_id));
   }
 
   list_type::iterator item = list_.find(i_hdr.get().dest_instance_id);
@@ -84,7 +82,7 @@ void container_manager::recv(const ID& src_location_id, buffer::shared_buffer da
       "DistributedManager",
       "Data recv for", beam::arg<ID>(i_hdr.get().dest_instance_id));
 
-    item->second->recv(src_location_id, i_hdr.get(), data);
+    item->second->recv(peer_id, i_hdr.get(), data);
   }
   else
   {
@@ -128,8 +126,6 @@ void container_manager::send_to_location(const ID& src_instance_id,
     "Dst Loca", beam::arg<ID>(dest_location_id),
     "Dst Inst", beam::arg<ID>(dest_instance_id));
 
-  buffer::shared_buffer buffer = boost::make_shared<buffer::const_size_buffer>(2048);
-
   header_packet hdr;
   hdr.src_instance_id = src_instance_id;
   hdr.dest_instance_id = dest_instance_id;
@@ -138,9 +134,7 @@ void container_manager::send_to_location(const ID& src_instance_id,
   outbound_data<serializer::boost_serializer, header_packet> o_hdr(hdr);
   outbound_pair o_pair(o_hdr, data);
 
-  o_pair.pack(buffer);
-
-  send_to_function_(dest_location_id, buffer);
+  send_to(dest_location_id, o_pair);
 }
 
 }

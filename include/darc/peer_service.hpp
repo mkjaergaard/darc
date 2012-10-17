@@ -18,19 +18,22 @@ protected:
 			       service_type,
 			       darc::buffer::shared_buffer)> send_to_function_type;
   peer& peer_;
+  service_type service_id_;
 
 public:
   virtual void recv(const darc::ID& src_peer_id,
-		    service_type,
 		    darc::buffer::shared_buffer data) = 0;
 
-  peer_service(darc::peer& p) :
-    peer_(p)
-  {}
-
-  void send_to(const ID& peer_id, service_type service, darc::buffer::shared_buffer data)
+  peer_service(darc::peer& p, service_type service_id) :
+    peer_(p),
+    service_id_(service_id)
   {
-    peer_.send_to(peer_id, service, data);
+    peer_.attach(service_id, this);
+  }
+
+  void send_to(const ID& peer_id, const outbound_data_base& data)
+  {
+    peer_.send_to(peer_id, service_id_, data);
   }
 
 

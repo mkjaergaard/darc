@@ -20,6 +20,7 @@ add_library(darc_common
   src/id_arg.cpp
   src/container_manager.cpp
   src/container_base.cpp
+  src/peer.cpp
 )
 
 target_link_libraries(darc_common ${Boost_LIBRARIES} ${beam_LIBRARIES} -lstdc++)
