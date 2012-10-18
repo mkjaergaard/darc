@@ -55,6 +55,7 @@
 
 #include <beam/static_scope.hpp>
 #include <darc/id_arg.hpp>
+#include <beam/assert.hpp>
 
 namespace boost
 {
@@ -388,7 +389,11 @@ void connection<Key, T>::handle_update(const header_packet& header,
   else if(update.start_index != last_received_index_ + 1)
   {
     // todo: request full update
-    assert(false);
+    beam::glog<beam::Fatal>("shared_set, incorrect index",
+			    "set_id", beam::arg<ID>(parent_->id()),
+			    "update.start_index", beam::arg<int>(update.start_index),
+			    "last_received_index_ + 1", beam::arg<int>(last_received_index_ + 1));
+    BEAM_ASSERT(false);
   }
   last_received_index_ = update.end_index;
 
