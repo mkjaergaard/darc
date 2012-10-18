@@ -36,6 +36,9 @@
 #pragma once
 
 #include <darc/buffer/shared_buffer.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+
 
 namespace darc
 {
@@ -53,6 +56,26 @@ public:
   }
 
   T& get()
+  {
+    return value_;
+  }
+
+};
+
+template<typename S, typename T>
+class inbound_data_ptr
+{
+protected:
+  boost::shared_ptr<T> value_;
+
+public:
+  inbound_data_ptr(buffer::shared_buffer& buffer)
+  {
+    value_ = boost::make_shared<T>();
+    S::unpack(buffer, *value_);
+  }
+
+  boost::shared_ptr<T>& get()
   {
     return value_;
   }

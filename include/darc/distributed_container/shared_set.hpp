@@ -386,7 +386,8 @@ void connection<Key, T>::handle_update(const header_packet& header,
     // todo: handle more intelligent since this might cause duplicate callbacks
     list_.clear();
   }
-  else if(update.start_index != last_received_index_ + 1)
+  else if(update.start_index != last_received_index_ + 1 &&
+	  update.start_index != last_sent_index_ + 1)
   {
     // todo: request full update
     beam::glog<beam::Fatal>("shared_set, incorrect index",
