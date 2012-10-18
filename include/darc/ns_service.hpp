@@ -20,8 +20,6 @@ namespace darc
 class ns_service : public darc::peer_service
 {
 protected:
-  const static int service_type_id = 55;
-
   local_ns_ptr root_ns_;
   namespace_handle root_handle_;
 
@@ -81,7 +79,7 @@ public:
 
 public:
   ns_service(peer& p, distributed_container::container_manager * container_manager) :
-    peer_service(p),
+    peer_service(p, 37),
     container_manager_(container_manager),
     root_ns_(local_ns::create(this, container_manager, ".")),
     root_handle_(boost::make_shared<namespace_handle_impl>(boost::ref(root_ns_)))
@@ -170,7 +168,6 @@ public:
   }
 
   void recv(const darc::ID& src_peer_id,
-	    service_type,
 	    darc::buffer::shared_buffer data)
   {
     inbound_data<serializer::boost_serializer, payload_header_packet> i_hdr(data);
@@ -192,8 +189,6 @@ public:
 
   void connect(const ID& dest_peer_id)
   {
-    buffer::shared_buffer buffer = boost::make_shared<buffer::const_size_buffer>(2048); // todo
-
     payload_header_packet hdr;
     hdr.payload_type = ns_connect_packet::payload_id;
     outbound_data<serializer::boost_serializer, payload_header_packet> o_hdr(hdr);
@@ -204,9 +199,7 @@ public:
 
     outbound_pair o_pair(o_hdr, o_cnt);
 
-    o_pair.pack(buffer);
-
-    send_to(dest_peer_id, service_type_id, buffer);
+    send_to(dest_peer_id, o_pair);
   }
 
 };
