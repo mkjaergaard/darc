@@ -11,6 +11,11 @@ struct message_packet
 
   darc::ID tag_id;
 
+  message_packet() :
+    tag_id(ID::create())
+  {
+  }
+
   message_packet(const darc::ID& tag_id) :
     tag_id(tag_id)
   {

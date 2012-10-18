@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <darc/test/two_peer_sim.hpp>
 #include <darc/publisher.hpp>
 #include <darc/subscriber.hpp>
 #include <darc/local_dispatcher.hpp>
@@ -7,58 +8,21 @@
 
 #include <darc/id.hpp>
 
-class PubSubTest : public testing::Test
+class PubSubTest : public darc::test::two_peer_sim, public testing::Test
 {
 public:
-//  boost::asio::io_service io_service_;
-
-  darc::peer peer1;
-  darc::peer peer2;
   darc::distributed_container::container_manager mngr1;
   darc::distributed_container::container_manager mngr2;
   darc::ns_service ns1;
   darc::ns_service ns2;
 
   PubSubTest() :
-    mngr1(boost::bind(&PubSubTest::send_to_node2_, this, _1, _2)),
-    mngr2(boost::bind(&PubSubTest::send_to_node1_, this, _1, _2)),
+    mngr1(peer1),
+    mngr2(peer2),
     ns1(peer1, &mngr1),
     ns2(peer2, &mngr2)
   {
-    peer1.set_send_to_function(
-      boost::bind(&PubSubTest::send_to_node2, this, _1, _2, _3));
-    peer2.set_send_to_function(
-      boost::bind(&PubSubTest::send_to_node1, this, _1, _2, _3));
   }
-
-  void send_to_node1(const darc::ID& destination,
-		     uint32_t service,
-		     darc::buffer::shared_buffer data)
-  {
-    beam::glog<beam::Info>("Data Received from node 2---");
-    ns1.recv(peer2.id(), service, data);
-  }
-
-  void send_to_node2(const darc::ID& destination,
-		     uint32_t service,
-		     darc::buffer::shared_buffer data)
-  {
-    beam::glog<beam::Info>("Data Received from node 1---");
-    ns2.recv(peer1.id(), service, data);
-  }
-
-  void send_to_node1_(const darc::ID& destination, darc::buffer::shared_buffer data)
-  {
-    beam::glog<beam::Info>("Data Received from node 2");
-    mngr1.recv(peer2.id(), data);
-  }
-
-  void send_to_node2_(const darc::ID& destination, darc::buffer::shared_buffer data)
-  {
-    beam::glog<beam::Info>("Data Received from node 1");
-    mngr2.recv(peer1.id(), data);
-  }
-
 };
 
 void handler(const boost::shared_ptr<const int> &data)

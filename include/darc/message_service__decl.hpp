@@ -2,6 +2,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
+#include <boost/asio.hpp>
 #include <darc/basic_local_dispatcher__fwd.hpp>
 #include <boost/bind.hpp>
 
@@ -41,9 +42,9 @@ public:
 
 public:
   MessageService(peer& p, boost::asio::io_service& io_service, ns_service& ns_service) :
-    peer_service(p),
+    peer_service(p, 13),
     io_service_(io_service),
-    remote_dispatcher_(p),
+    remote_dispatcher_(this),
     nameserver_(ns_service)
   {
   }
@@ -52,10 +53,9 @@ public:
   // Remap peer_service calls to remote_dispatcher
   //
   void recv(const darc::ID& src_peer_id,
-	    service_type service,
 	    darc::buffer::shared_buffer data)
   {
-    remote_dispatcher_.recv(src_peer_id, service, data);
+    remote_dispatcher_.recv(src_peer_id, data);
   }
 
   // /////////////////////////////////////////////
@@ -70,6 +70,9 @@ public:
   void new_tag_event(ID tag_id,
 		     ID alias_id,
 		     ID peer_id);
+
+  void remote_message_recv(const ID& tag_id,
+			   darc::buffer::shared_buffer data);
 
   template<typename T>
   LocalDispatcher<T>* attach(PublisherImpl<T> &publisher, const std::string &topic);

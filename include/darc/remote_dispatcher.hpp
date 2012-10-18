@@ -12,6 +12,8 @@
 namespace darc
 {
 
+class MessageService; //fwd
+
 class RemoteDispatcher
 {
 protected:
@@ -22,7 +24,7 @@ protected:
   typedef std::map</*tag*/ID, remote_tag_list_type_ptr> remote_list_type;
 
   remote_list_type list_;
-  peer& peer_;
+  MessageService * parent_service_;
 
 protected:
   void handle_subscribe_packet(const darc::ID& src_peer_id,
@@ -31,22 +33,20 @@ protected:
   }
 
   void handle_message_packet(const darc::ID& src_peer_id,
-			     darc::buffer::shared_buffer data)
-  {
-  }
+			     darc::buffer::shared_buffer data);
 
 public:
-  RemoteDispatcher(peer& p) :
-    peer_(p)
+  RemoteDispatcher(MessageService* parent) :
+    parent_service_(parent)
   {
   }
 
   void recv(const darc::ID& src_peer_id,
-	    darc::service_type service_id,
 	    darc::buffer::shared_buffer data)
   {
-    darc::inbound_data<darc::serializer::boost_serializer, uint32_t> payload_type_i(data);
-    switch(payload_type_i.get())
+    darc::inbound_data<darc::serializer::boost_serializer,
+		       payload_header_packet> payload_type_i(data);
+    switch(payload_type_i.get().payload_type)
     {
     case subscribe_packet::payload_id:
     {
@@ -59,6 +59,9 @@ public:
     }
     break;
     default:
+      beam::glog<beam::Fatal>
+	("Unknown payload",
+	 "payload_id:", beam::arg<int>(payload_type_i.get().payload_type));
       assert(0);
     }
   }
@@ -92,18 +95,16 @@ public:
 	  it++)
       {
 	// todo: here we send a copy to all
-	send_msg(tag_id, it->first, msg);
+	send_msg(/*tag_id*/it->second, it->first, msg);
       }
     }
   }
 
+  void send_to(const ID& peer_id, const outbound_data_base& data);
+
   template<typename T>
   void send_msg(const ID& tag_id, const ID& peer_id, const boost::shared_ptr<const T> &msg)
   {
-
-    // todo move to peer_service
-    buffer::shared_buffer buffer = boost::make_shared<buffer::const_size_buffer>(1024*10); // todo
-
     payload_header_packet hdr;
     hdr.payload_type = message_packet::payload_id;
     outbound_data<serializer::boost_serializer, payload_header_packet> o_hdr(hdr);
@@ -116,9 +117,7 @@ public:
     outbound_pair o_pair1(o_hdr, o_msg_hdr);
     outbound_pair o_pair2(o_pair1, o_msg);
 
-    o_pair2.pack(buffer);
-
-    peer_.send_to(peer_id, 52, buffer);
+    send_to(peer_id, o_pair2);
   }
 
 };

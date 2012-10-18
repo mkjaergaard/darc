@@ -45,6 +45,21 @@ void MessageService::new_tag_event(ID tag_id,
   }
 }
 
+void MessageService::remote_message_recv(const ID& tag_id,
+					 darc::buffer::shared_buffer data)
+{
+  DispatcherGroupListType::iterator elem =
+    dispatcher_group_list_.find(tag_id);
+  if(elem != dispatcher_group_list_.end())
+  {
+    elem->second->remote_message_recv(tag_id, data);
+  }
+  else
+  {
+    beam::glog<beam::Warning>("message_service: remote msg for unknown tag id",
+			      "tag_id", beam::arg<ID>(tag_id));
+  }
+}
 
 template<typename T>
 LocalDispatcher<T>* MessageService::attach(PublisherImpl<T> &publisher,

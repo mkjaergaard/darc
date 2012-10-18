@@ -8,6 +8,9 @@
 
 #include <beam/glog.hpp>
 
+#include <darc/inbound_data.hpp>
+#include <darc/serializer/boost.hpp>
+
 namespace darc
 {
 
@@ -19,6 +22,8 @@ public:
   }
 
   virtual void join(boost::shared_ptr<BasicDispatcherGroup> b_group) {};
+  virtual void remote_message_recv(const ID& tag_id,
+				   darc::buffer::shared_buffer data) = 0;
 
 };
 
@@ -86,6 +91,12 @@ public:
 
   void dispatchToGroup(const ID& tag_id, const boost::shared_ptr<const T> &msg)
   {
+    dispatchLocallyToGroup(tag_id, msg);
+    remote_dispatcher_->dispatch_remotely(tag_id, msg);
+  }
+
+  void dispatchLocallyToGroup(const ID& tag_id, const boost::shared_ptr<const T> &msg)
+  {
     beam::glog<beam::Info>("dispatchToGroup");
     for(typename DispatcherListType::iterator it = dispatcher_list_.begin();
 	it != dispatcher_list_.end();
@@ -94,9 +105,14 @@ public:
       beam::glog<beam::Info>("dispatchLocally");
       it->second->dispatchLocally(msg);
     }
-    remote_dispatcher_->dispatch_remotely(tag_id, msg);
   }
 
+  void remote_message_recv(const ID& tag_id,
+			   darc::buffer::shared_buffer data)
+  {
+    inbound_data_ptr<serializer::boost_serializer, T> i_msg(data);
+    dispatchLocallyToGroup(tag_id, i_msg.get());
+  }
 
   // split
 
