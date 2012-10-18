@@ -4,6 +4,7 @@
 #include <darc/inbound_data.hpp>
 #include <darc/serializer/boost.hpp>
 
+#include <darc/payload_header_packet.hpp>
 #include <darc/message_packet.hpp>
 #include <darc/subscribe_packet.hpp>
 #include <darc/peer.hpp>
@@ -99,7 +100,25 @@ public:
   template<typename T>
   void send_msg(const ID& tag_id, const ID& peer_id, const boost::shared_ptr<const T> &msg)
   {
-    
+
+    // todo move to peer_service
+    buffer::shared_buffer buffer = boost::make_shared<buffer::const_size_buffer>(1024*10); // todo
+
+    payload_header_packet hdr;
+    hdr.payload_type = message_packet::payload_id;
+    outbound_data<serializer::boost_serializer, payload_header_packet> o_hdr(hdr);
+
+    message_packet msg_hdr(tag_id);
+    outbound_data<serializer::boost_serializer, message_packet> o_msg_hdr(msg_hdr);
+
+    outbound_ptr<serializer::boost_serializer, T> o_msg(msg);
+
+    outbound_pair o_pair1(o_hdr, o_msg_hdr);
+    outbound_pair o_pair2(o_pair1, o_msg);
+
+    o_pair2.pack(buffer);
+
+    peer_.send_to(peer_id, 52, buffer);
   }
 
 };
