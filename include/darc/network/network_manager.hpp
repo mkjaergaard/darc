@@ -36,10 +36,16 @@
 #pragma once
 
 #include <boost/regex.hpp>
-//#include <darc/network/link_manager_callback_if.h>
-//#include <darc/network/inbound_link.h>
-//#include <darc/network/udp/protocol_manager.h>
-//#include <darc/network/zmq/protocol_manager.h>
+#include <boost/asio.hpp>
+#include <darc/peer.hpp>
+#include <darc/id.hpp>
+#include <darc/inbound_data.hpp>
+#include <darc/serializer/boost.hpp>
+#include <darc/network/protocol_manager_base.hpp>
+#include <darc/network/link_header_packet.hpp>
+#include <beam/glog.hpp>
+#include <darc/id_arg.hpp>
+#include <darc/network/zmq/protocol_manager.hpp>
 
 namespace darc
 {
@@ -49,13 +55,13 @@ namespace network
 typedef ID NodeID;
 typedef ID ConnectionID;
 
-class network_manager// : public network_managerCallbackIF
+class network_manager
 {
 private:
-  NodeID node_id_;
+  peer& peer_;
 
   // Protocol Managers
-  //zeromq::ProtocolManager zmq_manager_;
+  zeromq::ProtocolManager zmq_manager_;
 
   // Map "protocol" -> Manager
   typedef std::map<const std::string, ProtocolManagerBase*> ManagerProtocolMapType;
@@ -69,75 +75,41 @@ private:
   typedef std::map<const NodeID, const ConnectionID> NeighbourNodesType; // NodeID -> OutboundID
   NeighbourNodesType neighbour_nodes_;
 
-  // Callbacks to handlers of certain packet types
-  typedef boost::function< void(const packet::Header&, SharedBuffer, std::size_t) > PacketReceivedHandlerType;
-  std::map< packet::Header::PayloadType, PacketReceivedHandlerType > packet_received_handlers_;
-
-  // Event Callbacks
-  typedef boost::function< void(const ID&) > NewRemoteNodeListenerType;
-  typedef std::vector< NewRemoteNodeListenerType > NewRemoteNodeListenerListType;
-  NewRemoteNodeListenerListType new_remote_node_listeners_;
-
 public:
-  network_manager(boost::asio::io_service * io_service, NodeID& node_id) :
-    node_id_(node_id),
-    udp_manager_(io_service, this),
-    zmq_manager_(io_service, this)
+  network_manager(boost::asio::io_service &io_service, darc::peer& p) :
+    peer_(p),
+    zmq_manager_(io_service, this, p)
   {
-    // Link protocol names and protocol managers
-    manager_protocol_map_["udp"] = &udp_manager_;
+    peer_.set_send_to_function(boost::bind(&network_manager::sendPacket, this, _1, _2));
     manager_protocol_map_["zmq+tcp"] = &zmq_manager_;
   }
 
-  void addNewRemoteNodeListener(NewRemoteNodeListenerType listener)
-  {
-    new_remote_node_listeners_.push_back(listener);
-  }
-
-  // Impl of CallbackIF
-  const NodeID& getNodeID()
-  {
-    return node_id_;
-  }
-
-  void getRemoteNodeList(std::vector<NodeID>& node_list)
-  {
-    node_list.clear();
-    for(NeighbourNodesType::iterator it = neighbour_nodes_.begin();
-	it != neighbour_nodes_.end();
-	it++)
-    {
-      node_list.push_back(it->first);
-    }
-  }
-
-  void sendPacket(packet::Header::PayloadType type, const NodeID& recv_node_id, SharedBuffer buffer, std::size_t data_len)
+  void sendPacket(const NodeID& recv_node_id, buffer::shared_buffer data)
   {
     // ID::null means we send to all nodes
     if( recv_node_id == ID::null() )
     {
+      assert(false);
+/*
       for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
       {
 	zmq_manager_.sendPacket(it->second, type, it->first, buffer, data_len );
       }
+*/
     }
     else
     {
       NeighbourNodesType::iterator item = neighbour_nodes_.find(recv_node_id);
       if(item != neighbour_nodes_.end())
       {
-	zmq_manager_.sendPacket(item->second, type, item->first, buffer, data_len );
+	zmq_manager_.sendPacket(item->second, recv_node_id, link_header_packet::SERVICE, data);
       }
       else
       {
-	DARC_WARNING("Trying to send packet to unknown node: %s", recv_node_id.short_string().c_str());
+	beam::glog<beam::Warning>("network_manager: sending packet to unknown peer_id",
+				  "peer_id", beam::arg<ID>(recv_node_id));
       }
     }
-  }
-
-  void registerPacketReceivedHandler(packet::Header::PayloadType type, PacketReceivedHandlerType handler)
-  {
-    packet_received_handlers_[type] = handler;
   }
 
   void accept(const std::string& url)
@@ -155,12 +127,14 @@ public:
 	}
 	else
 	{
-	  DARC_ERROR("Unsupported Protocol: %s in %s", std::string(what[1]).c_str(), url.c_str());
+	  beam::glog<beam::Error>("network_manager: unsupported protocol",
+				  "url", beam::arg<std::string>(url));
 	}
       }
       else
       {
-	DARC_ERROR("Invalid URL: %s", url.c_str());
+	  beam::glog<beam::Error>("network_manager: invalid url",
+				  "url", beam::arg<std::string>(url));
       }
     }
     catch(std::exception& e) //todo: handle the possible exceptions
@@ -183,12 +157,14 @@ public:
 	}
 	else
 	{
-	  DARC_ERROR("Unsupported Protocol: %s in %s", std::string(what[1]).c_str(), url.c_str());
+	  beam::glog<beam::Error>("network_manager: unsupported protocol",
+				  "url", beam::arg<std::string>(url));
 	}
       }
       else
       {
-	DARC_ERROR("Invalid URL: %s", url.c_str());
+	beam::glog<beam::Error>("network_manager: invalid url",
+				"url", beam::arg<std::string>(url));
       }
     }
     catch(std::exception& e) //todo: handle the possible exceptions
@@ -197,97 +173,19 @@ public:
     }
   }
 
+  void discover_reply_received(const ID& src_peer_id, ID& connection_id)
+  {
+    //todo: check if it exists already
+    neighbour_nodes_.insert(NeighbourNodesType::value_type(src_peer_id, connection_id));
+    peer_.peer_connected(src_peer_id);
+  }
+
+  void service_packet_received(const ID& src_peer_id, buffer::shared_buffer data)
+  {
+    peer_.recv(src_peer_id, data);
+  }
+
 private:
-  void handleDiscoverPacket(const NodeID& sender_node_id, InboundLink * source_link, SharedBuffer buffer, std::size_t data_len)
-  {
-    packet::Discover discover;
-    discover.read(buffer.data(), data_len);
-    source_link->sendDiscoverReply(discover.link_id, sender_node_id);
-    DARC_INFO("DISCOVER from node %s (%s) on inbound %s",
-	      sender_node_id.short_string().c_str(),
-	      discover.link_id.short_string().c_str(),
-	      "todo");
-	       
-    // If we received a DISCOVER from a node we dont know that we have a direct link to, send a DISCOVER back
-    if(neighbour_nodes_.count(sender_node_id) == 0)
-    {
-      source_link->sendDiscoverToAll();
-    }
-  }
-
-  void handleDiscoverReplyPacket(const NodeID& sender_node_id, const ConnectionID& inbound_id, SharedBuffer buffer, std::size_t data_len)
-  {
-    // todo: check that we have such inbound link!
-    packet::DiscoverReply discover_reply;
-    discover_reply.read(buffer.data(), data_len);
-    DARC_INFO("Found Node %s on outbound connection %s", sender_node_id.short_string().c_str(), discover_reply.link_id.short_string().c_str() );
-    neighbour_nodes_.insert(NeighbourNodesType::value_type(sender_node_id, discover_reply.link_id));
-    // Notify
-    for(NewRemoteNodeListenerListType::iterator it = new_remote_node_listeners_.begin();
-	it != new_remote_node_listeners_.end();
-	it++)
-    {
-      (*it)(sender_node_id);
-    }
-
-  }
-
-  void receiveHandler(const ConnectionID& inbound_id, InboundLink * source_link, SharedBuffer buffer, std::size_t data_len)
-  {
-    assert(false);
-  }
-
-  void receiveHandler(const ConnectionID& inbound_id,
-		      InboundLink * source_link,
-		      SharedBuffer header_buffer,
-		      std::size_t header_data_len,
-		      SharedBuffer buffer,
-		      std::size_t data_len)
-
-  {
-    packet::Header header;
-    header.read(header_buffer.data(), header_data_len);
-
-    // Discard packages not to us, or from self, e.g. due to multicasting
-    if((header.recv_node_id != ID::null() && header.recv_node_id != getNodeID()) ||
-       header.sender_node_id == getNodeID())
-    {
-      return;
-    }
-
-    // Switch on packet type
-    switch(header.payload_type)
-    {
-      case packet::Header::MSG_SUBSCRIBE:
-      case packet::Header::MSG_PUBLISH_INFO:
-      case packet::Header::MSG_PACKET:
-      case packet::Header::PROCEDURE_ADVERTISE:
-      case packet::Header::PROCEDURE_CALL:
-      case packet::Header::PROCEDURE_FEEDBACK:
-      case packet::Header::PROCEDURE_RESULT:
-      {
-	// todo: verify we have a listener
-	packet_received_handlers_[header.payload_type]( header, buffer, data_len );
-	break;
-      }
-      case packet::Header::DISCOVER_PACKET:
-      {
-	handleDiscoverPacket(header.sender_node_id, source_link, buffer, data_len);
-	break;
-      }
-      case packet::Header::DISCOVER_REPLY_PACKET:
-      {
-	handleDiscoverReplyPacket(header.sender_node_id, inbound_id, buffer, data_len);
-	break;
-      }
-      default:
-      {
-	DARC_WARNING("Unknown packet type received %u", header.payload_type);
-	break;
-      }
-    }
-  }
-
   // Get the protocol manager from a protocol name
   ProtocolManagerBase * getManager(const std::string& protocol)
   {
@@ -306,5 +204,3 @@ private:
 
 }
 }
-
-#endif

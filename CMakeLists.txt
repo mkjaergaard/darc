@@ -21,6 +21,8 @@ add_library(darc_common
   src/container_manager.cpp
   src/container_base.cpp
   src/peer.cpp
+  src/network/inbound_link_base.cpp
+  src/network/zmq/protocol_manager.cpp
 )
 
 target_link_libraries(darc_common ${Boost_LIBRARIES} ${beam_LIBRARIES} -lstdc++)
@@ -36,3 +38,7 @@ target_link_libraries(darc_common_gtest_distributed darc_common ${GTEST_BOTH_LIB
 # Add test cpp file
 catkin_add_gtest(darc_common_gtest_shared_set test/shared_set_gtest.cpp)
 target_link_libraries(darc_common_gtest_shared_set darc_common ${GTEST_BOTH_LIBRARIES})
+
+# Add test cpp file
+catkin_add_gtest(darc_common_gtest_network test/network_test.cpp)
+target_link_libraries(darc_common_gtest_network darc_common ${GTEST_BOTH_LIBRARIES} -lzmq)

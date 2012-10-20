@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2012, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,57 +28,71 @@
  */
 
 /**
- * DARC ProtocolManagerBase class
+ * DARC ZeroMQ LinkManager class
  *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_NETWORK_PROTOCOL_MANAGER_BASE_H__
-#define __DARC_NETWORK_PROTOCOL_MANAGER_BASE_H__
+#pragma once
 
-#include <string>
-#include <darc/network/link_manager_callback_if.h>
-#include <darc/network/id_types.h>
-#include <darc/shared_buffer_array.h>
-
-#include <darc/network/packet/discover.h> 
+#include <zmq.hpp>
+#include <boost/asio.hpp> // do we really need asio is this?
+#include <boost/thread.hpp>
+#include <darc/peer.hpp>
+#include <darc/network/protocol_manager_base.hpp>
+#include <darc/network/inbound_link_base.hpp>
 
 namespace darc
 {
 namespace network
 {
 
-class ProtocolManagerBase
+typedef ConnectionID ID;
+
+class network_manager;
+
+namespace zeromq
 {
-protected:
-  ProtocolManagerBase()
-  {
-  }
+
+class ProtocolManager : public ProtocolManagerBase, public inbound_link_base
+{
+private:
+  boost::asio::io_service * io_service_;
+  peer& peer_;
+  zmq::context_t context_;
+
+  ConnectionID inbound_id_;
+  zmq::socket_t subscriber_socket_;
+  boost::thread recv_thread_;
+
+  typedef boost::shared_ptr<zmq::socket_t> SocketPtr;
+  typedef std::map<const ConnectionID, SocketPtr> OutboundConnectionListType;
+
+  OutboundConnectionListType outbound_connection_list_;
 
 public:
-  virtual ~ProtocolManagerBase() {}
+  ProtocolManager(boost::asio::io_service& io_service, network_manager * manager, peer& p);
 
-  virtual const ID& accept(const std::string& protocol, const std::string& url) = 0;
-  virtual void connect(const std::string& protocol, const std::string& url) = 0;
-
-  virtual void sendPacket(const ConnectionID& outbound_id,
-			  packet::Header::PayloadType type, const NodeID& recv_node_id,
-			  SharedBuffer buffer, std::size_t data_len) = 0;
-/*
-  void sendDiscover(const ID& outbound_id)
+  ~ProtocolManager()
   {
-    std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBufferArray::create(data_len);
-
-    // Create packet
-    network::packet::Discover discover(outbound_id);
-    std::size_t len = discover.write(buffer.data(), buffer.size());
-    sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
   }
-*/
+
+  void sendPacket(const ConnectionID& outbound_id,
+		  const ID& dest_peer_id,
+		  const uint16_t packet_type,
+		  buffer::shared_buffer data);
+
+  virtual void send_packet_to_all(const uint16_t packet_type,
+				  buffer::shared_buffer data);
+
+  const ConnectionID& accept(const std::string& protocol, const std::string& url);
+  void connect(const std::string& protocol, const std::string& url);
+
+protected:
+  void work();
+
 };
 
+} // namespace zeromq
 } // namespace network
 } // namespace darc
-
-#endif

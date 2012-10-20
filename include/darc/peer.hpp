@@ -53,6 +53,10 @@ public:
 
   void recv(const ID& src_peer_id, buffer::shared_buffer data);
 
+  void peer_connected(const ID& peer_id)
+  {
+  }
+
   virtual void set_send_to_function(send_to_function_type send_to_function)
   {
     send_to_function_ = send_to_function;
