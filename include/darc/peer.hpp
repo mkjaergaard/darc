@@ -4,6 +4,7 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/signal.hpp>
 #include <darc/buffer/shared_buffer.hpp>
 #include <darc/buffer/const_size_buffer.hpp>
 #include <darc/id.hpp>
@@ -28,14 +29,23 @@ protected:
   typedef boost::function<void(const darc::ID&,
 			       darc::buffer::shared_buffer)> send_to_function_type;
 
+  typedef boost::signal<void(const ID&)> peer_connected_signal_type;
+
   send_to_function_type send_to_function_;
   ID id_;
   service_list_type service_list_;
+
+  peer_connected_signal_type peer_connected_signal_;
 
 public:
   peer() :
     id_(ID::create())
   {}
+
+  peer_connected_signal_type& peer_connected_signal()
+  {
+    return peer_connected_signal_;
+  }
 
   void send_to(const ID& peer_id, service_type service, const outbound_data_base& data)
   {
@@ -55,6 +65,7 @@ public:
 
   void peer_connected(const ID& peer_id)
   {
+    peer_connected_signal_(peer_id);
   }
 
   virtual void set_send_to_function(send_to_function_type send_to_function)
