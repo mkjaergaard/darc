@@ -8,6 +8,8 @@
 
 #include <darc/id.hpp>
 
+#include <boost/make_shared.hpp>
+
 namespace darc
 {
 
@@ -53,29 +55,42 @@ template<typename T>
 class Publisher
 {
 private:
-  boost::scoped_ptr<PublisherImpl<T> > impl_;
+  boost::shared_ptr<PublisherImpl<T> > impl_;
 
 public:
+  Publisher()
+  {
+  }
+
   Publisher(boost::asio::io_service &io_service,
 	    MessageService &message_service) :
-    impl_(new PublisherImpl<T>(io_service,
-				       message_service))
+    impl_(boost::make_shared<PublisherImpl<T> >(boost::ref(io_service),
+						boost::ref(message_service)))
   {
   }
 
   void publish(const boost::shared_ptr<const T> &msg)
   {
-    impl_->publish(msg);
+    if(impl_.get() != 0)
+    {
+      impl_->publish(msg);
+    }
   }
 
   void attach(const std::string& topic)
   {
-    impl_->attach(topic);
+    if(impl_.get() != 0)
+    {
+      impl_->attach(topic);
+    }
   }
 
   void detach()
   {
-    impl_->detach();
+    if(impl_.get() != 0)
+    {
+      impl_->detach();
+    }
   }
 
 };

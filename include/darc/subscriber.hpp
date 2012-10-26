@@ -15,13 +15,17 @@ namespace darc
 template<typename T>
 class SubscriberImpl
 {
+public:
+  typedef void(callback_type)(const boost::shared_ptr<const T>&);
+  typedef boost::function<callback_type> callback_functor_type;
+
 private:
   boost::asio::io_service &io_service_;
   MessageService &message_service_;
 
   LocalDispatcher<T> * dispatcher_; // ptr type?
 
-  boost::signal<void(const boost::shared_ptr<const T>&)> callback_;
+  boost::signal<callback_type> callback_;
 
 public:
   SubscriberImpl(boost::asio::io_service &io_service,
@@ -42,7 +46,7 @@ public:
     dispatcher_ = 0;
   }
 
-  void addCallback(boost::function<void(const boost::shared_ptr<const T>&)> handler)
+  void addCallback(callback_functor_type handler)
   {
     callback_.connect(handler);
   }
@@ -62,30 +66,46 @@ public:
 template<typename T>
 class Subscriber
 {
+public:
+  typedef typename SubscriberImpl<T>::callback_functor_type callback_functor_type;
+
 private:
-  boost::scoped_ptr<SubscriberImpl<T> > impl_;
+  boost::shared_ptr<SubscriberImpl<T> > impl_;
 
 public:
+  Subscriber()
+  {
+  }
+
   Subscriber(boost::asio::io_service &io_service,
 	     MessageService &message_service) :
-    impl_(new SubscriberImpl<T>(io_service,
-					message_service))
+    impl_(boost::make_shared<SubscriberImpl<T> >(boost::ref(io_service),
+						 boost::ref(message_service)))
   {
   }
 
   void attach(const std::string& topic)
   {
-    impl_->attach(topic);
+    if(impl_.get() != 0)
+    {
+      impl_->attach(topic);
+    }
   }
 
   void detach()
   {
-    impl_->detach();
+    if(impl_.get() != 0)
+    {
+      impl_->detach();
+    }
   }
 
   void addCallback(boost::function<void(const boost::shared_ptr<const T>&)> handler)
   {
-    impl_->addCallback(handler);
+    if(impl_.get() != 0)
+    {
+      impl_->addCallback(handler);
+    }
   }
 
 };
