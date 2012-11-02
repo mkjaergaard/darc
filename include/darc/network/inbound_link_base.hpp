@@ -88,7 +88,7 @@ public:
   {
     inbound_data<darc::serializer::boost_serializer, discover_packet> dp_i(data);
 
-    beam::glog<beam::Info>("Received DISCOVER",
+    beam::glog<beam::Debug>("Received DISCOVER",
 			   "peer_id", beam::arg<ID>(src_peer_id),
 			   "remote outbound_id", beam::arg<ID>(dp_i.get().outbound_id));
 

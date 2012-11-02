@@ -121,7 +121,7 @@ const ID& ProtocolManager::accept(const std::string& protocol, const std::string
   assert(protocol == "zmq+tcp");
 
   std::string zmq_url = std::string("tcp://").append(url);
-  beam::glog<beam::Info>("ZeroMQ accepting",
+  beam::glog<beam::Debug>("ZeroMQ accepting",
 			 "URL", beam::arg<std::string>(zmq_url.c_str()));
   subscriber_socket_.bind(zmq_url.c_str());
   subscriber_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
@@ -135,7 +135,7 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
 
   std::string zmq_url = std::string("tcp://").append(url);
 
-  beam::glog<beam::Info>("ZeroMQ connecting",
+  beam::glog<beam::Debug>("ZeroMQ connecting",
 			 "URL", beam::arg<std::string>(zmq_url.c_str()));
 
   SocketPtr publisher_socket = SocketPtr(new ::zmq::socket_t(context_, ZMQ_PUB));
@@ -150,7 +150,7 @@ void ProtocolManager::work()
 {
   while(1)
   {
-    beam::glog<beam::Info>("ZeroMQ Waiting");
+    beam::glog<beam::Debug>("ZeroMQ Waiting");
 
     int64_t more;
     size_t more_size = sizeof(more);
@@ -168,7 +168,7 @@ void ProtocolManager::work()
     header_msg->update_buffer();
     body_msg->update_buffer();
 
-    beam::glog<beam::Info>("ZeroMQ message",
+    beam::glog<beam::Debug>("ZeroMQ message",
 			   "size1", beam::arg<int>(header_msg->size()),
 			   "size2", beam::arg<int>(body_msg->size()));
 

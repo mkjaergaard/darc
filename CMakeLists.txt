@@ -8,8 +8,8 @@ catkin_package(
   LIBRARIES darc_common
 )
 
-find_package(Boost COMPONENTS system thread regex signals serialization)
-find_package(beam)
+find_package(Boost REQUIRED COMPONENTS system thread regex signals serialization)
+find_package(beam REQUIRED)
 
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIRS})
