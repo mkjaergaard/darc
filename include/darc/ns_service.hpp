@@ -1,5 +1,6 @@
 #pragma once
 
+#include <boost/signals/connection.hpp>
 #include <darc/id.hpp>
 #include <darc/peer_service.hpp>
 #include <darc/distributed_container/shared_set.hpp>
@@ -10,7 +11,6 @@
 #include <darc/ns_connect_packet.hpp>
 #include <darc/ns_connect_reply_packet.hpp>
 #include <darc/payload_header_packet.hpp>
-#include <darc/buffer/const_size_buffer.hpp>
 #include <darc/local_ns.hpp>
 #include <darc/tag_parser.hpp>
 
@@ -24,6 +24,8 @@ protected:
   namespace_handle root_handle_;
 
   distributed_container::container_manager * container_manager_;
+
+  boost::signals::connection peer_connected_connection_;
 
   ///////////////////////
   // Debug thingy
@@ -77,6 +79,16 @@ public:
     }
   }
 
+protected:
+  void peer_connected_handler(const ID& peer_id)
+  {
+    // lowest peer_id connects to the highest peer_id
+    if(peer_.id() < peer_id)
+    {
+      connect(peer_id);
+    }
+  }
+
 public:
   ns_service(peer& p, distributed_container::container_manager * container_manager) :
     peer_service(p, 37),
@@ -84,6 +96,7 @@ public:
     root_ns_(local_ns::create(this, container_manager, ".")),
     root_handle_(boost::make_shared<namespace_handle_impl>(boost::ref(root_ns_)))
   {
+    peer_connected_connection_ = p.peer_connected_signal().connect(boost::bind(&ns_service::peer_connected_handler, this, _1));
   }
 
   tag_handle register_tag(namespace_handle ns, const std::string& full_name)
