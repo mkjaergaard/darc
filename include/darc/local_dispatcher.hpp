@@ -54,7 +54,6 @@ public:
 	it != subscribers_.end();
 	it++)
     {
-      beam::glog<beam::Info>("POST");
       (*it)->postCallback(msg);
     }
   }

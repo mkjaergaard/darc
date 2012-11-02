@@ -72,8 +72,6 @@ public:
 
   void join(boost::shared_ptr<BasicDispatcherGroup> b_group)
   {
-    beam::glog<beam::Info>("joining");
-
     boost::shared_ptr<DispatcherGroup<T> > group
       = boost::dynamic_pointer_cast<DispatcherGroup<T> >(b_group);
 
@@ -97,12 +95,10 @@ public:
 
   void dispatchLocallyToGroup(const ID& tag_id, const boost::shared_ptr<const T> &msg)
   {
-    beam::glog<beam::Info>("dispatchToGroup");
     for(typename DispatcherListType::iterator it = dispatcher_list_.begin();
 	it != dispatcher_list_.end();
 	it++)
     {
-      beam::glog<beam::Info>("dispatchLocally");
       it->second->dispatchLocally(msg);
     }
   }
