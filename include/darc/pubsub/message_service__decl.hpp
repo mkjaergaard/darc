@@ -3,15 +3,17 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
 #include <boost/asio.hpp>
-#include <darc/basic_local_dispatcher__fwd.hpp>
+#include <darc/pubsub/basic_local_dispatcher__fwd.hpp>
 #include <boost/bind.hpp>
 
 #include <darc/id.hpp>
 #include <darc/ns_service.hpp>
 #include <darc/peer_service.hpp>
-#include <darc/remote_dispatcher.hpp>
+#include <darc/pubsub/remote_dispatcher.hpp>
 
 namespace darc
+{
+namespace pubsub
 {
 
 // fwd
@@ -86,4 +88,5 @@ public:
 
 };
 
+}
 }

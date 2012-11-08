@@ -1,15 +1,17 @@
 #pragma once
 
-#include <darc/message_service__decl.hpp>
+#include <darc/pubsub/message_service__decl.hpp>
 
 #include <boost/make_shared.hpp>
-#include <darc/dispatcher_group.hpp>
+#include <darc/pubsub/dispatcher_group.hpp>
 
 #include <darc/id.hpp>
 
 typedef darc::ID IDType;
 
 namespace darc
+{
+namespace pubsub
 {
 
 template<typename T>
@@ -60,4 +62,5 @@ DispatcherGroup<T>* MessageService::getDispatcherGroup(const tag_handle& tag)
   }
 }
 
+}
 }

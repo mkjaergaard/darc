@@ -5,11 +5,13 @@
 #include <darc/serializer/boost.hpp>
 
 #include <darc/payload_header_packet.hpp>
-#include <darc/message_packet.hpp>
-#include <darc/subscribe_packet.hpp>
+#include <darc/pubsub/message_packet.hpp>
+#include <darc/pubsub/subscribe_packet.hpp>
 #include <darc/peer.hpp>
 
 namespace darc
+{
+namespace pubsub
 {
 
 class MessageService; //fwd
@@ -122,4 +124,5 @@ public:
 
 };
 
+}
 }

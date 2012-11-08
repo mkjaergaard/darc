@@ -5,11 +5,13 @@
 #include <boost/signals.hpp>
 #include <boost/bind.hpp>
 
-#include <darc/message_service__decl.hpp>
+#include <darc/pubsub/message_service__decl.hpp>
 
 #include <darc/id.hpp>
 
 namespace darc
+{
+namespace pubsub
 {
 
 template<typename T>
@@ -110,4 +112,5 @@ public:
 
 };
 
+}
 }

@@ -4,6 +4,8 @@
 
 namespace darc
 {
+namespace pubsub
+{
 
 struct message_packet
 {
@@ -29,4 +31,5 @@ struct message_packet
 
 };
 
+}
 }

@@ -2,7 +2,10 @@
 
 namespace darc
 {
+namespace pubsub
+{
 
 class BasicLocalDispatcher;
 
+}
 }

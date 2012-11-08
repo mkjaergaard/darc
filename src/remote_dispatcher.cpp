@@ -1,7 +1,9 @@
-#include <darc/remote_dispatcher.hpp>
-#include <darc/message_service.hpp>
+#include <darc/pubsub/remote_dispatcher.hpp>
+#include <darc/pubsub/message_service.hpp>
 
 namespace darc
+{
+namespace pubsub
 {
 
 void RemoteDispatcher::handle_message_packet(const darc::ID& src_peer_id,
@@ -18,4 +20,5 @@ void RemoteDispatcher::send_to(const ID& peer_id, const outbound_data_base& data
   parent_service_->send_to(peer_id, data);
 }
 
+}
 }

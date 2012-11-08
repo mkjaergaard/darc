@@ -1,6 +1,8 @@
-#include <darc/message_service.hpp>
+#include <darc/pubsub/message_service.hpp>
 
 namespace darc
+{
+namespace pubsub
 {
 
 MessageService::MessageService(peer& p, boost::asio::io_service& io_service, ns_service& ns_service) :
@@ -79,4 +81,5 @@ void MessageService::post_new_tag_event(ID tag_id,
   io_service_.post(boost::bind(&MessageService::new_tag_event, this, tag_id, alias_id, peer_id));
 }
 
+}
 }

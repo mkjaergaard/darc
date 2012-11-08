@@ -4,13 +4,15 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/signals.hpp>
 
-#include <darc/message_service__decl.hpp>
+#include <darc/pubsub/message_service__decl.hpp>
 
 #include <darc/id.hpp>
 
 #include <boost/make_shared.hpp>
 
 namespace darc
+{
+namespace pubsub
 {
 
 template<typename T>
@@ -24,7 +26,7 @@ private:
 
 public:
   PublisherImpl(boost::asio::io_service &io_service,
-		MessageService &message_service) :
+                MessageService &message_service) :
     io_service_(io_service),
     message_service_(message_service)
   {
@@ -96,3 +98,5 @@ public:
 };
 
 }
+}
+

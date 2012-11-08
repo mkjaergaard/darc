@@ -1,11 +1,13 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <darc/subscriber.hpp>
-#include <darc/publisher.hpp>
+#include <darc/pubsub/subscriber.hpp>
+#include <darc/pubsub/publisher.hpp>
 #include <darc/tag_handle.hpp>
 
 namespace darc
+{
+namespace pubsub
 {
 
 template<typename T>
@@ -65,4 +67,5 @@ public:
 
 };
 
+}
 }

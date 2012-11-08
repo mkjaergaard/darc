@@ -4,6 +4,8 @@
 
 namespace darc
 {
+namespace pubsub
+{
 
 struct subscribe_packet
 {
@@ -24,4 +26,5 @@ struct subscribe_packet
 
 };
 
+}
 }

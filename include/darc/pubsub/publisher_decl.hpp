@@ -1,3 +1,5 @@
+#if 0
+
 #pragma once
 
 #include <boost/asio.hpp>
@@ -7,6 +9,8 @@
 #include <darc/id.hpp>
 
 namespace darc
+{
+namespace pubsub
 {
 
 typedef IDType darc::ID;
@@ -62,3 +66,5 @@ public:
 };
 
 }
+}
+#endif

@@ -1,12 +1,16 @@
+#if 0
+
 #pragma once
 
 #include <boost/asio.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/signals.hpp>
 
-#inlcude <darc/id.hpp>
+#include <darc/id.hpp>
 
 namespace darc
+{
+namespace pubsub
 {
 
 typedef IDType darc::ID;
@@ -38,3 +42,6 @@ public:
 };
 
 }
+}
+
+#endif

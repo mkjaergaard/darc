@@ -1,10 +1,10 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <darc/local_dispatcher.hpp>
+#include <darc/pubsub/local_dispatcher.hpp>
 
 #include <darc/tag_handle.hpp>
-#include <darc/remote_dispatcher.hpp>
+#include <darc/pubsub/remote_dispatcher.hpp>
 
 #include <beam/glog.hpp>
 
@@ -12,6 +12,8 @@
 #include <darc/serializer/boost.hpp>
 
 namespace darc
+{
+namespace pubsub
 {
 
 class BasicDispatcherGroup
@@ -115,4 +117,5 @@ public:
   // join
 };
 
+}
 }
