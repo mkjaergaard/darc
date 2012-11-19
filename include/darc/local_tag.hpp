@@ -35,13 +35,13 @@ protected:
 
 public:
   local_tag(ns_service *,
-	    const std::string name,
-	    local_ns * parent);
+            const std::string name,
+            local_ns * parent);
 
   static local_tag_ptr create(ns_service *,
-			      const std::string name,
-			      local_ns * parent);
- ~local_tag();
+                              const std::string name,
+                              local_ns * parent);
+  ~local_tag();
 
   void trigger_new_tag(const ID& tag_id, const ID& peer_id)
   {

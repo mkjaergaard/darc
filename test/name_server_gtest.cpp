@@ -23,8 +23,8 @@ public:
 void callback(const darc::ID& id1, const darc::ID& id2)
 {
   beam::glog<beam::Info>("Callback",
-			 "ID1", beam::arg<darc::ID>(id1),
-			 "ID2", beam::arg<darc::ID>(id2));
+                         "ID1", beam::arg<darc::ID>(id1),
+                         "ID2", beam::arg<darc::ID>(id2));
 }
 
 void Step(const std::string& title)

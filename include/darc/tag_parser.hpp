@@ -40,8 +40,8 @@ public:
     tokenizer_(full_tag, seperator_)
   {
     for(tokenizer_type::iterator it = tokenizer_.begin();
-	it != tokenizer_.end();
-	it++)
+        it != tokenizer_.end();
+        it++)
     {
       namespaces_.push_back(*it);
     }

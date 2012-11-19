@@ -5,9 +5,9 @@ namespace darc
 {
 
 local_ns::local_ns(ns_service * service,
-		   distributed_container::container_manager * container_manager,
-		   const std::string name,
-		   local_ns* parent):
+                   distributed_container::container_manager * container_manager,
+                   const std::string name,
+                   local_ns* parent):
   ns_service_(service),
   parent_(parent),
   id_(ID::create()),
@@ -18,14 +18,14 @@ local_ns::local_ns(ns_service * service,
 }
 
 local_ns_ptr local_ns::create(ns_service * ns_service,
-			      distributed_container::container_manager * container_manager,
-			      const std::string name,
-			      local_ns * parent)
+                              distributed_container::container_manager * container_manager,
+                              const std::string name,
+                              local_ns * parent)
 {
   local_ns_ptr ns = boost::make_shared<local_ns>(ns_service,
-						 container_manager,
-						 name,
-						 parent);
+                                                 container_manager,
+                                                 name,
+                                                 parent);
   if(parent != 0)
   {
     parent->attach_child_ns(ns);

@@ -45,35 +45,35 @@ public:
     std::cout << depth - 1 << " N: " << ns->id().short_string() << " " << ns->name() << std::endl;
 
     for(local_ns::list_type::iterator it = ns->list_.list().begin();
-	it != ns->list_.list().end();
-	it++)
+        it != ns->list_.list().end();
+        it++)
     {
       entry& e = it->second.second;
       if(e.type == entry::namespace_type)
       {
-	std::cout << depth << " n: " <<
-	  it->first.short_string() << " " <<
-	  it->second.first.short_string() << " " <<
-	  e.name << std::endl;
+        std::cout << depth << " n: " <<
+          it->first.short_string() << " " <<
+          it->second.first.short_string() << " " <<
+          e.name << std::endl;
       }
       else if(e.type == entry::tag_type)
       {
-	std::cout << depth << " t: " <<
-	  it->first.short_string() << " " <<
-	  it->second.first.short_string() << " " <<
-	  e.name << std::endl;
+        std::cout << depth << " t: " <<
+          it->first.short_string() << " " <<
+          it->second.first.short_string() << " " <<
+          e.name << std::endl;
       }
     }
 
     for(local_ns::local_ns_list_type::iterator it = ns->local_ns_list_.begin();
-	it != ns->local_ns_list_.end();
-	it++)
+        it != ns->local_ns_list_.end();
+        it++)
     {
       print_ns(it->second, depth+1);
     }
     for(local_ns::local_tag_list_type::iterator it = ns->local_tag_list_.begin();
-	it != ns->local_tag_list_.end();
-	it++)
+        it != ns->local_tag_list_.end();
+        it++)
     {
       std::cout << depth << " T: " << it->second->id().short_string() << " " << it->second->name() << std::endl;
     }
@@ -104,8 +104,8 @@ public:
     tag_parser p(full_name);
 
     for(tag_parser::namespace_list_type::const_iterator it = p.get_namespaces().begin();
-	it != p.get_namespaces().end();
-	it++)
+        it != p.get_namespaces().end();
+        it++)
     {
       ns = register_namespace_(ns, *it);
     }
@@ -125,21 +125,21 @@ public:
 
 /*
   void register_tag_link(const ID& parent_ns_id1, const std::string& name1,
-			 const ID& parent_ns_id2, const std::string& name2)
+  const ID& parent_ns_id2, const std::string& name2)
   {
-    ID id1 = ID::create();
-    ID id2 = ID::create();
+  ID id1 = ID::create();
+  ID id2 = ID::create();
 
-    e1.parent_id = parent_ns_id1;
-    e1.target_id = id2;
+  e1.parent_id = parent_ns_id1;
+  e1.target_id = id2;
 
-    entry e2(entry::tag_link_type);
-    e2.name = name2;
-    e2.parent_id = parent_ns_id2;
-    e2.target_id = id1;
+  entry e2(entry::tag_link_type);
+  e2.name = name2;
+  e2.parent_id = parent_ns_id2;
+  e2.target_id = id1;
 
-    list_.insert(id1, e1);
-    list_.insert(id2, e2);
+  list_.insert(id1, e1);
+  list_.insert(id2, e2);
   }
 */
 
@@ -148,8 +148,8 @@ public:
     tag_parser p(full_name);
 
     for(tag_parser::namespace_list_type::const_iterator it = p.get_namespaces().begin();
-	it != p.get_namespaces().end();
-	it++)
+        it != p.get_namespaces().end();
+        it++)
     {
       ns = register_namespace_(ns, *it);
     }
@@ -181,7 +181,7 @@ public:
   }
 
   void recv(const darc::ID& src_peer_id,
-	    darc::buffer::shared_buffer data)
+            darc::buffer::shared_buffer data)
   {
     inbound_data<serializer::boost_serializer, payload_header_packet> i_hdr(data);
 

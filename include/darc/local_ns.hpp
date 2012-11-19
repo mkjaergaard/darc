@@ -43,14 +43,14 @@ public: //for printing
 
 public:
   local_ns(ns_service * service,
-	   distributed_container::container_manager * container_manager,
-	   const std::string name,
-	   local_ns* parent);
+           distributed_container::container_manager * container_manager,
+           const std::string name,
+           local_ns* parent);
 
   static local_ns_ptr create(ns_service *,
-			     distributed_container::container_manager * container_manager,
-			     const std::string name = "",
-			     local_ns * parent = 0);
+                             distributed_container::container_manager * container_manager,
+                             const std::string name = "",
+                             local_ns * parent = 0);
 
   ~local_ns()
   {
@@ -63,10 +63,10 @@ public:
       return;
     }
     beam::glog<beam::Trace>("New Item Callback",
-			    "instance", beam::arg<darc::ID>(instance),
-			    "owner", beam::arg<darc::ID>(owner),
-			    "key", beam::arg<ID>(key),
-			    "value", beam::arg<entry>(value));
+                            "instance", beam::arg<darc::ID>(instance),
+                            "owner", beam::arg<darc::ID>(owner),
+                            "key", beam::arg<ID>(key),
+                            "value", beam::arg<entry>(value));
 
     switch(value.type)
     {
@@ -77,8 +77,8 @@ public:
       local_tag_ptr tag = find_local_tag(value.name);
       if(tag.get() != 0)
       {
-	beam::glog<beam::Info>("Trigger New Tag");
-	tag->trigger_new_tag(key, list_.get_peer_id(owner));
+        beam::glog<beam::Info>("Trigger New Tag");
+        tag->trigger_new_tag(key, list_.get_peer_id(owner));
       }
     }
     break;
@@ -89,7 +89,7 @@ public:
       local_ns_ptr ns = find_local_ns(value.name);
       if(ns.get() != 0)
       {
-	ns->connect_list_instance(owner, value.list_instance_id);
+        ns->connect_list_instance(owner, value.list_instance_id);
       }
     }
     break;
@@ -108,12 +108,12 @@ public:
   local_tag_ptr find_local_tag(const std::string& name)
   {
     for(local_tag_list_type::iterator it = local_tag_list_.begin();
-	it != local_tag_list_.end();
-	it++)
+        it != local_tag_list_.end();
+        it++)
     {
       if(it->second->name() == name)
       {
-	return it->second;
+        return it->second;
       }
     }
     return local_tag_ptr(); // Return empty ptr in case of not found
@@ -123,12 +123,12 @@ public:
   local_ns_ptr find_local_ns(const std::string& name)
   {
     for(local_ns_list_type::iterator it = local_ns_list_.begin();
-	it != local_ns_list_.end();
-	it++)
+        it != local_ns_list_.end();
+        it++)
     {
       if(it->second->name() == name)
       {
-	return it->second;
+        return it->second;
       }
     }
     return local_ns_ptr(); // Return empty ptr in case of not found
@@ -141,7 +141,7 @@ public:
   {
     local_ns_list_.insert(
       local_ns_list_type::value_type(child->id(),
-				     child));
+                                     child));
 
     entry e(entry::namespace_type);
     e.name = child->name();
@@ -155,7 +155,7 @@ public:
   {
     local_tag_list_.insert(
       local_tag_list_type::value_type(child->id(),
-				      child));
+                                      child));
 
     entry e(entry::tag_type);
     e.name = child->name();
@@ -171,7 +171,7 @@ public:
 /*
   const ID& namespace_id() const
   {
-    return parent_ns_id_;
+  return parent_ns_id_;
   }
 */
   const std::string& name() const
