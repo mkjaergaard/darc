@@ -15,7 +15,7 @@ namespace pubsub
 {
 
 template<typename T>
-class SubscriberImpl
+class subscriber_impl
 {
 public:
   typedef void(callback_type)(const boost::shared_ptr<const T>&);
@@ -23,17 +23,18 @@ public:
 
 private:
   boost::asio::io_service &io_service_;
-  MessageService &message_service_;
+  message_service &message_service_;
 
-  LocalDispatcher<T> * dispatcher_; // ptr type?
+  local_dispatcher<T> * dispatcher_; // ptr type?
 
   boost::signal<callback_type> callback_;
 
 public:
-  SubscriberImpl(boost::asio::io_service &io_service,
-                 MessageService &message_service) :
+  subscriber_impl(boost::asio::io_service &io_service,
+                 message_service &message_service) :
     io_service_(io_service),
-    message_service_(message_service)
+    message_service_(message_service),
+    dispatcher_(0)
   {
   }
 
@@ -55,7 +56,7 @@ public:
 
   void postCallback(const boost::shared_ptr<const T> &msg)
   {
-    io_service_.post(boost::bind(&SubscriberImpl::triggerCallback, this, msg));
+    io_service_.post(boost::bind(&subscriber_impl::triggerCallback, this, msg));
   }
 
   void triggerCallback(const boost::shared_ptr<const T> msg)
@@ -66,22 +67,22 @@ public:
 };
 
 template<typename T>
-class Subscriber
+class subscriber
 {
 public:
-  typedef typename SubscriberImpl<T>::callback_functor_type callback_functor_type;
+  typedef typename subscriber_impl<T>::callback_functor_type callback_functor_type;
 
 private:
-  boost::shared_ptr<SubscriberImpl<T> > impl_;
+  boost::shared_ptr<subscriber_impl<T> > impl_;
 
 public:
-  Subscriber()
+  subscriber()
   {
   }
 
-  Subscriber(boost::asio::io_service &io_service,
-             MessageService &message_service) :
-    impl_(boost::make_shared<SubscriberImpl<T> >(boost::ref(io_service),
+  subscriber(boost::asio::io_service &io_service,
+             message_service &message_service) :
+    impl_(boost::make_shared<subscriber_impl<T> >(boost::ref(io_service),
                                                  boost::ref(message_service)))
   {
   }

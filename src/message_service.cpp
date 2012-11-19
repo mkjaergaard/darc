@@ -5,7 +5,7 @@ namespace darc
 namespace pubsub
 {
 
-MessageService::MessageService(peer& p, boost::asio::io_service& io_service, ns_service& ns_service) :
+message_service::message_service(peer& p, boost::asio::io_service& io_service, ns_service& ns_service) :
   peer_service(p, 13),
   io_service_(io_service),
   remote_dispatcher_(this),
@@ -16,13 +16,13 @@ MessageService::MessageService(peer& p, boost::asio::io_service& io_service, ns_
 // /////////////////////////////////////////////
 // Remap peer_service calls to remote_dispatcher
 //
-void MessageService::recv(const darc::ID& src_peer_id,
+void message_service::recv(const darc::ID& src_peer_id,
                           darc::buffer::shared_buffer data)
 {
   remote_dispatcher_.recv(src_peer_id, data);
 }
 
-void MessageService::new_tag_event(ID tag_id,
+void message_service::new_tag_event(ID tag_id,
                                    ID alias_id,
                                    ID peer_id)
 {
@@ -34,8 +34,8 @@ void MessageService::new_tag_event(ID tag_id,
   // Local alias
   if(peer_id == peer_service::peer_.id())
   {
-    DispatcherGroupListType::iterator elem1 = dispatcher_group_list_.find(tag_id);
-    DispatcherGroupListType::iterator elem2 = dispatcher_group_list_.find(alias_id);
+    dispatcher_group_list_type::iterator elem1 = dispatcher_group_list_.find(tag_id);
+    dispatcher_group_list_type::iterator elem2 = dispatcher_group_list_.find(alias_id);
 
     if(elem1 == dispatcher_group_list_.end() ||
        elem2 == dispatcher_group_list_.end())
@@ -56,10 +56,10 @@ void MessageService::new_tag_event(ID tag_id,
   }
 }
 
-void MessageService::remote_message_recv(const ID& tag_id,
+void message_service::remote_message_recv(const ID& tag_id,
                                          darc::buffer::shared_buffer data)
 {
-  DispatcherGroupListType::iterator elem =
+  dispatcher_group_list_type::iterator elem =
     dispatcher_group_list_.find(tag_id);
   if(elem != dispatcher_group_list_.end())
   {
@@ -74,11 +74,11 @@ void MessageService::remote_message_recv(const ID& tag_id,
 
 // /////////////////////////////////////////////
 
-void MessageService::post_new_tag_event(ID tag_id,
+void message_service::post_new_tag_event(ID tag_id,
                                         ID alias_id,
                                         ID peer_id)
 {
-  io_service_.post(boost::bind(&MessageService::new_tag_event, this, tag_id, alias_id, peer_id));
+  io_service_.post(boost::bind(&message_service::new_tag_event, this, tag_id, alias_id, peer_id));
 }
 
 }

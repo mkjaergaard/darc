@@ -16,19 +16,20 @@ namespace pubsub
 {
 
 template<typename T>
-class PublisherImpl
+class publisher_impl
 {
 private:
   boost::asio::io_service &io_service_;
-  MessageService &message_service_;
+  message_service &message_service_;
 
-  LocalDispatcher<T> * dispatcher_; // ptr type?
+  local_dispatcher<T> * dispatcher_; // ptr type?
 
 public:
-  PublisherImpl(boost::asio::io_service &io_service,
-                MessageService &message_service) :
+  publisher_impl(boost::asio::io_service &io_service,
+                message_service &message_service) :
     io_service_(io_service),
-    message_service_(message_service)
+    message_service_(message_service),
+    dispatcher_(0)
   {
   }
 
@@ -47,26 +48,26 @@ public:
   {
     if(dispatcher_ != 0)
     {
-      dispatcher_->dispatchFromPublisher(msg);
+      dispatcher_->dispatch_from_publisher(msg);
     }
   }
 
 };
 
 template<typename T>
-class Publisher
+class publisher
 {
 private:
-  boost::shared_ptr<PublisherImpl<T> > impl_;
+  boost::shared_ptr<publisher_impl<T> > impl_;
 
 public:
-  Publisher()
+  publisher()
   {
   }
 
-  Publisher(boost::asio::io_service &io_service,
-            MessageService &message_service) :
-    impl_(boost::make_shared<PublisherImpl<T> >(boost::ref(io_service),
+  publisher(boost::asio::io_service &io_service,
+            message_service &message_service) :
+    impl_(boost::make_shared<publisher_impl<T> >(boost::ref(io_service),
                                                 boost::ref(message_service)))
   {
   }

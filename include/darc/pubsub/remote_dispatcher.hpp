@@ -14,9 +14,9 @@ namespace darc
 namespace pubsub
 {
 
-class MessageService; //fwd
+class message_service; //fwd
 
-class RemoteDispatcher
+class remote_dispatcher
 {
 protected:
   // Datastructure stuff, refactor out
@@ -26,7 +26,7 @@ protected:
   typedef std::map</*tag*/ID, remote_tag_list_type_ptr> remote_list_type;
 
   remote_list_type list_;
-  MessageService * parent_service_;
+  message_service * parent_service_;
 
 protected:
   void handle_subscribe_packet(const darc::ID& src_peer_id,
@@ -38,7 +38,7 @@ protected:
                              darc::buffer::shared_buffer data);
 
 public:
-  RemoteDispatcher(MessageService* parent) :
+  remote_dispatcher(message_service* parent) :
     parent_service_(parent)
   {
   }
@@ -65,6 +65,7 @@ public:
         ("Unknown payload",
          "payload_id:", beam::arg<int>(payload_type_i.get().payload_type));
       assert(0);
+      break;
     }
   }
 

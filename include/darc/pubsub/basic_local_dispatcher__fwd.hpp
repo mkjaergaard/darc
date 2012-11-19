@@ -5,7 +5,7 @@ namespace darc
 namespace pubsub
 {
 
-class BasicLocalDispatcher;
+class basic_local_dispatcher;
 
 }
 }

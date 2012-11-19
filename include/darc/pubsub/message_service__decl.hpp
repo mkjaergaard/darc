@@ -18,32 +18,32 @@ namespace pubsub
 
 // fwd
 template<typename T>
-class PublisherImpl;
+class publisher_impl;
 
 template<typename T>
-class SubscriberImpl;
+class subscriber_impl;
 
 template<typename T>
-class DispatcherGroup;
-class BasicDispatcherGroup;
+class dispatcher_group;
+class basic_dispatcher_group;
 
 template<typename T>
-class LocalDispatcher;
+class local_dispatcher;
 
-class MessageService : public boost::noncopyable, public darc::peer_service
+class message_service : public boost::noncopyable, public darc::peer_service
 {
 private:
-  typedef std::map<darc::ID, boost::shared_ptr<BasicDispatcherGroup> > DispatcherGroupListType;
-  DispatcherGroupListType dispatcher_group_list_;
+  typedef std::map<darc::ID, boost::shared_ptr<basic_dispatcher_group> > dispatcher_group_list_type;
+  dispatcher_group_list_type dispatcher_group_list_;
 
   boost::asio::io_service& io_service_;
-  RemoteDispatcher remote_dispatcher_;
+  remote_dispatcher remote_dispatcher_;
 
 public:
   ns_service& nameserver_;
 
 public:
-  MessageService(peer& p, boost::asio::io_service& io_service, ns_service& ns_service);
+  message_service(peer& p, boost::asio::io_service& io_service, ns_service& ns_service);
 
   // /////////////////////////////////////////////
   // Remap peer_service calls to remote_dispatcher
@@ -65,26 +65,26 @@ public:
                            darc::buffer::shared_buffer data);
 
   template<typename T>
-  LocalDispatcher<T>* attach(PublisherImpl<T> &publisher, const std::string &topic);
+  local_dispatcher<T>* attach(publisher_impl<T> &publisher, const std::string &topic);
 
   template<typename T>
-  LocalDispatcher<T>* attach(SubscriberImpl<T> &subscriber, const std::string &topic);
+  local_dispatcher<T>* attach(subscriber_impl<T> &subscriber, const std::string &topic);
 
   template<typename T>
-  void detach(PublisherImpl<T> &publisher)
+  void detach(publisher_impl<T> &publisher)
   {
   }
 
   template<typename T>
-  void detach(SubscriberImpl<T> &subscriber)
+  void detach(subscriber_impl<T> &subscriber)
   {
   }
 
   template<typename T>
-  DispatcherGroup<T>* getDispatcherGroup(const std::string& topic);
+  dispatcher_group<T>* get_dispatcher_group(const std::string& topic);
 
   template<typename T>
-  DispatcherGroup<T>* getDispatcherGroup(const tag_handle& tag);
+  dispatcher_group<T>* get_dispatcher_group(const tag_handle& tag);
 
 };
 

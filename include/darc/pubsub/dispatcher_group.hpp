@@ -16,50 +16,50 @@ namespace darc
 namespace pubsub
 {
 
-class BasicDispatcherGroup
+class basic_dispatcher_group
 {
 public:
-  virtual ~BasicDispatcherGroup()
+  virtual ~basic_dispatcher_group()
   {
   }
 
-  virtual void join(boost::shared_ptr<BasicDispatcherGroup> b_group) {};
+  virtual void join(boost::shared_ptr<basic_dispatcher_group> b_group) {};
   virtual void remote_message_recv(const ID& tag_id,
                                    darc::buffer::shared_buffer data) = 0;
 
 };
 
 template<typename T>
-class DispatcherGroup : public BasicDispatcherGroup
+class dispatcher_group : public basic_dispatcher_group
 {
 private:
-  typedef LocalDispatcher<T> DispatcherType;
-  typedef boost::shared_ptr<DispatcherType> DispatcherPtr;
+  typedef local_dispatcher<T> dispatcher_type;
+  typedef boost::shared_ptr<dispatcher_type> dispatcher_ptr;
 
-  typedef std::map<darc::ID, DispatcherPtr> DispatcherListType;
+  typedef std::map<darc::ID, dispatcher_ptr> dispatcher_list_type;
 
-  DispatcherListType dispatcher_list_;
+  dispatcher_list_type dispatcher_list_;
 
   tag_handle_impl::listener_type listener_;
-  RemoteDispatcher * remote_dispatcher_;
+  remote_dispatcher * remote_dispatcher_;
 
 public:
-  DispatcherGroup(tag_handle_impl::listener_type listener, RemoteDispatcher * remote_dispatcher) :
+  dispatcher_group(tag_handle_impl::listener_type listener, remote_dispatcher * remote_dispatcher) :
     listener_(listener),
     remote_dispatcher_(remote_dispatcher)
   {
   }
 
-  LocalDispatcher<T>* getDispatcher(const tag_handle& tag)
+  local_dispatcher<T>* get_dispatcher(const tag_handle& tag)
   {
-    typename DispatcherListType::iterator elem = dispatcher_list_.find(tag->id());
+    typename dispatcher_list_type::iterator elem = dispatcher_list_.find(tag->id());
     if(elem == dispatcher_list_.end())
     {
-      boost::shared_ptr<LocalDispatcher<T> > dispatcher
-        = boost::make_shared<LocalDispatcher<T> >(this, tag);
+      boost::shared_ptr<local_dispatcher<T> > dispatcher
+        = boost::make_shared<local_dispatcher<T> >(this, tag);
 
       dispatcher_list_.insert(
-        typename DispatcherListType::value_type(tag->id(), dispatcher));
+        typename dispatcher_list_type::value_type(tag->id(), dispatcher));
 
       // todo: put somewhere else?
       dispatcher->tag_->connect_listener(listener_);
@@ -72,16 +72,16 @@ public:
     }
   }
 
-  void join(boost::shared_ptr<BasicDispatcherGroup> b_group)
+  void join(boost::shared_ptr<basic_dispatcher_group> b_group)
   {
-    boost::shared_ptr<DispatcherGroup<T> > group
-      = boost::dynamic_pointer_cast<DispatcherGroup<T> >(b_group);
+    boost::shared_ptr<dispatcher_group<T> > group
+      = boost::dynamic_pointer_cast<dispatcher_group<T> >(b_group);
 
-    for(typename DispatcherListType::iterator it = group->dispatcher_list_.begin();
+    for(typename dispatcher_list_type::iterator it = group->dispatcher_list_.begin();
         it != group->dispatcher_list_.end();
         it++)
     {
-      it->second->setGroup(this);
+      it->second->set_group(this);
     }
 
     dispatcher_list_.insert(group->dispatcher_list_.begin(),
@@ -89,19 +89,19 @@ public:
 
   }
 
-  void dispatchToGroup(const ID& tag_id, const boost::shared_ptr<const T> &msg)
+  void dispatch_to_group(const ID& tag_id, const boost::shared_ptr<const T> &msg)
   {
-    dispatchLocallyToGroup(tag_id, msg);
+    dispatch_locally_to_group(tag_id, msg);
     remote_dispatcher_->dispatch_remotely(tag_id, msg);
   }
 
-  void dispatchLocallyToGroup(const ID& tag_id, const boost::shared_ptr<const T> &msg)
+  void dispatch_locally_to_group(const ID& tag_id, const boost::shared_ptr<const T> &msg)
   {
-    for(typename DispatcherListType::iterator it = dispatcher_list_.begin();
+    for(typename dispatcher_list_type::iterator it = dispatcher_list_.begin();
         it != dispatcher_list_.end();
         it++)
     {
-      it->second->dispatchLocally(msg);
+      it->second->dispatch_locally(msg);
     }
   }
 
@@ -109,7 +109,7 @@ public:
                            darc::buffer::shared_buffer data)
   {
     inbound_data_ptr<serializer::boost_serializer, T> i_msg(data);
-    dispatchLocallyToGroup(tag_id, i_msg.get());
+    dispatch_locally_to_group(tag_id, i_msg.get());
   }
 
   // split

@@ -6,7 +6,7 @@ namespace pubsub
 {
 
 template<typename T>
-class LocalDispatcher;
+class local_dispatcher;
 
 }
 }
