@@ -43,7 +43,7 @@ public:
         it != tokenizer_.end();
         it++)
     {
-      namespaces_.push_back(*it);
+      namespaces_.push_back(std::string(*it));
     }
 
     if(namespaces_.empty() ||
