@@ -49,20 +49,20 @@ public:
   // Remap peer_service calls to remote_dispatcher
   //
   void recv(const darc::ID& src_peer_id,
-	    darc::buffer::shared_buffer data);
+            darc::buffer::shared_buffer data);
 
   // /////////////////////////////////////////////
 
   void post_new_tag_event(ID tag_id,
-			  ID alias_id,
-			  ID peer_id);
+                          ID alias_id,
+                          ID peer_id);
 
   void new_tag_event(ID tag_id,
-		     ID alias_id,
-		     ID peer_id);
+                     ID alias_id,
+                     ID peer_id);
 
   void remote_message_recv(const ID& tag_id,
-			   darc::buffer::shared_buffer data);
+                           darc::buffer::shared_buffer data);
 
   template<typename T>
   LocalDispatcher<T>* attach(PublisherImpl<T> &publisher, const std::string &topic);

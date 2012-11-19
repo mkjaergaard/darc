@@ -27,8 +27,8 @@ private:
 
 public:
   PublisherImpl(boost::asio::io_service &io_service,
-		MessageService &message_service,
-		const IDType& topic_id) :
+                MessageService &message_service,
+                const IDType& topic_id) :
     io_service_(io_service),
     message_service_(message_service),
     topic_id_(topic_id)

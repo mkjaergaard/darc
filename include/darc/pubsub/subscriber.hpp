@@ -31,7 +31,7 @@ private:
 
 public:
   SubscriberImpl(boost::asio::io_service &io_service,
-		 MessageService &message_service) :
+                 MessageService &message_service) :
     io_service_(io_service),
     message_service_(message_service)
   {
@@ -80,9 +80,9 @@ public:
   }
 
   Subscriber(boost::asio::io_service &io_service,
-	     MessageService &message_service) :
+             MessageService &message_service) :
     impl_(boost::make_shared<SubscriberImpl<T> >(boost::ref(io_service),
-						 boost::ref(message_service)))
+                                                 boost::ref(message_service)))
   {
   }
 

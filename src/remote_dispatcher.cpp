@@ -7,7 +7,7 @@ namespace pubsub
 {
 
 void RemoteDispatcher::handle_message_packet(const darc::ID& src_peer_id,
-					      darc::buffer::shared_buffer data)
+                                             darc::buffer::shared_buffer data)
 {
   inbound_data<serializer::boost_serializer, message_packet> msg_i(data);
 

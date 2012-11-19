@@ -17,19 +17,19 @@ MessageService::MessageService(peer& p, boost::asio::io_service& io_service, ns_
 // Remap peer_service calls to remote_dispatcher
 //
 void MessageService::recv(const darc::ID& src_peer_id,
-			  darc::buffer::shared_buffer data)
+                          darc::buffer::shared_buffer data)
 {
   remote_dispatcher_.recv(src_peer_id, data);
 }
 
 void MessageService::new_tag_event(ID tag_id,
-				   ID alias_id,
-				   ID peer_id)
+                                   ID alias_id,
+                                   ID peer_id)
 {
   beam::glog<beam::Info>("tagEvent",
-			 "tag_id", beam::arg<darc::ID>(tag_id),
-			 "alias_id", beam::arg<darc::ID>(alias_id),
-			 "peer_id", beam::arg<darc::ID>(peer_id));
+                         "tag_id", beam::arg<darc::ID>(tag_id),
+                         "alias_id", beam::arg<darc::ID>(alias_id),
+                         "peer_id", beam::arg<darc::ID>(peer_id));
 
   // Local alias
   if(peer_id == peer_service::peer_.id())
@@ -57,7 +57,7 @@ void MessageService::new_tag_event(ID tag_id,
 }
 
 void MessageService::remote_message_recv(const ID& tag_id,
-					 darc::buffer::shared_buffer data)
+                                         darc::buffer::shared_buffer data)
 {
   DispatcherGroupListType::iterator elem =
     dispatcher_group_list_.find(tag_id);
@@ -68,15 +68,15 @@ void MessageService::remote_message_recv(const ID& tag_id,
   else
   {
     beam::glog<beam::Warning>("message_service: remote msg for unknown tag id",
-			      "tag_id", beam::arg<ID>(tag_id));
+                              "tag_id", beam::arg<ID>(tag_id));
   }
 }
 
 // /////////////////////////////////////////////
 
 void MessageService::post_new_tag_event(ID tag_id,
-					ID alias_id,
-					ID peer_id)
+                                        ID alias_id,
+                                        ID peer_id)
 {
   io_service_.post(boost::bind(&MessageService::new_tag_event, this, tag_id, alias_id, peer_id));
 }

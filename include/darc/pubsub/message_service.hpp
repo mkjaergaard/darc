@@ -16,7 +16,7 @@ namespace pubsub
 
 template<typename T>
 LocalDispatcher<T>* MessageService::attach(PublisherImpl<T> &publisher,
-					   const std::string& topic)
+                                           const std::string& topic)
 {
   tag_handle tag = nameserver_.register_tag(nameserver_.root(), topic);
   DispatcherGroup<T>* group = getDispatcherGroup<T>(tag);
@@ -27,7 +27,7 @@ LocalDispatcher<T>* MessageService::attach(PublisherImpl<T> &publisher,
 
 template<typename T>
 LocalDispatcher<T>* MessageService::attach(SubscriberImpl<T> &subscriber,
-					   const std::string& topic)
+                                           const std::string& topic)
 {
   tag_handle tag = nameserver_.register_tag(nameserver_.root(), topic);
   DispatcherGroup<T>* group = getDispatcherGroup<T>(tag);
@@ -44,8 +44,8 @@ DispatcherGroup<T>* MessageService::getDispatcherGroup(const tag_handle& tag)
   {
     boost::shared_ptr<DispatcherGroup<T> > dispatcher_group
       = boost::make_shared<DispatcherGroup<T> >(
-	boost::bind(&MessageService::new_tag_event, this, _1, _2, _3),
-	&remote_dispatcher_);
+        boost::bind(&MessageService::new_tag_event, this, _1, _2, _3),
+        &remote_dispatcher_);
 
     dispatcher_group_list_.insert(
       typename DispatcherGroupListType::value_type(tag->id(), dispatcher_group));

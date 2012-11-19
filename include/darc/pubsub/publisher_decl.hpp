@@ -27,8 +27,8 @@ private:
 
 public:
   PublisherImpl(boost::asio::io_service &io_service,
-		MessageService &message_service,
-		const IDType& topic_id) :
+                MessageService &message_service,
+                const IDType& topic_id) :
     io_service_(io_service),
     message_service_(message_service),
     topic_id_(topic_id)
@@ -49,11 +49,11 @@ private:
 
 public:
   Publisher(boost::asio::io_service &io_service,
-	    const IDType& topic_id,
-	    MessageService &message_service) :
+            const IDType& topic_id,
+            MessageService &message_service) :
     impl_(new PublisherImpl<T, MessageServiceType>(io_service,
-						   topic_id,
-						   message_service) )
+                                                   topic_id,
+                                                   message_service) )
   {
     impl_->attach();
   }

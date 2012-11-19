@@ -53,8 +53,8 @@ public:
   void dispatchLocally(const boost::shared_ptr<const T> &msg)
   {
     for(typename SubscribersListType::iterator it = subscribers_.begin();
-	it != subscribers_.end();
-	it++)
+        it != subscribers_.end();
+        it++)
     {
       (*it)->postCallback(msg);
     }

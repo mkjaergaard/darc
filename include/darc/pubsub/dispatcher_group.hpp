@@ -25,7 +25,7 @@ public:
 
   virtual void join(boost::shared_ptr<BasicDispatcherGroup> b_group) {};
   virtual void remote_message_recv(const ID& tag_id,
-				   darc::buffer::shared_buffer data) = 0;
+                                   darc::buffer::shared_buffer data) = 0;
 
 };
 
@@ -56,10 +56,10 @@ public:
     if(elem == dispatcher_list_.end())
     {
       boost::shared_ptr<LocalDispatcher<T> > dispatcher
-	= boost::make_shared<LocalDispatcher<T> >(this, tag);
+        = boost::make_shared<LocalDispatcher<T> >(this, tag);
 
       dispatcher_list_.insert(
-	typename DispatcherListType::value_type(tag->id(), dispatcher));
+        typename DispatcherListType::value_type(tag->id(), dispatcher));
 
       // todo: put somewhere else?
       dispatcher->tag_->connect_listener(listener_);
@@ -78,14 +78,14 @@ public:
       = boost::dynamic_pointer_cast<DispatcherGroup<T> >(b_group);
 
     for(typename DispatcherListType::iterator it = group->dispatcher_list_.begin();
-	it != group->dispatcher_list_.end();
-	it++)
+        it != group->dispatcher_list_.end();
+        it++)
     {
       it->second->setGroup(this);
     }
 
     dispatcher_list_.insert(group->dispatcher_list_.begin(),
-			    group->dispatcher_list_.end());
+                            group->dispatcher_list_.end());
 
   }
 
@@ -98,15 +98,15 @@ public:
   void dispatchLocallyToGroup(const ID& tag_id, const boost::shared_ptr<const T> &msg)
   {
     for(typename DispatcherListType::iterator it = dispatcher_list_.begin();
-	it != dispatcher_list_.end();
-	it++)
+        it != dispatcher_list_.end();
+        it++)
     {
       it->second->dispatchLocally(msg);
     }
   }
 
   void remote_message_recv(const ID& tag_id,
-			   darc::buffer::shared_buffer data)
+                           darc::buffer::shared_buffer data)
   {
     inbound_data_ptr<serializer::boost_serializer, T> i_msg(data);
     dispatchLocallyToGroup(tag_id, i_msg.get());

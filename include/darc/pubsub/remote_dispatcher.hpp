@@ -30,12 +30,12 @@ protected:
 
 protected:
   void handle_subscribe_packet(const darc::ID& src_peer_id,
-			       darc::buffer::shared_buffer data)
+                               darc::buffer::shared_buffer data)
   {
   }
 
   void handle_message_packet(const darc::ID& src_peer_id,
-			     darc::buffer::shared_buffer data);
+                             darc::buffer::shared_buffer data);
 
 public:
   RemoteDispatcher(MessageService* parent) :
@@ -44,10 +44,10 @@ public:
   }
 
   void recv(const darc::ID& src_peer_id,
-	    darc::buffer::shared_buffer data)
+            darc::buffer::shared_buffer data)
   {
     darc::inbound_data<darc::serializer::boost_serializer,
-		       payload_header_packet> payload_type_i(data);
+                       payload_header_packet> payload_type_i(data);
     switch(payload_type_i.get().payload_type)
     {
     case subscribe_packet::payload_id:
@@ -62,15 +62,15 @@ public:
     break;
     default:
       beam::glog<beam::Fatal>
-	("Unknown payload",
-	 "payload_id:", beam::arg<int>(payload_type_i.get().payload_type));
+        ("Unknown payload",
+         "payload_id:", beam::arg<int>(payload_type_i.get().payload_type));
       assert(0);
     }
   }
 
   void new_tag_event(ID tag_id,
-		     ID alias_id,
-		     ID peer_id)
+                     ID alias_id,
+                     ID peer_id)
   {
     remote_list_type::iterator item = list_.find(tag_id);
     if(item != list_.end())
@@ -93,11 +93,11 @@ public:
     if(item != list_.end())
     {
       for(remote_tag_list_type::iterator it = item->second->begin();
-	  it != item->second->end();
-	  it++)
+          it != item->second->end();
+          it++)
       {
-	// todo: here we send a copy to all
-	send_msg(/*tag_id*/it->second, it->first, msg);
+        // todo: here we send a copy to all
+        send_msg(/*tag_id*/it->second, it->first, msg);
       }
     }
   }
