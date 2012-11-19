@@ -65,15 +65,15 @@ public:
   void recv(const ID& peer_id, darc::buffer::shared_buffer data);
 
   void send_to_instance(const ID& src_instance_id,
-			const ID& dest_instance_id,
-			const uint32_t payload_type,
-			const outbound_data_base& data);
+                        const ID& dest_instance_id,
+                        const uint32_t payload_type,
+                        const outbound_data_base& data);
 
   void send_to_location(const ID& src_instance_id,
-			const ID& dest_location_id,
-			const ID& dest_instance_id,
-			const uint32_t payload_type,
-			const outbound_data_base& data);
+                        const ID& dest_location_id,
+                        const ID& dest_instance_id,
+                        const uint32_t payload_type,
+                        const outbound_data_base& data);
 
 
 };

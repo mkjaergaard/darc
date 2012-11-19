@@ -93,18 +93,18 @@ void container_manager::recv(const ID& peer_id, buffer::shared_buffer data)
 }
 
 void container_manager::send_to_instance(const ID& src_instance_id,
-					 const ID& dest_instance_id,
-					 const uint32_t payload_type,
-					 const outbound_data_base& data)
+                                         const ID& dest_instance_id,
+                                         const uint32_t payload_type,
+                                         const outbound_data_base& data)
 {
   instance_location_map_type::iterator item = instance_location_map.find(dest_instance_id);
   if(item != instance_location_map.end())
   {
     send_to_location(src_instance_id,
-		     item->second,
-		     dest_instance_id,
-		     payload_type,
-		     data);
+                     item->second,
+                     dest_instance_id,
+                     payload_type,
+                     data);
   }
   else
   {
@@ -115,10 +115,10 @@ void container_manager::send_to_instance(const ID& src_instance_id,
 }
 
 void container_manager::send_to_location(const ID& src_instance_id,
-					 const ID& dest_location_id,
-					 const ID& dest_instance_id,
-					 const uint32_t payload_type,
-					 const outbound_data_base& data)
+                                         const ID& dest_location_id,
+                                         const ID& dest_instance_id,
+                                         const uint32_t payload_type,
+                                         const outbound_data_base& data)
 {
   beam::glog<beam::Trace>(
     "Send To Location",

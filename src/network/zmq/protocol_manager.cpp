@@ -67,9 +67,9 @@ ProtocolManager::ProtocolManager(boost::asio::io_service& io_service, network_ma
 #include <unistd.h>
 
 void ProtocolManager::sendPacket(const ConnectionID& outbound_id,
-				 const ID& dest_peer_id,
-				 const uint16_t packet_type,
-				 buffer::shared_buffer data)
+                                 const ID& dest_peer_id,
+                                 const uint16_t packet_type,
+                                 buffer::shared_buffer data)
 {
   // Create the Link Header Packet: do it somewhere else Base Class
   //
@@ -85,23 +85,23 @@ void ProtocolManager::sendPacket(const ConnectionID& outbound_id,
   //
   buffer::shared_buffer * keep_alive1 = new buffer::shared_buffer(header_data);
   zmq::message_t message1((void*)header_data->data(),
-			  1024,//data->len(),
-			  &zmq_buffer::free_func,
-			  keep_alive1);
+                          1024,//data->len(),
+                          &zmq_buffer::free_func,
+                          keep_alive1);
   //
 
   buffer::shared_buffer * keep_alive2 = new buffer::shared_buffer(data);
   zmq::message_t message2((void*)data->data(),
-			  1024*10,//data->len(),
-			  &zmq_buffer::free_func,
-			  keep_alive2);
+                          1024*10,//data->len(),
+                          &zmq_buffer::free_func,
+                          keep_alive2);
 
   outbound_connection_list_[outbound_id]->send(message1, ZMQ_SNDMORE);
   outbound_connection_list_[outbound_id]->send(message2);
 }
 
 void ProtocolManager::send_packet_to_all(const uint16_t packet_type,
-					 buffer::shared_buffer data)
+                                         buffer::shared_buffer data)
 {
   // todo, only create the packet once and send to all
   for(OutboundConnectionListType::iterator it = outbound_connection_list_.begin();
@@ -109,9 +109,9 @@ void ProtocolManager::send_packet_to_all(const uint16_t packet_type,
       it++)
   {
     sendPacket(it->first,
-	       ID::null(),
-	       packet_type,
-	       data);
+               ID::null(),
+               packet_type,
+               data);
   }
 
 }
@@ -122,7 +122,7 @@ const ID& ProtocolManager::accept(const std::string& protocol, const std::string
 
   std::string zmq_url = std::string("tcp://").append(url);
   beam::glog<beam::Debug>("ZeroMQ accepting",
-			 "URL", beam::arg<std::string>(zmq_url.c_str()));
+                          "URL", beam::arg<std::string>(zmq_url.c_str()));
   subscriber_socket_.bind(zmq_url.c_str());
   subscriber_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
   recv_thread_ = boost::thread(boost::bind(&ProtocolManager::work, this));
@@ -136,7 +136,7 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
   std::string zmq_url = std::string("tcp://").append(url);
 
   beam::glog<beam::Debug>("ZeroMQ connecting",
-			 "URL", beam::arg<std::string>(zmq_url.c_str()));
+                          "URL", beam::arg<std::string>(zmq_url.c_str()));
 
   SocketPtr publisher_socket = SocketPtr(new ::zmq::socket_t(context_, ZMQ_PUB));
   publisher_socket->connect(zmq_url.c_str());
@@ -169,11 +169,11 @@ void ProtocolManager::work()
     body_msg->update_buffer();
 
     beam::glog<beam::Debug>("ZeroMQ message",
-			   "size1", beam::arg<int>(header_msg->size()),
-			   "size2", beam::arg<int>(body_msg->size()));
+                            "size1", beam::arg<int>(header_msg->size()),
+                            "size2", beam::arg<int>(body_msg->size()));
 
     packet_received(header_msg, body_msg);
-}
+  }
 
 }
 

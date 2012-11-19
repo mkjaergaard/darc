@@ -26,8 +26,7 @@ class peer
 protected:
   typedef std::map<service_type, peer_service*> service_list_type;
 
-  typedef boost::function<void(const darc::ID&,
-			       darc::buffer::shared_buffer)> send_to_function_type;
+  typedef boost::function<void(const darc::ID&, darc::buffer::shared_buffer)> send_to_function_type;
 
   typedef boost::signal<void(const ID&)> peer_connected_signal_type;
 

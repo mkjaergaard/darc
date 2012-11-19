@@ -74,23 +74,23 @@ protected:
 
 public:
   virtual void sendPacket(const ID& outbound_id,
-			  const ID& dest_peer_id,
-			  const uint16_t packet_type,
-			  buffer::shared_buffer data) = 0;
+                          const ID& dest_peer_id,
+                          const uint16_t packet_type,
+                          buffer::shared_buffer data) = 0;
 
   virtual void send_packet_to_all(const uint16_t packet_type,
-				  buffer::shared_buffer data) = 0;
+                                  buffer::shared_buffer data) = 0;
 
   void packet_received(buffer::shared_buffer header_data,
-		       buffer::shared_buffer body_data);
+                       buffer::shared_buffer body_data);
 
   void handle_discover_packet(const ID& src_peer_id, buffer::shared_buffer& data)
   {
     inbound_data<darc::serializer::boost_serializer, discover_packet> dp_i(data);
 
     beam::glog<beam::Debug>("Received DISCOVER",
-			   "peer_id", beam::arg<ID>(src_peer_id),
-			   "remote outbound_id", beam::arg<ID>(dp_i.get().outbound_id));
+                            "peer_id", beam::arg<ID>(src_peer_id),
+                            "remote outbound_id", beam::arg<ID>(dp_i.get().outbound_id));
 
     discover_reply_packet drp;
     drp.outbound_id = dp_i.get().outbound_id;
@@ -108,7 +108,7 @@ public:
   void sendDiscover(const ID& outbound_id)
   {
     beam::glog<beam::Debug>("Sending DISCOVER",
-			    "Outbound ID", beam::arg<ID>(outbound_id));
+                            "Outbound ID", beam::arg<ID>(outbound_id));
 
     discover_packet dp;
     dp.outbound_id = outbound_id;
@@ -124,14 +124,14 @@ public:
 /*
   void sendDiscoverReply(const ID& remote_outbound_id, const ID& remote_node_id)
   {
-    // Create packet
-    std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBufferArray::create(data_len);
-    network::packet::DiscoverReply discover_reply(remote_outbound_id);
-    std::size_t len = discover_reply.write( buffer.data(), buffer.size() );
+  // Create packet
+  std::size_t data_len = 1024*32;
+  SharedBuffer buffer = SharedBufferArray::create(data_len);
+  network::packet::DiscoverReply discover_reply(remote_outbound_id);
+  std::size_t len = discover_reply.write( buffer.data(), buffer.size() );
 
-    // Send packet
-    sendPacketToAll(network::packet::Header::DISCOVER_REPLY_PACKET, remote_node_id, buffer, len );
+  // Send packet
+  sendPacketToAll(network::packet::Header::DISCOVER_REPLY_PACKET, remote_node_id, buffer, len );
   }
 */
 };

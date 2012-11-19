@@ -113,9 +113,9 @@ protected:
     server_instance_id_ = e.instance_id;
 
     send_to_location(e.location_id,
-		     e.instance_id,
-		     header_packet::control,
-		     o_ctrl);
+                     e.instance_id,
+                     header_packet::control,
+                     o_ctrl);
   }
 
   void request_full_update()
@@ -127,9 +127,9 @@ protected:
     outbound_data<serializer::boost_serializer, control_packet> o_ctrl(ctrl);
 
     send_to_location(server_location_id_,
-		     server_instance_id_,
-		     header_packet::control,
-		     o_ctrl);
+                     server_instance_id_,
+                     header_packet::control,
+                     o_ctrl);
   }
 
   void populate_partial_update(ev_update_partial& e)
@@ -138,23 +138,23 @@ protected:
     inbound_data<serializer::boost_serializer, list_type> i_removed_list(e.data);
 
     for(typename list_type::iterator it = i_added_list.get().begin();
-	it != i_added_list.get().end();
-	it++)
+        it != i_added_list.get().end();
+        it++)
     {
       insert_type result = list_.insert(*it);
       if(result.second)
       {
-	llog::llog<llog::Severity::Debug>("New Item Callback");
+        llog::llog<llog::Severity::Debug>("New Item Callback");
       }
     }
 
     for(typename list_type::iterator it = i_removed_list.get().begin();
-	it != i_removed_list.get().end();
-	it++)
+        it != i_removed_list.get().end();
+        it++)
     {
       if(list_.erase(*it) > 0)
       {
-	llog::llog<llog::Severity::Debug>("Erased Item Callback");
+        llog::llog<llog::Severity::Debug>("Erased Item Callback");
       }
     }
 
@@ -167,13 +167,13 @@ protected:
     list_.clear();
 
     for(typename list_type::iterator it = i_added_list.get().begin();
-	it != i_added_list.get().end();
-	it++)
+        it != i_added_list.get().end();
+        it++)
     {
       insert_type result = list_.insert(*it);
       if(result.second)
       {
-	llog::llog<llog::Severity::Debug>("New Item Callback 2");
+        llog::llog<llog::Severity::Debug>("New Item Callback 2");
       }
     }
   }
@@ -186,34 +186,34 @@ protected:
   // Default Handler
   //**********
   void handle(const UNINIT&,
-	      ev_sub_req& event)
+              ev_sub_req& event)
   {
     base::trans(PEND_SUBSCRIPTION());
     request_subscription(event);
   }
 
   void handle(const PEND_SUBSCRIPTION&,
-	      ev_update_complete& event)
+              ev_update_complete& event)
   {
     populate_complete_set(event);
     base::trans(UPDATED());
   }
 
   void handle(const UPDATED&,
-	      ev_update_partial& event)
+              ev_update_partial& event)
   {
     populate_partial_update(event);
   }
 
   void handle(const PEND_COMPLETE&,
-	      ev_update_complete& event)
+              ev_update_complete& event)
   {
     populate_complete_set(event);
     base::trans(UPDATED());
   }
 
   void handle(const PEND_COMPLETE&,
-	      ev_update_partial& event)
+              ev_update_partial& event)
   {
     stash_partial_update(event);
   }

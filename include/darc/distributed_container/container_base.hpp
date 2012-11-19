@@ -63,8 +63,8 @@ public:
   }
 
   virtual void recv(const ID& src_location_id,
-		    const header_packet& hdr,
-		    darc::buffer::shared_buffer data) = 0;
+                    const header_packet& hdr,
+                    darc::buffer::shared_buffer data) = 0;
 
   virtual ~container_base()
   {
@@ -78,13 +78,13 @@ public:
   void attach(container_manager * manager);
 
   void send_to_location(const ID& dest_location_id,
-			const ID& dest_instance_id,
-			const uint32_t payload_type,
-			const outbound_data_base& data);
+                        const ID& dest_instance_id,
+                        const uint32_t payload_type,
+                        const outbound_data_base& data);
 
   void send_to_instance(const ID& dest_instance_id,
-			const uint32_t payload_type,
-			const outbound_data_base& data);
+                        const uint32_t payload_type,
+                        const outbound_data_base& data);
 
 };
 

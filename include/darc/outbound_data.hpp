@@ -104,8 +104,8 @@ public:
   virtual void pack(buffer::shared_buffer& buffer) const
   {
     for(T it = begin_;
-	it != end_;
-	it++)
+        it != end_;
+        it++)
     {
       S::template pack<typename T::value_type>(buffer, *it);
     }

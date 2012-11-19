@@ -52,7 +52,7 @@ public:
     {
       if(removed_list_.erase(item) == 0)
       {
-	added_list_.insert(item);
+        added_list_.insert(item);
       }
       state_index_++;
     }
@@ -64,7 +64,7 @@ public:
     {
       if(added_list_.erase(item) == 0)
       {
-	removed_list_.insert(item);
+        removed_list_.insert(item);
       }
       state_index_++;
     }
@@ -146,7 +146,7 @@ protected:
     case control_packet::resend:
       if(subscriber_list_.find(msg.client_id) != subscriber_list_.end())
       {
-	send_all(msg.client_id);
+        send_all(msg.client_id);
       }
       break;
     default:

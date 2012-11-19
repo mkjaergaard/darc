@@ -104,9 +104,9 @@ protected:
 
 public:
   connection(container_manager * manager,
-	     shared_set<Key, T> * parent,
-	     const ID& remote_location_id,
-	     const ID& remote_instance_id) :
+             shared_set<Key, T> * parent,
+             const ID& remote_location_id,
+             const ID& remote_instance_id) :
     remote_location_id_(remote_location_id),
     remote_instance_id_(remote_instance_id),
     manager_(manager),
@@ -132,10 +132,10 @@ public:
 
   // called when we have a new map entry to send to remote
   void increment(const ID& informer, // where we got the info from
-		 const Key& key,
-		 const ID& origin,
-		 const T& value,
-		 uint32_t state_index)
+                 const Key& key,
+                 const ID& origin,
+                 const T& value,
+                 uint32_t state_index)
   {
     entry_type entry(origin, value);
 
@@ -156,20 +156,20 @@ public:
       outbound_pair o_data(o_update, o_item);
 
       manager_->send_to_location(parent_->id(),
-				 remote_location_id_,
-				 remote_instance_id_,
-				 header_packet::update,
-				 o_data);
+                                 remote_location_id_,
+                                 remote_instance_id_,
+                                 header_packet::update,
+                                 o_data);
     }
   }
 
   void handle_update(const header_packet& header,
-		     const update_packet& update,
-		     buffer::shared_buffer data);
+                     const update_packet& update,
+                     buffer::shared_buffer data);
 
   void full_update(typename list_type::iterator begin,
-		   typename list_type::iterator end,
-		   uint32_t state_index)
+                   typename list_type::iterator end,
+                   uint32_t state_index)
   {
     if(begin != end)
     {
@@ -181,10 +181,10 @@ public:
 
       // todo: smarter iterator count
       for(typename list_type::iterator it = begin;
-	  it != end;
-	  it++)
+          it != end;
+          it++)
       {
-	++update.num_entries;
+        ++update.num_entries;
       }
 
       outbound_data<serializer::boost_serializer, update_packet> o_update(update);
@@ -194,10 +194,10 @@ public:
       outbound_pair o_data(o_update, o_item);
 
       manager_->send_to_location(parent_->id(),
-				 remote_location_id_,
-				 remote_instance_id_,
-				 header_packet::update,
-				 o_data);
+                                 remote_location_id_,
+                                 remote_instance_id_,
+                                 header_packet::update,
+                                 o_data);
     }
     last_sent_index_ = 0;
   }
@@ -266,7 +266,7 @@ public:
   }
 
   void connect(const ID& remote_location_id,
-	       const ID& remote_instance_id)
+               const ID& remote_instance_id)
   {
     assert(connection_list_.find(remote_instance_id) == connection_list_.end());
     connection_ptr c = boost::make_shared<connection_type >(
@@ -288,14 +288,14 @@ public:
   }
 
 protected:
-  void remote_insert(const ID& informer, //informer
-		     const Key& key, // Key
-		     const ID& origin, // origin
-		     const T& value) // entry
+  void remote_insert(const ID& informer,
+                     const Key& key,
+                     const ID& origin,
+                     const T& value)
   {
     slog<beam::Trace>("remote_insert",
-		      "key", beam::arg<Key>(key),
-		      "value", beam::arg<T>(value));
+                      "key", beam::arg<Key>(key),
+                      "value", beam::arg<T>(value));
 
     entry_type entry(origin, value);
     list_.insert(
@@ -307,8 +307,8 @@ protected:
 
     // do it in flush instead
     for(typename connection_list_type::iterator it = connection_list_.begin();
-	it != connection_list_.end();
-	it++)
+        it != connection_list_.end();
+        it++)
     {
       it->second->increment(informer, key, origin, value, state_index_);
     }
@@ -319,8 +319,8 @@ protected:
     typename connection_list_type::iterator item = connection_list_.find(remote_instance_id);
     assert(item != connection_list_.end());
     item->second->full_update(list_.begin(),
-			      list_.end(),
-			      state_index_);
+                              list_.end(),
+                              state_index_);
 
   }
 
@@ -363,9 +363,9 @@ protected:
   }
 
   void handle_update(const ID& src_location_id,
-		     const header_packet& header,
-		     const update_packet& update,
-		     darc::buffer::shared_buffer data)
+                     const header_packet& header,
+                     const update_packet& update,
+                     darc::buffer::shared_buffer data)
   {
     typename connection_list_type::iterator item = connection_list_.find(header.src_instance_id);
     assert(item != connection_list_.end());
@@ -378,8 +378,8 @@ protected:
 // Connection impl
 template<typename Key, typename T>
 void connection<Key, T>::handle_update(const header_packet& header,
-				       const update_packet& update,
-				       buffer::shared_buffer data)
+                                       const update_packet& update,
+                                       buffer::shared_buffer data)
 {
   if(update.type == update_packet::complete)
   {
@@ -387,13 +387,13 @@ void connection<Key, T>::handle_update(const header_packet& header,
     list_.clear();
   }
   else if(update.start_index != last_received_index_ + 1 &&
-	  update.start_index != last_sent_index_ + 1)
+          update.start_index != last_sent_index_ + 1)
   {
     // todo: request full update
     beam::glog<beam::Fatal>("shared_set, incorrect index",
-			    "set_id", beam::arg<ID>(parent_->id()),
-			    "update.start_index", beam::arg<int>(update.start_index),
-			    "last_received_index_ + 1", beam::arg<int>(last_received_index_ + 1));
+                            "set_id", beam::arg<ID>(parent_->id()),
+                            "update.start_index", beam::arg<int>(update.start_index),
+                            "last_received_index_ + 1", beam::arg<int>(last_received_index_ + 1));
     BEAM_ASSERT(false);
   }
   last_received_index_ = update.end_index;
@@ -404,9 +404,9 @@ void connection<Key, T>::handle_update(const header_packet& header,
     typename list_type::value_type value(i_item.get().first, i_item.get().second);
     list_.insert(value);
     parent_->remote_insert(remote_instance_id_, //informer
-			   value.first, // Key
-			   value.second.first, // origin
-			   value.second.second); // entry
+                           value.first, // key
+                           value.second.first, // origin
+                           value.second.second); // entry
   }
 }
 

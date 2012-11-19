@@ -78,12 +78,12 @@ public:
   }
 
   void sendPacket(const ConnectionID& outbound_id,
-		  const ID& dest_peer_id,
-		  const uint16_t packet_type,
-		  buffer::shared_buffer data);
+                  const ID& dest_peer_id,
+                  const uint16_t packet_type,
+                  buffer::shared_buffer data);
 
   virtual void send_packet_to_all(const uint16_t packet_type,
-				  buffer::shared_buffer data);
+                                  buffer::shared_buffer data);
 
   const ConnectionID& accept(const std::string& protocol, const std::string& url);
   void connect(const std::string& protocol, const std::string& url);

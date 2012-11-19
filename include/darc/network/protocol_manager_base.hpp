@@ -61,19 +61,19 @@ public:
   virtual void connect(const std::string& protocol, const std::string& url) = 0;
 
   virtual void sendPacket(const ConnectionID& outbound_id,
-			  const ID& dest_peer_id,
-			  const uint16_t packet_type,
-			  buffer::shared_buffer data) = 0;
+                          const ID& dest_peer_id,
+                          const uint16_t packet_type,
+                          buffer::shared_buffer data) = 0;
 /*
   void sendDiscover(const ID& outbound_id)
   {
-    std::size_t data_len = 1024*32;
-    SharedBuffer buffer = SharedBufferArray::create(data_len);
+  std::size_t data_len = 1024*32;
+  SharedBuffer buffer = SharedBufferArray::create(data_len);
 
-    // Create packet
-    network::packet::Discover discover(outbound_id);
-    std::size_t len = discover.write(buffer.data(), buffer.size());
-    sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
+  // Create packet
+  network::packet::Discover discover(outbound_id);
+  std::size_t len = discover.write(buffer.data(), buffer.size());
+  sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
   }
 */
 };

@@ -22,7 +22,7 @@ public:
 };
 
 bool equal_(const darc::distributed_container::shared_set<std::string, uint32_t>& set1,
-	   const darc::distributed_container::shared_set<std::string, uint32_t>& set2)
+            const darc::distributed_container::shared_set<std::string, uint32_t>& set2)
 {
   typedef darc::distributed_container::shared_set<std::string, uint32_t> set_type;
   typedef set_type::list_type::const_iterator i_type;
@@ -40,7 +40,7 @@ bool equal_(const darc::distributed_container::shared_set<std::string, uint32_t>
 }
 
 bool equal(const darc::distributed_container::shared_set<std::string, uint32_t>& set1,
-	   const darc::distributed_container::shared_set<std::string, uint32_t>& set2)
+           const darc::distributed_container::shared_set<std::string, uint32_t>& set2)
 {
   return equal_(set1, set2) && equal_(set2, set1);
 }
@@ -49,10 +49,10 @@ template<typename Key, typename T>
 void callback(const darc::ID& instance, const darc::ID& owner, const Key& key, const T& value)
 {
   beam::glog<beam::Info>("New Item Callback",
-			 "instance", beam::arg<darc::ID>(instance),
-			 "owner", beam::arg<darc::ID>(owner),
-			 "key", beam::arg<Key>(key),
-			 "value", beam::arg<T>(value));
+                         "instance", beam::arg<darc::ID>(instance),
+                         "owner", beam::arg<darc::ID>(owner),
+                         "key", beam::arg<Key>(key),
+                         "value", beam::arg<T>(value));
 }
 
 TEST_F(SharedSetTest, Subscribe)
@@ -62,10 +62,10 @@ TEST_F(SharedSetTest, Subscribe)
   darc::distributed_container::shared_set<std::string, uint32_t> my_set2;
 
   beam::glog<beam::Info>("Shared Set Created",
-			 "Node1", beam::arg<darc::ID>(peer1.id()),
-			 "Node2", beam::arg<darc::ID>(peer2.id()),
-			 "Set1", beam::arg<darc::ID>(my_set1.id()),
-			 "Set2", beam::arg<darc::ID>(my_set2.id()));
+                         "Node1", beam::arg<darc::ID>(peer1.id()),
+                         "Node2", beam::arg<darc::ID>(peer2.id()),
+                         "Set1", beam::arg<darc::ID>(my_set1.id()),
+                         "Set2", beam::arg<darc::ID>(my_set2.id()));
 
   darc::test::step("Attach to managers");
   my_set1.attach(&mngr1);
@@ -94,4 +94,3 @@ TEST_F(SharedSetTest, Subscribe)
   EXPECT_EQ(equal(my_set1, my_set2), true);
 
 }
-

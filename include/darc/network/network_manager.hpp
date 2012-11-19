@@ -69,7 +69,7 @@ private:
 
   // Map "Inbound ConnectionID" -> Manager
   typedef std::map<const ConnectionID, ProtocolManagerBase*> ManagerConnectionMapType;
-  ManagerConnectionMapType manager_connection_map_; 
+  ManagerConnectionMapType manager_connection_map_;
 
   // Node -> Outbound connection map (handle this a little more intelligent, more connections per nodes, timeout etc)
   typedef std::map<const NodeID, const ConnectionID> NeighbourNodesType; // NodeID -> OutboundID
@@ -91,10 +91,10 @@ public:
     {
       assert(false);
 /*
-      for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
-      {
-	zmq_manager_.sendPacket(it->second, type, it->first, buffer, data_len );
-      }
+  for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
+  {
+  zmq_manager_.sendPacket(it->second, type, it->first, buffer, data_len );
+  }
 */
     }
     else
@@ -102,12 +102,12 @@ public:
       NeighbourNodesType::iterator item = neighbour_nodes_.find(recv_node_id);
       if(item != neighbour_nodes_.end())
       {
-	zmq_manager_.sendPacket(item->second, recv_node_id, link_header_packet::SERVICE, data);
+        zmq_manager_.sendPacket(item->second, recv_node_id, link_header_packet::SERVICE, data);
       }
       else
       {
-	beam::glog<beam::Warning>("network_manager: sending packet to unknown peer_id",
-				  "peer_id", beam::arg<ID>(recv_node_id));
+        beam::glog<beam::Warning>("network_manager: sending packet to unknown peer_id",
+                                  "peer_id", beam::arg<ID>(recv_node_id));
       }
     }
   }
@@ -119,22 +119,22 @@ public:
       boost::smatch what;
       if(boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ))
       {
-	ProtocolManagerBase * mngr = getManager(what[1]);
-	if(mngr)
-	{
-	  ConnectionID inbound_id = mngr->accept(what[1], what[2]);
-	  manager_connection_map_.insert(ManagerConnectionMapType::value_type(inbound_id, mngr));
-	}
-	else
-	{
-	  beam::glog<beam::Error>("network_manager: unsupported protocol",
-				  "url", beam::arg<std::string>(url));
-	}
+        ProtocolManagerBase * mngr = getManager(what[1]);
+        if(mngr)
+        {
+          ConnectionID inbound_id = mngr->accept(what[1], what[2]);
+          manager_connection_map_.insert(ManagerConnectionMapType::value_type(inbound_id, mngr));
+        }
+        else
+        {
+          beam::glog<beam::Error>("network_manager: unsupported protocol",
+                                  "url", beam::arg<std::string>(url));
+        }
       }
       else
       {
-	  beam::glog<beam::Error>("network_manager: invalid url",
-				  "url", beam::arg<std::string>(url));
+        beam::glog<beam::Error>("network_manager: invalid url",
+                                "url", beam::arg<std::string>(url));
       }
     }
     catch(std::exception& e) //todo: handle the possible exceptions
@@ -150,21 +150,21 @@ public:
       boost::smatch what;
       if( boost::regex_match(url, what, boost::regex("^(.+)://(.+)$")) )
       {
-	ProtocolManagerBase * mngr = getManager(what[1]);
-	if(mngr)
-	{
-	  mngr->connect(what[1], what[2]);
-	}
-	else
-	{
-	  beam::glog<beam::Error>("network_manager: unsupported protocol",
-				  "url", beam::arg<std::string>(url));
-	}
+        ProtocolManagerBase * mngr = getManager(what[1]);
+        if(mngr)
+        {
+          mngr->connect(what[1], what[2]);
+        }
+        else
+        {
+          beam::glog<beam::Error>("network_manager: unsupported protocol",
+                                  "url", beam::arg<std::string>(url));
+        }
       }
       else
       {
-	beam::glog<beam::Error>("network_manager: invalid url",
-				"url", beam::arg<std::string>(url));
+        beam::glog<beam::Error>("network_manager: invalid url",
+                                "url", beam::arg<std::string>(url));
       }
     }
     catch(std::exception& e) //todo: handle the possible exceptions
