@@ -47,6 +47,29 @@ struct state
   const static unsigned int value = State;
 };
 
+struct arg0
+{
+};
+
+template<typename T1>
+struct arg1
+{
+  T1& a1_;
+
+  arg1(T1& a1) :
+    a1_(a1)
+  {
+  }
+};
+
+template<typename T1>
+arg1 wrap(T1& a1)
+{
+  return arg1(a1);
+}
+
+extern arg0 arg0_alloc;
+
 template<typename Derived>
 class fsm
 {
@@ -60,30 +83,32 @@ protected:
   }
 
 public:
-  template<typename Event>
-  void post_event(Event& event)
+  template<typename Event,
+           typename Arguments = arg0>
+  void post_event(Event& event,
+                  Arguments& arg = arg0_alloc)
   {
     Derived* d_this = (Derived*)this;
 
     switch(state_)
     {
     case 0:
-      d_this->handle(state<0>(), event);
+      d_this->handle(state<0>(), event, arg);
       break;
     case 1:
-      d_this->handle(state<1>(), event);
+      d_this->handle(state<1>(), event, arg);
       break;
     case 2:
-      d_this->handle(state<2>(), event);
+      d_this->handle(state<2>(), event, arg);
       break;
     case 3:
-      d_this->handle(state<3>(), event);
+      d_this->handle(state<3>(), event, arg);
       break;
     case 4:
-      d_this->handle(state<4>(), event);
+      d_this->handle(state<4>(), event, arg);
       break;
     case 5:
-      d_this->handle(state<5>(), event);
+      d_this->handle(state<5>(), event, arg);
       break;
     default:
       assert(0);
