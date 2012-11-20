@@ -3,7 +3,6 @@
 #include <boost/signals/connection.hpp>
 #include <darc/id.hpp>
 #include <darc/peer_service.hpp>
-#include <darc/distributed_container/shared_set.hpp>
 #include <darc/local_tag.hpp>
 #include <darc/tag_handle.hpp>
 #include <darc/namespace_handle.hpp>

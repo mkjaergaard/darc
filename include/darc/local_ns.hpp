@@ -4,7 +4,7 @@
 #include <boost/signals.hpp>
 #include <boost/signals/connection.hpp>
 #include <darc/id.hpp>
-#include <darc/distributed_container/shared_set.hpp>
+#include <darc/distributed_container/shared_map.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <beam/glog.hpp>
@@ -23,7 +23,7 @@ class local_ns : public boost::enable_shared_from_this<local_ns>
 {
 protected:
 public: //for printing
-  typedef distributed_container::shared_set<ID, entry> list_type;
+  typedef distributed_container::shared_map<ID, entry> list_type;
   list_type list_; // the shared list!
 
   ns_service * ns_service_;
