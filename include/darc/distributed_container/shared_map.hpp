@@ -122,7 +122,7 @@ public:
   // Public interface
   void insert(const Key& key, const T& value)
   {
-    remote_insert(id(), key, id(), value);
+    insert_(id(), key, id(), value);
   }
 
   void connect(const ID& remote_location_id,
@@ -136,8 +136,8 @@ public:
       remote_instance_id);
     connection_list_.insert(
       typename connection_list_type::value_type(remote_instance_id, c));
-    c->do_connect();
-    full_update(remote_instance_id);
+    c->send_connect();
+    trigger_full_update(remote_instance_id);
   }
   //
   /////////////////////////
@@ -151,12 +151,12 @@ public:
 
 protected:
   // Insert entry into map and propagate to all other
-  void remote_insert(const ID& informer,
-                     const Key& key,
-                     const ID& origin,
-                     const T& value)
+  void insert_(const ID& informer,
+               const Key& key,
+               const ID& origin,
+               const T& value)
   {
-    slog<beam::Trace>("remote_insert",
+    slog<beam::Trace>("insert_",
                       "key", beam::arg<Key>(key),
                       "value", beam::arg<T>(value));
 
@@ -173,18 +173,18 @@ protected:
         it != connection_list_.end();
         it++)
     {
-      it->second->increment(informer, key, origin, value, state_index_);
+      it->second->insert(informer, key, origin, value, state_index_);
     }
   }
 
-  void full_update(const ID& remote_instance_id)
+  void trigger_full_update(const ID& remote_instance_id)
   {
     typename connection_list_type::iterator item = connection_list_.find(remote_instance_id);
     assert(item != connection_list_.end());
 
-    item->second->full_update(list_.begin(),
-                              list_.end(),
-                              state_index_);
+    item->second->send_full_update(list_.begin(),
+                                   list_.end(),
+                                   state_index_);
 
   }
 
@@ -230,7 +230,7 @@ protected:
     connection_list_.insert(
       typename connection_list_type::value_type(header.src_instance_id, c));
 
-    full_update(header.src_instance_id);
+    trigger_full_update(header.src_instance_id);
   }
 
   void handle_update(const ID& src_location_id,

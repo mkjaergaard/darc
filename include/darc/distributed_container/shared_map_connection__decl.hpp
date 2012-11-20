@@ -94,7 +94,7 @@ public:
   {
   }
 
-  void do_connect()
+  void send_connect()
   {
     control_packet ctrl;
     ctrl.command = control_packet::connect;
@@ -109,7 +109,7 @@ public:
   }
 
   // called when we have a new map entry to send to remote
-  void increment(const ID& informer, // where we got the info from
+  void insert(const ID& informer, // where we got the info from
                  const Key& key,
                  const ID& origin,
                  const T& value,
@@ -145,9 +145,9 @@ public:
                      const update_packet& update,
                      buffer::shared_buffer data);
 
-  void full_update(typename list_type::iterator begin,
-                   typename list_type::iterator end,
-                   uint32_t state_index)
+  void send_full_update(typename list_type::iterator begin,
+                        typename list_type::iterator end,
+                        uint32_t state_index)
   {
     if(begin != end)
     {

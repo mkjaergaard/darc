@@ -69,10 +69,10 @@ void connection<Key, T>::handle_update(const header_packet& header,
     inbound_data<serializer::boost_serializer, transfer_type> i_item(data);
     typename list_type::value_type value(i_item.get().first, i_item.get().second);
     list_.insert(value);
-    parent_->remote_insert(remote_instance_id_, //informer
-                           value.first, // key
-                           value.second.first, // origin
-                           value.second.second); // entry
+    parent_->insert_(remote_instance_id_, //informer
+                     value.first, // key
+                     value.second.first, // origin
+                     value.second.second); // entry
   }
 }
 
