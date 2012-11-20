@@ -36,8 +36,8 @@ catkin_add_gtest(darc_common_gtest_distributed test/distributed_gtest.cpp)
 target_link_libraries(darc_common_gtest_distributed darc_common ${GTEST_BOTH_LIBRARIES})
 
 # Add test cpp file
-catkin_add_gtest(darc_common_gtest_shared_set test/shared_set_gtest.cpp)
-target_link_libraries(darc_common_gtest_shared_set darc_common ${GTEST_BOTH_LIBRARIES})
+catkin_add_gtest(darc_common_gtest_shared_map test/shared_map_gtest.cpp)
+target_link_libraries(darc_common_gtest_shared_map darc_common ${GTEST_BOTH_LIBRARIES})
 
 # Add test cpp file
 catkin_add_gtest(darc_common_gtest_network test/network_test.cpp)

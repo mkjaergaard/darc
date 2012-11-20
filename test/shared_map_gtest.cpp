@@ -2,19 +2,19 @@
 
 #include <darc/test/two_peer_sim.hpp>
 #include <darc/test/step.hpp>
-#include <darc/distributed_container/shared_set.hpp>
+#include <darc/distributed_container/shared_map.hpp>
 
 #include <boost/bind.hpp>
 #include <beam/glog.hpp>
 #include <darc/id_arg.hpp>
 
-class SharedSetTest : public darc::test::two_peer_sim, public testing::Test
+class SharedMapTest : public darc::test::two_peer_sim, public testing::Test
 {
 public:
   darc::distributed_container::container_manager mngr1;
   darc::distributed_container::container_manager mngr2;
 
-  SharedSetTest() :
+  SharedMapTest() :
     mngr1(peer1),
     mngr2(peer2)
   {
@@ -55,17 +55,17 @@ void callback(const darc::ID& instance, const darc::ID& owner, const Key& key, c
                          "value", beam::arg<T>(value));
 }
 
-TEST_F(SharedSetTest, Subscribe)
+TEST_F(SharedMapTest, Subscribe)
 {
-  darc::test::step("Creating Shared Sets");
+  darc::test::step("Creating Shared Maps");
   darc::distributed_container::shared_map<std::string, uint32_t> my_set1;
   darc::distributed_container::shared_map<std::string, uint32_t> my_set2;
 
-  beam::glog<beam::Info>("Shared Set Created",
+  beam::glog<beam::Info>("Shared Map Created",
                          "Node1", beam::arg<darc::ID>(peer1.id()),
                          "Node2", beam::arg<darc::ID>(peer2.id()),
-                         "Set1", beam::arg<darc::ID>(my_set1.id()),
-                         "Set2", beam::arg<darc::ID>(my_set2.id()));
+                         "Map1", beam::arg<darc::ID>(my_set1.id()),
+                         "Map2", beam::arg<darc::ID>(my_set2.id()));
 
   darc::test::step("Attach to managers");
   my_set1.attach(&mngr1);
@@ -74,21 +74,21 @@ TEST_F(SharedSetTest, Subscribe)
   darc::test::step("Connect Listener");
   my_set1.signal_.connect(boost::bind(&callback<std::string, uint32_t>, _1, _2, _3, _4));
 
-  darc::test::step("Connect Set1->Set2");
+  darc::test::step("Connect Map1->Map2");
   my_set1.connect(peer2.id(), my_set2.id());
 
-  darc::test::step("Insert key3 + key4 into Set1");
+  darc::test::step("Insert key3 + key4 into Map1");
   my_set1.insert("key3", 3);
   my_set1.insert("key4", 4);
 
   EXPECT_EQ(equal(my_set1, my_set2), true);
 
-  darc::test::step("Insert key1 into Set1");
+  darc::test::step("Insert key1 into Map1");
   my_set1.insert("key1", 1);
 
   EXPECT_EQ(equal(my_set1, my_set2), true);
 
-  darc::test::step("Insert key2 into Set2");
+  darc::test::step("Insert key2 into Map2");
   my_set2.insert("key2", 2);
 
   EXPECT_EQ(equal(my_set1, my_set2), true);
