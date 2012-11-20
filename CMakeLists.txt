@@ -25,7 +25,7 @@ add_library(darc_common
   src/network/zmq/protocol_manager.cpp
 )
 
-target_link_libraries(darc_common ${Boost_LIBRARIES} ${beam_LIBRARIES} -lstdc++)
+target_link_libraries(darc_common ${Boost_LIBRARIES} ${beam_LIBRARIES} -lstdc++ -lzmq)
 
 # Add test cpp file
 catkin_add_gtest(darc_common_gtest_buffer test/buffer_gtest.cpp)
