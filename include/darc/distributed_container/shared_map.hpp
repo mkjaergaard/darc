@@ -78,7 +78,7 @@ namespace distributed_container
 {
 
 template<typename Key, typename T>
-class shared_set;
+class shared_map;
 
 template<typename Key, typename T>
 class connection
@@ -95,7 +95,7 @@ protected:
   ID remote_location_id_; // location we are connected to
   ID remote_instance_id_; // instance we are connected to
   container_manager * manager_;
-  shared_set<Key, T> * parent_;
+  shared_map<Key, T> * parent_;
 
   uint32_t last_sent_index_;
   uint32_t last_received_index_;
@@ -104,7 +104,7 @@ protected:
 
 public:
   connection(container_manager * manager,
-             shared_set<Key, T> * parent,
+             shared_map<Key, T> * parent,
              const ID& remote_location_id,
              const ID& remote_instance_id) :
     remote_location_id_(remote_location_id),
@@ -210,7 +210,7 @@ public:
 };
 
 template<typename Key, typename T>
-class shared_set : public container_base, public beam::static_scope<beam::Info>
+class shared_map : public container_base, public beam::static_scope<beam::Info>
 {
   friend class connection<Key, T>;
 
@@ -235,7 +235,7 @@ protected:
 
 
 public:
-  shared_set() :
+  shared_map() :
     state_index_(0)
   {
   }

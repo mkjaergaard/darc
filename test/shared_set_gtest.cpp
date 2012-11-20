@@ -21,10 +21,10 @@ public:
   }
 };
 
-bool equal_(const darc::distributed_container::shared_set<std::string, uint32_t>& set1,
-            const darc::distributed_container::shared_set<std::string, uint32_t>& set2)
+bool equal_(const darc::distributed_container::shared_map<std::string, uint32_t>& set1,
+            const darc::distributed_container::shared_map<std::string, uint32_t>& set2)
 {
-  typedef darc::distributed_container::shared_set<std::string, uint32_t> set_type;
+  typedef darc::distributed_container::shared_map<std::string, uint32_t> set_type;
   typedef set_type::list_type::const_iterator i_type;
   for(i_type it = set1.list().begin();
       it != set1.list().end();
@@ -39,8 +39,8 @@ bool equal_(const darc::distributed_container::shared_set<std::string, uint32_t>
   return true;
 }
 
-bool equal(const darc::distributed_container::shared_set<std::string, uint32_t>& set1,
-           const darc::distributed_container::shared_set<std::string, uint32_t>& set2)
+bool equal(const darc::distributed_container::shared_map<std::string, uint32_t>& set1,
+           const darc::distributed_container::shared_map<std::string, uint32_t>& set2)
 {
   return equal_(set1, set2) && equal_(set2, set1);
 }
@@ -58,8 +58,8 @@ void callback(const darc::ID& instance, const darc::ID& owner, const Key& key, c
 TEST_F(SharedSetTest, Subscribe)
 {
   darc::test::step("Creating Shared Sets");
-  darc::distributed_container::shared_set<std::string, uint32_t> my_set1;
-  darc::distributed_container::shared_set<std::string, uint32_t> my_set2;
+  darc::distributed_container::shared_map<std::string, uint32_t> my_set1;
+  darc::distributed_container::shared_map<std::string, uint32_t> my_set2;
 
   beam::glog<beam::Info>("Shared Set Created",
                          "Node1", beam::arg<darc::ID>(peer1.id()),
