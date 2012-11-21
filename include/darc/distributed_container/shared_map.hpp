@@ -77,6 +77,7 @@ public:
   typedef typename list_type::iterator iterator;
 
   boost::signal<void(const ID&, const ID&, const Key&, const T&)> signal_;
+  boost::signal<void(const ID&, const ID&, const Key&, const T&)> signal2_;
 
 protected:
   typedef boost::shared_ptr<connection_type> connection_ptr;
@@ -125,6 +126,15 @@ public:
     insert_(id(), key, id(), value);
   }
 
+  void remove(const Key& key)
+  {
+    typename list_type::iterator item = list_.find(key);
+    assert(item != list_.end());
+    assert(item->second.first == id());
+
+    remove_(id(), key);
+  }
+
   void connect(const ID& remote_location_id,
                const ID& remote_instance_id)
   {
@@ -137,7 +147,6 @@ public:
     connection_list_.insert(
       typename connection_list_type::value_type(remote_instance_id, c));
     c->send_connect();
-    trigger_full_update(remote_instance_id);
   }
   //
   /////////////////////////
@@ -174,6 +183,33 @@ protected:
         it++)
     {
       it->second->insert(informer, key, origin, value, state_index_);
+    }
+  }
+
+  // Insert entry into map and propagate to all other
+  void remove_(const ID& informer,
+               const Key& key)
+  {
+    slog<beam::Trace>("remove_",
+                      "key", beam::arg<Key>(key));
+
+    typename list_type::iterator item = list_.find(key);
+    assert(item != list_.end());
+
+    signal2_(id(), item->second.first, item->first, item->second.second);
+
+    list_.erase(key);
+    state_index_++;
+
+    // Trigger signal for new entry
+    //signal2_(id(), origin, key, value);
+
+    // todo: Implement som sort of flush instead
+    for(typename connection_list_type::iterator it = connection_list_.begin();
+        it != connection_list_.end();
+        it++)
+    {
+      it->second->remove(informer, key, state_index_);
     }
   }
 

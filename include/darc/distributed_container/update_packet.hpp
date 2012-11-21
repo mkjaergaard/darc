@@ -51,7 +51,8 @@ struct update_packet
   uint32_t start_index;
   uint32_t end_index;
   uint32_t type;
-  uint32_t num_entries;
+  uint32_t num_entries_insert;
+  uint32_t num_entries_remove;
 
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version)
@@ -60,7 +61,8 @@ struct update_packet
     ar & start_index;
     ar & end_index;
     ar & type;
-    ar & num_entries;
+    ar & num_entries_insert;
+    ar & num_entries_remove;
   }
 };
 

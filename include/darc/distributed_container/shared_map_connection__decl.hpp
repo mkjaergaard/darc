@@ -129,12 +129,42 @@ public:
       update.start_index = state_index;
       update.end_index = state_index;
       update.type = update_packet::partial;
-      update.num_entries = 1;
+      update.num_entries_insert = 1;
+      update.num_entries_remove = 0;
 
       outbound_data<serializer::boost_serializer, update_packet> o_update(update);
 
       transfer_type item(key, entry);
       outbound_data<serializer::boost_serializer, transfer_type> o_item(item);
+
+      outbound_pair o_data(o_update, o_item);
+
+      manager_->send_to_location(parent_->id(),
+                                 remote_location_id_,
+                                 remote_instance_id_,
+                                 header_packet::update,
+                                 o_data);
+    }
+  }
+
+  // called when we have a new map entry to send to remote
+  void remove(const ID& informer, // where we got the info from
+              const Key& key,
+              uint32_t state_index)
+  {
+    last_sent_index_ = state_index;
+    if(informer != remote_instance_id_) // dont send to informer
+    {
+      update_packet update;
+      update.start_index = state_index;
+      update.end_index = state_index;
+      update.type = update_packet::partial;
+      update.num_entries_insert = 0;
+      update.num_entries_remove = 1;
+
+      outbound_data<serializer::boost_serializer, update_packet> o_update(update);
+
+      outbound_data<serializer::boost_serializer, Key> o_item(key);
 
       outbound_pair o_data(o_update, o_item);
 
@@ -154,14 +184,15 @@ public:
     update.start_index = 0;
     update.end_index = state_index;
     update.type = update_packet::complete;
-    update.num_entries = 0;
+    update.num_entries_insert = 0;
+    update.num_entries_remove = 0;
 
     // todo: smarter iterator count
     for(typename list_type::iterator it = begin;
         it != end;
         it++)
     {
-      ++update.num_entries;
+      ++update.num_entries_insert;
     }
 
     outbound_data<serializer::boost_serializer, update_packet> o_update(update);

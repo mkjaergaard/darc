@@ -46,7 +46,7 @@ template<typename Key, typename T>
 void connection<Key, T>::insert_data(const update_packet& update,
                                      buffer::shared_buffer data)
 {
-  for(size_t i = 0; i < update.num_entries; i++)
+  for(size_t i = 0; i < update.num_entries_insert; i++)
   {
     inbound_data<serializer::boost_serializer, transfer_type> i_item(data);
     typename list_type::value_type value(i_item.get().first, i_item.get().second);
@@ -55,6 +55,14 @@ void connection<Key, T>::insert_data(const update_packet& update,
                      value.first, // key
                      value.second.first, // origin
                      value.second.second); // entry
+  }
+
+  for(size_t i = 0; i < update.num_entries_remove; i++)
+  {
+    inbound_data<serializer::boost_serializer, Key> i_item(data);
+    list_.erase(i_item.get());
+    parent_->remove_(remote_instance_id_, //informer
+                     i_item.get()); // key
   }
 }
 }

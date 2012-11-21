@@ -91,6 +91,9 @@ TEST_F(SharedMapTest, Subscribe)
   darc::test::step("Insert key2 into Map2");
   my_set2.insert("key2", 2);
 
+  darc::test::step("Remove key2 from Map2");
+  my_set2.remove("key2");
+
   EXPECT_EQ(equal(my_set1, my_set2), true);
 
 }
