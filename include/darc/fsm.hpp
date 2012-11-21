@@ -36,8 +36,6 @@
 #pragma once
 
 #include <boost/static_assert.hpp>
-#include <llog/logger.hpp>
-
 namespace darc
 {
 
@@ -47,28 +45,38 @@ struct state
   const static unsigned int value = State;
 };
 
-struct arg0
+template<unsigned int Event>
+struct event_0
 {
+  const static unsigned int value = Event;
 };
 
-template<typename T1>
-struct arg1
+template<unsigned int Event,
+         typename T1>
+struct event_1 : event_0<Event>
 {
-  T1& a1_;
+  const T1& a1_;
 
-  arg1(T1& a1) :
+  event_1(const T1& a1) :
     a1_(a1)
   {
   }
 };
 
-template<typename T1>
-arg1 wrap(T1& a1)
+template<unsigned int Event,
+         typename T1,
+         typename T2>
+struct event_2 : event_0<Event>
 {
-  return arg1(a1);
-}
+  const T1& a1_;
+  const T2& a2_;
 
-extern arg0 arg0_alloc;
+  event_2(const T1& a1, const T2& a2) :
+    a1_(a1),
+    a2_(a2)
+  {
+  }
+};
 
 template<typename Derived>
 class fsm
@@ -83,32 +91,30 @@ protected:
   }
 
 public:
-  template<typename Event,
-           typename Arguments = arg0>
-  void post_event(Event& event,
-                  Arguments& arg = arg0_alloc)
+  template<typename Event>
+  void post_event(Event event)
   {
     Derived* d_this = (Derived*)this;
 
     switch(state_)
     {
     case 0:
-      d_this->handle(state<0>(), event, arg);
+      d_this->handle(state<0>(), event);
       break;
     case 1:
-      d_this->handle(state<1>(), event, arg);
+      d_this->handle(state<1>(), event);
       break;
     case 2:
-      d_this->handle(state<2>(), event, arg);
+      d_this->handle(state<2>(), event);
       break;
     case 3:
-      d_this->handle(state<3>(), event, arg);
+      d_this->handle(state<3>(), event);
       break;
     case 4:
-      d_this->handle(state<4>(), event, arg);
+      d_this->handle(state<4>(), event);
       break;
     case 5:
-      d_this->handle(state<5>(), event, arg);
+      d_this->handle(state<5>(), event);
       break;
     default:
       assert(0);

@@ -230,7 +230,7 @@ protected:
     connection_list_.insert(
       typename connection_list_type::value_type(header.src_instance_id, c));
 
-    trigger_full_update(header.src_instance_id);
+    c->set_as_connected();
   }
 
   void handle_update(const ID& src_location_id,

@@ -43,27 +43,9 @@ namespace distributed_container
 {
 
 template<typename Key, typename T>
-void connection<Key, T>::handle_update(const header_packet& header,
-                                       const update_packet& update,
-                                       buffer::shared_buffer data)
+void connection<Key, T>::insert_data(const update_packet& update,
+                                     buffer::shared_buffer data)
 {
-  if(update.type == update_packet::complete)
-  {
-    // todo: handle more intelligent since this might cause duplicate callbacks
-    list_.clear();
-  }
-  else if(update.start_index != last_received_index_ + 1 &&
-          update.start_index != last_sent_index_ + 1)
-  {
-    // todo: request full update
-    beam::glog<beam::Fatal>("shared_set, incorrect index",
-                            "set_id", beam::arg<ID>(parent_->id()),
-                            "update.start_index", beam::arg<int>(update.start_index),
-                            "last_received_index_ + 1", beam::arg<int>(last_received_index_ + 1));
-    assert(false);
-  }
-  last_received_index_ = update.end_index;
-
   for(size_t i = 0; i < update.num_entries; i++)
   {
     inbound_data<serializer::boost_serializer, transfer_type> i_item(data);
@@ -75,6 +57,5 @@ void connection<Key, T>::handle_update(const header_packet& header,
                      value.second.second); // entry
   }
 }
-
 }
 }
