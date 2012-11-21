@@ -56,12 +56,21 @@ namespace zeromq
 ProtocolManager::ProtocolManager(boost::asio::io_service& io_service, network_manager * manager, peer& p):
   network::ProtocolManagerBase(),
   network::inbound_link_base(manager, p),
-//  network::InboundLink(callback),
   peer_(p),
-  context_(1),
-  inbound_id_(ConnectionID::create()),
-  subscriber_socket_(context_, ZMQ_SUB)
+  context_(new zmq::context_t(1)),
+  inbound_id_(ConnectionID::create())
 {
+}
+
+ProtocolManager::~ProtocolManager()
+{
+  // todo: fix this creation of a dummy buffer
+  int d = 0;
+  outbound_data<darc::serializer::boost_serializer, int> o_d(d);
+  buffer::shared_buffer dummy_data = boost::make_shared<buffer::const_size_buffer>(1024);
+  o_d.pack(dummy_data);
+
+  send_packet_to_all(link_header_packet::DISCONNECT, dummy_data);
 }
 
 #include <unistd.h>
@@ -122,10 +131,9 @@ const ID& ProtocolManager::accept(const std::string& protocol, const std::string
 
   std::string zmq_url = std::string("tcp://").append(url);
   beam::glog<beam::Debug>("ZeroMQ accepting",
-                          "URL", beam::arg<std::string>(zmq_url.c_str()));
-  subscriber_socket_.bind(zmq_url.c_str());
-  subscriber_socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-  recv_thread_ = boost::thread(boost::bind(&ProtocolManager::work, this));
+                          "URL", beam::arg<std::string>(zmq_url));
+
+  recv_thread_ = boost::thread(boost::bind(&ProtocolManager::work, this, zmq_url));
   return inbound_id_;
 }
 
@@ -138,7 +146,10 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
   beam::glog<beam::Debug>("ZeroMQ connecting",
                           "URL", beam::arg<std::string>(zmq_url.c_str()));
 
-  SocketPtr publisher_socket = SocketPtr(new ::zmq::socket_t(context_, ZMQ_PUB));
+  SocketPtr publisher_socket = SocketPtr(new ::zmq::socket_t(*context_, ZMQ_PUB));
+
+  int linger_value = 2000;
+  publisher_socket->setsockopt(ZMQ_LINGER, &linger_value, sizeof(linger_value));
   publisher_socket->connect(zmq_url.c_str());
 
   ConnectionID id = ID::create();
@@ -146,34 +157,61 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
   sendDiscover(id);
 }
 
-void ProtocolManager::work()
+void ProtocolManager::work(const std::string& url)
 {
-  while(1)
+  zmq::socket_t socket(*context_, ZMQ_SUB);
+
+  socket.bind(url.c_str());
+  socket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+
+  try
   {
-    beam::glog<beam::Debug>("ZeroMQ Waiting");
+    while(1)
+    {
+      beam::glog<beam::Debug>("ZeroMQ Waiting");
 
-    int64_t more;
-    size_t more_size = sizeof(more);
+      int64_t more;
+      size_t more_size = sizeof(more);
 
-    boost::shared_ptr<zmq_buffer> header_msg = boost::make_shared<zmq_buffer>();
-    boost::shared_ptr<zmq_buffer> body_msg = boost::make_shared<zmq_buffer>();
+      boost::shared_ptr<zmq_buffer> header_msg = boost::make_shared<zmq_buffer>();
+      boost::shared_ptr<zmq_buffer> body_msg = boost::make_shared<zmq_buffer>();
 
-    subscriber_socket_.recv(header_msg.get());
-    subscriber_socket_.getsockopt (ZMQ_RCVMORE, &more, &more_size);
-    assert(more != 0);
+      bool recv1 = socket.recv(header_msg.get());
+      if(!recv1)
+      {
+        beam::glog<beam::Warning>("ZeroMQ1 recv returned non-zero");
+      }
 
-    subscriber_socket_.recv(body_msg.get());
-    subscriber_socket_.getsockopt (ZMQ_RCVMORE, &more, &more_size);
-    assert(more == 0);
-    header_msg->update_buffer();
-    body_msg->update_buffer();
+      socket.getsockopt (ZMQ_RCVMORE, &more, &more_size);
+      assert(more != 0);
 
-    beam::glog<beam::Debug>("ZeroMQ message",
-                            "size1", beam::arg<int>(header_msg->size()),
-                            "size2", beam::arg<int>(body_msg->size()));
+      bool recv2 = socket.recv(body_msg.get());
+      if(!recv2)
+      {
+        beam::glog<beam::Warning>("ZeroMQ2 recv returned non-zero");
+      }
 
-    packet_received(header_msg, body_msg);
+      socket.getsockopt (ZMQ_RCVMORE, &more, &more_size);
+      assert(more == 0);
+      header_msg->update_buffer();
+      body_msg->update_buffer();
+
+      beam::glog<beam::Debug>("ZeroMQ message",
+                              "size1", beam::arg<int>(header_msg->size()),
+                              "size2", beam::arg<int>(body_msg->size()));
+
+      packet_received(header_msg, body_msg);
+    }
   }
+  catch(zmq::error_t& e)
+  {
+    // Expect an ETERM (Happens when we are shutting down)
+    if(e.num() != ETERM)
+    {
+      throw e; // todo: rethrow is not proper handling
+    }
+  }
+  beam::glog<beam::Warning>("ZeroMQ Exiting work thread");
 
 }
 

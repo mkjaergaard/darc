@@ -50,6 +50,11 @@ void inbound_link_base::packet_received(buffer::shared_buffer header_data,
     handle_discover_reply_packet(header_i.get().src_peer_id, body_data);
     break;
   }
+  case link_header_packet::DISCONNECT:
+  {
+    manager_->disconnect_received(header_i.get().src_peer_id);
+    break;
+  }
   default:
   {
     beam::glog<beam::Warning>("NetworkManager: Unknown packet type",

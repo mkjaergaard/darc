@@ -38,6 +38,7 @@
 #include <zmq.hpp>
 #include <boost/asio.hpp> // do we really need asio is this?
 #include <boost/thread.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <darc/peer.hpp>
 #include <darc/network/protocol_manager_base.hpp>
 #include <darc/network/inbound_link_base.hpp>
@@ -59,10 +60,9 @@ class ProtocolManager : public ProtocolManagerBase, public inbound_link_base
 private:
   boost::asio::io_service * io_service_;
   peer& peer_;
-  zmq::context_t context_;
+  boost::scoped_ptr<zmq::context_t> context_;
 
   ConnectionID inbound_id_;
-  zmq::socket_t subscriber_socket_;
   boost::thread recv_thread_;
 
   typedef boost::shared_ptr<zmq::socket_t> SocketPtr;
@@ -73,9 +73,7 @@ private:
 public:
   ProtocolManager(boost::asio::io_service& io_service, network_manager * manager, peer& p);
 
-  ~ProtocolManager()
-  {
-  }
+  ~ProtocolManager();
 
   void sendPacket(const ConnectionID& outbound_id,
                   const ID& dest_peer_id,
@@ -89,7 +87,7 @@ public:
   void connect(const std::string& protocol, const std::string& url);
 
 protected:
-  void work();
+  void work(const std::string&);
 
 };
 

@@ -55,7 +55,9 @@ protected:
   }
 
 public:
-  virtual ~ProtocolManagerBase() {}
+  virtual ~ProtocolManagerBase()
+  {
+  }
 
   virtual const ID& accept(const std::string& protocol, const std::string& url) = 0;
   virtual void connect(const std::string& protocol, const std::string& url) = 0;

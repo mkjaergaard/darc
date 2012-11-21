@@ -84,6 +84,11 @@ public:
     manager_protocol_map_["zmq+tcp"] = &zmq_manager_;
   }
 
+  ~network_manager()
+  {
+    // disconnect all peers
+  }
+
   void sendPacket(const NodeID& recv_node_id, buffer::shared_buffer data)
   {
     // ID::null means we send to all nodes
@@ -178,6 +183,13 @@ public:
     //todo: check if it exists already
     neighbour_nodes_.insert(NeighbourNodesType::value_type(src_peer_id, connection_id));
     peer_.peer_connected(src_peer_id);
+  }
+
+  void disconnect_received(const ID& src_peer_id)
+  {
+    // todo: verify we have the node
+    neighbour_nodes_.erase(src_peer_id);
+    peer_.peer_disconnected(src_peer_id);
   }
 
   void service_packet_received(const ID& src_peer_id, buffer::shared_buffer data)

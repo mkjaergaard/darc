@@ -44,6 +44,8 @@ struct link_header_packet
 {
   const static uint16_t DISCOVER = 0;
   const static uint16_t DISCOVER_REPLY = 1;
+  const static uint16_t DISCONNECT = 2;
+  const static uint16_t HEARTBEAT = 3;
   const static uint16_t SERVICE = 10;
 
   ID dest_peer_id;
