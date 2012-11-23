@@ -52,6 +52,7 @@ void inbound_link_base::packet_received(buffer::shared_buffer header_data,
   }
   case link_header_packet::DISCONNECT:
   {
+    beam::glog<beam::Info>("DISCONNECT Received");
     manager_->disconnect_received(header_i.get().src_peer_id);
     break;
   }

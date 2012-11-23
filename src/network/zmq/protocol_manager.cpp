@@ -70,6 +70,7 @@ ProtocolManager::~ProtocolManager()
   buffer::shared_buffer dummy_data = boost::make_shared<buffer::const_size_buffer>(1024);
   o_d.pack(dummy_data);
 
+  slog<beam::Info>("Sending DISCONNECT");
   send_packet_to_all(link_header_packet::DISCONNECT, dummy_data);
 }
 
