@@ -83,11 +83,11 @@ protected:
   typedef boost::shared_ptr<connection_type> connection_ptr;
 
   typedef std::map</*informer*/ID, connection_ptr> connection_list_type;
-  connection_list_type connection_list_;
 
   list_type list_;
   uint32_t state_index_;
 
+  connection_list_type connection_list_;
 
 public:
   shared_map() :
@@ -147,6 +147,19 @@ public:
     connection_list_.insert(
       typename connection_list_type::value_type(remote_instance_id, c));
     c->send_connect();
+  }
+
+  void disconnect(const ID& peer_id)
+  {
+    for(typename connection_list_type::iterator it = connection_list_.begin();
+        it != connection_list_.end();
+        it++)
+    {
+      if(it->second->peer_id() == peer_id)
+      {
+        connection_list_.erase(it->first);
+      }
+    }
   }
   //
   /////////////////////////

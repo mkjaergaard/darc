@@ -28,70 +28,31 @@
  */
 
 /**
- * DARC ZeroMQ LinkManager class
+ *
  *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <zmq.hpp>
-#include <boost/asio.hpp> // do we really need asio is this?
-#include <boost/thread.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <darc/peer.hpp>
-#include <darc/network/protocol_manager_base.hpp>
-#include <darc/network/inbound_link_base.hpp>
-#include <beam/static_scope.hpp>
+#include <darc/id.hpp>
 
 namespace darc
 {
 namespace network
 {
 
-typedef ConnectionID ID;
-
-class network_manager;
-
-namespace zeromq
+struct disconnect_packet
 {
+  ID outbound_id;
 
-class ProtocolManager : public ProtocolManagerBase, public inbound_link_base, public beam::static_scope<beam::Info>
-{
-private:
-  boost::asio::io_service * io_service_;
-  peer& peer_;
-  boost::scoped_ptr<zmq::context_t> context_;
-
-  ConnectionID inbound_id_;
-  boost::thread recv_thread_;
-
-  typedef boost::shared_ptr<zmq::socket_t> SocketPtr;
-  typedef std::map<const ConnectionID, SocketPtr> OutboundConnectionListType;
-
-  OutboundConnectionListType outbound_connection_list_;
-
-public:
-  ProtocolManager(boost::asio::io_service& io_service, network_manager * manager, peer& p);
-
-  ~ProtocolManager();
-
-  void sendPacket(const ConnectionID& outbound_id,
-                  const ID& dest_peer_id,
-                  const uint16_t packet_type,
-                  buffer::shared_buffer data);
-
-  virtual void send_packet_to_all(const uint16_t packet_type,
-                                  buffer::shared_buffer data);
-
-  const ConnectionID& accept(const std::string& protocol, const std::string& url);
-  void connect(const std::string& protocol, const std::string& url);
-
-protected:
-  void work(const std::string&);
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+    ar & outbound_id;
+  }
 
 };
 
-} // namespace zeromq
-} // namespace network
-} // namespace darc
+}
+}

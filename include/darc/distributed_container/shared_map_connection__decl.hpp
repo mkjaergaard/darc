@@ -112,6 +112,16 @@ public:
   {
   }
 
+  ~connection()
+  {
+    for(typename list_type::iterator it = list_.begin();
+        it != list_.end();
+        it++)
+    {
+      parent_->remove_(remote_instance_id_, //informer
+                       it->first); // key
+    }
+  }
 
   // called when we have a new map entry to send to remote
   void insert(const ID& informer, // where we got the info from
@@ -122,9 +132,10 @@ public:
   {
     entry_type entry(origin, value);
 
-    last_sent_index_ = state_index;
     if(informer != remote_instance_id_) // dont send to informer
     {
+      last_sent_index_ = state_index;
+
       update_packet update;
       update.start_index = state_index;
       update.end_index = state_index;
@@ -207,7 +218,7 @@ public:
                                header_packet::update,
                                o_data);
 
-    last_sent_index_ = 0;
+    last_sent_index_ = state_index;
   }
 
   const ID& peer_id()
@@ -293,7 +304,8 @@ protected:
       beam::glog<beam::Fatal>("shared_map, incorrect index",
                               "set_id", beam::arg<ID>(parent_->id()),
                               "update.start_index", beam::arg<int>(update.start_index),
-                              "last_received_index_ + 1", beam::arg<int>(last_received_index_ + 1));
+                              "last_received_index_ + 1", beam::arg<int>(last_received_index_ + 1),
+                              "last_sent_index_ + 1", beam::arg<int>(last_sent_index_ + 1));
       assert(false);
     }
 
