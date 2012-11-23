@@ -88,6 +88,11 @@ protected:
     }
   }
 
+  void peer_disconnected_handler(const ID& peer_id)
+  {
+    
+  }
+
 public:
   ns_service(peer& p, distributed_container::container_manager * container_manager) :
     peer_service(p, 37),

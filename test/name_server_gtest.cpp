@@ -34,6 +34,10 @@ void Step(const std::string& title)
 
 TEST_F(NameServerTest, Create)
 {
+  beam::glog<beam::Info>("Peers",
+                         "Peer1", beam::arg<darc::ID>(peer1.id()),
+                         "Peer2", beam::arg<darc::ID>(peer2.id()));
+
   Step("Register NS1 tag");
   darc::tag_handle t1 = ns1.register_tag(ns1.root(), "myns/Tag1");
 
@@ -62,5 +66,7 @@ TEST_F(NameServerTest, Create)
   ns1.print_tree();
   Step("NS2 Content");
   ns2.print_tree();
+
+  sleep(1);
 
 }

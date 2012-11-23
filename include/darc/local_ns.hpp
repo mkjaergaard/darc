@@ -103,6 +103,11 @@ public:
     list_.connect(peer_id, instance_id);
   }
 
+  void disconnect_peer(const ID& peer_id)
+  {
+    list_.disconnect(peer_id);
+  }
+
   // Find method
   // Find local tag based on name
   local_tag_ptr find_local_tag(const std::string& name)
