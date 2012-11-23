@@ -62,7 +62,7 @@ public:
         typename dispatcher_list_type::value_type(tag->id(), dispatcher));
 
       // todo: put somewhere else?
-      dispatcher->tag_->connect_listener(listener_);
+      dispatcher->tag_->connect_new_tag_listener(listener_);
 
       return dispatcher.get();
     }
