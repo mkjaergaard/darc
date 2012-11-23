@@ -90,7 +90,7 @@ protected:
 
   void peer_disconnected_handler(const ID& peer_id)
   {
-    
+    root_ns_->disconnect_peer(peer_id);
   }
 
 public:

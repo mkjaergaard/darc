@@ -31,7 +31,8 @@ public:
 
 protected:
   typedef boost::signal<callback_type> signal_type;
-  signal_type listeners_signal_;
+  signal_type new_tag_signal_;
+  signal_type removed_tag_signal_;
 
 public:
   local_tag(ns_service *,
@@ -46,12 +47,22 @@ public:
   void trigger_new_tag(const ID& tag_id, const ID& peer_id)
   {
     // Original tag ID, Remote tag ID, Remote Peer ID
-    listeners_signal_(id_, tag_id, peer_id);
+    new_tag_signal_(id_, tag_id, peer_id);
   }
 
-  boost::signals::connection connect_listener(boost::function<callback_type> listener)
+  void trigger_removed_tag(const ID& tag_id, const ID& peer_id)
   {
-    return listeners_signal_.connect(listener);
+    removed_tag_signal_(id_, tag_id, peer_id);
+  }
+
+  signal_type& new_tag_signal()
+  {
+    return new_tag_signal_;
+  }
+
+  signal_type& removed_tag_signal()
+  {
+    return removed_tag_signal_;
   }
 
   const ID& id() const
