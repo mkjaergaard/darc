@@ -21,6 +21,7 @@ add_library(darc_common
   src/container_manager.cpp
   src/container_base.cpp
   src/peer.cpp
+  src/system_signals.cpp
   src/network/inbound_link_base.cpp
   src/network/zmq/protocol_manager.cpp
 )
