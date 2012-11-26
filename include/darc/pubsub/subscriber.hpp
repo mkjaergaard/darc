@@ -27,7 +27,8 @@ private:
 
   local_dispatcher<T> * dispatcher_; // ptr type?
 
-  boost::signal<callback_type> callback_;
+//  boost::signal<callback_type> callback_;
+  callback_functor_type callback_;
 
 public:
   subscriber_impl(boost::asio::io_service &io_service,
@@ -51,15 +52,17 @@ public:
 
   void addCallback(callback_functor_type handler)
   {
-    callback_.connect(handler);
+    //callback_.connect(handler);
+    callback_ = handler;
   }
 
   void postCallback(const boost::shared_ptr<const T> &msg)
   {
     io_service_.post(boost::bind(&subscriber_impl::triggerCallback, this, msg));
+//    io_service_.post(callback_, msg);
   }
 
-  void triggerCallback(const boost::shared_ptr<const T> msg)
+  void triggerCallback(const boost::shared_ptr<const T> &msg)
   {
     callback_(msg);
   }
