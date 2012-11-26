@@ -3,6 +3,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
 #include <boost/asio.hpp>
+#include <boost/thread/mutex.hpp>
 #include <darc/pubsub/basic_local_dispatcher__fwd.hpp>
 #include <boost/bind.hpp>
 
@@ -41,6 +42,8 @@ private:
 
 public:
   ns_service& nameserver_;
+
+  boost::mutex mutex_;
 
 public:
   message_service(peer& p, boost::asio::io_service& io_service, ns_service& ns_service);

@@ -26,6 +26,8 @@ void message_service::new_tag_event(ID tag_id,
                                    ID alias_id,
                                    ID peer_id)
 {
+  boost::mutex::scoped_lock lock(mutex_);
+
   beam::glog<beam::Info>("tagEvent",
                          "tag_id", beam::arg<darc::ID>(tag_id),
                          "alias_id", beam::arg<darc::ID>(alias_id),
@@ -59,6 +61,8 @@ void message_service::new_tag_event(ID tag_id,
 void message_service::remote_message_recv(const ID& tag_id,
                                          darc::buffer::shared_buffer data)
 {
+  boost::mutex::scoped_lock lock(mutex_);
+
   dispatcher_group_list_type::iterator elem =
     dispatcher_group_list_.find(tag_id);
   if(elem != dispatcher_group_list_.end())
