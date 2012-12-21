@@ -29,3 +29,12 @@ set(my_LIBRARIES
 # Add test cpp file
 catkin_add_gtest(darc_ns_gtest_name_server test/name_server_gtest.cpp)
 target_link_libraries(darc_ns_gtest_name_server ${my_LIBRARIES} ${GTEST_BOTH_LIBRARIES})
+
+# Install
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+
+install(DIRECTORY include/
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.hpp")
