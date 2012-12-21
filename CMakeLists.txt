@@ -43,3 +43,12 @@ target_link_libraries(darc_common_gtest_shared_map darc_common ${GTEST_BOTH_LIBR
 # Add test cpp file
 catkin_add_gtest(darc_common_gtest_network test/network_test.cpp)
 target_link_libraries(darc_common_gtest_network darc_common ${GTEST_BOTH_LIBRARIES} -lzmq)
+
+# Install
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+
+install(DIRECTORY include/
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.hpp")
