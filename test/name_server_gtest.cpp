@@ -1,10 +1,14 @@
 #include <gtest/gtest.h>
 
 #include <darc/test/two_peer_sim.hpp>
+#include <darc/test/callback_monitor.hpp>
 #include <darc/ns_service.hpp>
 
 class NameServerTest : public darc::test::two_peer_sim, public testing::Test
 {
+protected:
+  typedef darc::test::callback_monitor<darc::ID, darc::ID, darc::ID> tag_callback_monitor_type;
+
 public:
   darc::distributed_container::container_manager mngr1;
   darc::distributed_container::container_manager mngr2;
@@ -17,6 +21,9 @@ public:
     ns1(peer1, &mngr1),
     ns2(peer2, &mngr2)
   {
+    beam::glog<beam::Info>("Peers",
+                           "Peer1", beam::arg<darc::ID>(peer1.id()),
+                           "Peer2", beam::arg<darc::ID>(peer2.id()));
   }
 };
 
@@ -34,38 +41,54 @@ void Step(const std::string& title)
 
 TEST_F(NameServerTest, Create)
 {
-  beam::glog<beam::Info>("Peers",
-                         "Peer1", beam::arg<darc::ID>(peer1.id()),
-                         "Peer2", beam::arg<darc::ID>(peer2.id()));
+  tag_callback_monitor_type p1_new_tag;
+  tag_callback_monitor_type p2_new_tag;
+  tag_callback_monitor_type p1_rem_tag;
+  tag_callback_monitor_type p2_rem_tag;
 
-  Step("Register NS1 tag");
-  darc::tag_handle t1 = ns1.register_tag(ns1.root(), "myns/Tag1");
+  Step("Peer1: Register Tag1");
+  darc::tag_handle t1_1 = ns1.register_tag(ns1.root(), "Tag1");
+  t1_1->connect_new_tag_listener(p1_new_tag.functor());
+  t1_1->connect_removed_tag_listener(p1_rem_tag.functor());
 
-  Step("NS1 Content");
-  ns1.print_tree();
+  EXPECT_EQ(0, p1_new_tag.num_callbacks());
+  EXPECT_EQ(0, p2_new_tag.num_callbacks());
+  EXPECT_EQ(0, p1_rem_tag.num_callbacks());
+  EXPECT_EQ(0, p2_rem_tag.num_callbacks());
 
-  Step("Set Tag Callback");
-  t1->connect_listener(boost::bind(callback, _1, _2));
+  Step("Connect P1<->P2");
+  peer1.peer_connected(peer2.id());
+  peer2.peer_connected(peer1.id());
 
-  Step("Connect NS1<->NS2");
-  ns1.connect(peer2.id());
+  EXPECT_EQ(0, p1_new_tag.num_callbacks());
+  EXPECT_EQ(0, p2_new_tag.num_callbacks());
+  EXPECT_EQ(0, p1_rem_tag.num_callbacks());
+  EXPECT_EQ(0, p2_rem_tag.num_callbacks());
 
-  Step("NS2 Content");
-  ns2.print_tree();
-
-  Step("Register NS1 tag");
+  Step("Peer2: Register Tag1");
   darc::tag_handle t2_1 = ns2.register_tag(ns2.root(), "Tag1");
+  t2_1->connect_new_tag_listener(p2_new_tag.functor());
+  t2_1->connect_removed_tag_listener(p2_rem_tag.functor());
 
-  Step("Register Namespace");
-  darc::namespace_handle n2_1 = ns2.register_namespace(ns2.root(), "NS1");
+  EXPECT_EQ(1, p1_new_tag.num_callbacks());
+  EXPECT_EQ(0, p2_new_tag.num_callbacks()); // should be 1
+  EXPECT_EQ(0, p1_rem_tag.num_callbacks());
+  EXPECT_EQ(0, p2_rem_tag.num_callbacks());
 
-  Step("Register NS1 tag2");
-  darc::tag_handle t2_2 = ns2.register_tag(n2_1, "Tag2");
+  t1_1.reset();
+  EXPECT_EQ(0, p1_new_tag.num_callbacks());
+  EXPECT_EQ(0, p2_new_tag.num_callbacks());
+  EXPECT_EQ(1, p1_rem_tag.num_callbacks());
+  EXPECT_EQ(1, p2_rem_tag.num_callbacks());
 
-  Step("NS1 Content");
-  ns1.print_tree();
-  Step("NS2 Content");
-  ns2.print_tree();
+  Step("Disconnect P1<->P2");
+  peer1.peer_disconnected(peer2.id());
+  peer2.peer_disconnected(peer1.id());
+
+  EXPECT_EQ(0, p1_new_tag.num_callbacks());
+  EXPECT_EQ(0, p2_new_tag.num_callbacks());
+  EXPECT_EQ(1, p1_rem_tag.num_callbacks());
+  EXPECT_EQ(1, p2_rem_tag.num_callbacks());
 
   sleep(1);
 

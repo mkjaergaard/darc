@@ -168,6 +168,16 @@ public:
     list_.insert(child->id(), e);
   }
 
+  void detach_child_tag(local_tag* child)
+  {
+    local_tag_list_type::iterator item =
+      local_tag_list_.find(child->id());
+    assert(item != local_tag_list_.end());
+
+    local_tag_list_.erase(item);
+    list_.remove(child->id());
+  }
+
   // Getters
   const ID& id() const
   {

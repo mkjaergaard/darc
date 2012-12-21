@@ -12,10 +12,11 @@ class ns_service;
 class local_ns;
 
 class local_tag;
+typedef boost::shared_ptr<local_tag> local_tag_internal_ptr;
 typedef boost::shared_ptr<local_tag> local_tag_ptr;
 
 // manages lifetime of a local tag
-class local_tag : public boost::enable_shared_from_this<local_tag>
+class local_tag
 {
 protected:
   ns_service * ns_service_;

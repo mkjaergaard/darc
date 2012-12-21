@@ -49,6 +49,13 @@ public:
     removed_tag_signal_connection_ = local_tag_->removed_tag_signal().connect(callback);
   }
 
+  void reset()
+  {
+    new_tag_signal_connection_.disconnect();
+    removed_tag_signal_connection_.disconnect();
+    local_tag_.reset();
+  }
+
 };
 
 typedef boost::shared_ptr<tag_handle_impl> tag_handle;

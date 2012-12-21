@@ -20,11 +20,11 @@ local_tag_ptr local_tag::create(ns_service * ns_service,
                                 const std::string name,
                                 local_ns * parent)
 {
-  local_tag_ptr tag = boost::make_shared<local_tag>(ns_service, name, parent);
-  parent->attach_child_tag(tag);
-  return tag;
+  local_tag_ptr internal_tag = boost::make_shared<local_tag>(ns_service, name, parent);
+  parent->attach_child_tag(internal_tag);
+  return local_tag_ptr(internal_tag.get(),
+                       boost::bind(&local_ns::detach_child_tag, parent, _1));
 }
-
 
 local_tag::~local_tag()
 {
