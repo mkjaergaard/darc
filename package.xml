@@ -5,5 +5,6 @@
   <author>Morten Kjaergaard</author>
   <maintainer email="none@none.com">Morten Kjaergaard</maintainer>
   <license>BSD</license>
-  <build_depend>beam</build_depend>
+  <run_depend>beam</run_depend>
+  <buildtool_depend>catkin</buildtool_depend>
 </package>
