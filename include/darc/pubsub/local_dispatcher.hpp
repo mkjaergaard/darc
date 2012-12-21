@@ -40,6 +40,14 @@ public:
     group_ = group;
   }
 
+  void check_empty()
+  {
+    if(publishers_.empty() && subscribers_.empty())
+    {
+      group_->remove_dispatcher(this);
+    }
+  }
+
   void attach(subscriber_impl<T> &subscriber)
   {
     subscribers_.push_back(&subscriber);
@@ -48,6 +56,38 @@ public:
   void attach(publisher_impl<T> &publisher)
   {
     publishers_.push_back(&publisher);
+  }
+
+  void detach(subscriber_impl<T> &subscriber)
+  {
+    for(typename subscribers_list_type::iterator it = subscribers_.begin();
+        it != subscribers_.end();
+        it++)
+    {
+      if(*it == &subscriber)
+      {
+        subscribers_.erase(it);
+        check_empty();
+        return;
+      }
+    }
+    assert(false); // detach of unknown subscriber
+  }
+
+  void detach(publisher_impl<T> &publisher)
+  {
+    for(typename publishers_list_type::iterator it = publishers_.begin();
+        it != publishers_.end();
+        it++)
+    {
+      if(*it == &publisher)
+      {
+        publishers_.erase(it);
+        check_empty();
+        return;
+      }
+    }
+    assert(false); // detach of unknown publisher
   }
 
   void dispatch_locally(const boost::shared_ptr<const T> &msg)

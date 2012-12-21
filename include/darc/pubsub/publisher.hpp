@@ -40,7 +40,7 @@ public:
 
   void detach()
   {
-    message_service_.detach(*this);
+    message_service_.detach(*this, dispatcher_);
     dispatcher_ = 0;
   }
 

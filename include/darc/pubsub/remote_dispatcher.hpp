@@ -87,6 +87,19 @@ public:
     }
   }
 
+  void removed_tag_event(ID tag_id,
+                         ID alias_id,
+                         ID peer_id)
+  {
+    remote_list_type::iterator item = list_.find(tag_id);
+    if(item != list_.end())
+    {
+      remote_tag_type entry_to_remove(peer_id, alias_id);
+      remote_tag_list_type& l = *(item->second);
+      l.erase(entry_to_remove);
+    }
+  }
+
   template<typename T>
   void dispatch_remotely(const ID& tag_id, const boost::shared_ptr<const T> &msg)
   {

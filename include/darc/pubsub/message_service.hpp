@@ -27,6 +27,13 @@ local_dispatcher<T>* message_service::attach(publisher_impl<T> &publisher,
 }
 
 template<typename T>
+void message_service::detach(publisher_impl<T> &publisher, local_dispatcher<T>* dispatcher)
+{
+  boost::mutex::scoped_lock lock(mutex_);
+  dispatcher->detach(publisher);
+}
+
+template<typename T>
 local_dispatcher<T>* message_service::attach(subscriber_impl<T> &subscriber,
                                              const std::string& topic)
 {
@@ -39,6 +46,13 @@ local_dispatcher<T>* message_service::attach(subscriber_impl<T> &subscriber,
 }
 
 template<typename T>
+void message_service::detach(subscriber_impl<T> &subscriber, local_dispatcher<T>* dispatcher)
+{
+  boost::mutex::scoped_lock lock(mutex_);
+  dispatcher->detach(subscriber);
+}
+
+template<typename T>
 dispatcher_group<T>* message_service::get_dispatcher_group(const tag_handle& tag)
 {
   typename dispatcher_group_list_type::iterator elem = dispatcher_group_list_.find(tag->id());
@@ -47,6 +61,7 @@ dispatcher_group<T>* message_service::get_dispatcher_group(const tag_handle& tag
     boost::shared_ptr<dispatcher_group<T> > group
       = boost::make_shared<dispatcher_group<T> >(
         boost::bind(&message_service::new_tag_event, this, _1, _2, _3),
+        boost::bind(&message_service::removed_tag_event, this, _1, _2, _3),
         &remote_dispatcher_);
 
     dispatcher_group_list_.insert(

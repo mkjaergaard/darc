@@ -56,13 +56,13 @@ public:
 
   // /////////////////////////////////////////////
 
-  void post_new_tag_event(ID tag_id,
-                          ID alias_id,
-                          ID peer_id);
-
   void new_tag_event(ID tag_id,
                      ID alias_id,
                      ID peer_id);
+
+  void removed_tag_event(ID tag_id,
+                         ID alias_id,
+                         ID peer_id);
 
   void remote_message_recv(const ID& tag_id,
                            darc::buffer::shared_buffer data);
@@ -74,14 +74,10 @@ public:
   local_dispatcher<T>* attach(subscriber_impl<T> &subscriber, const std::string &topic);
 
   template<typename T>
-  void detach(publisher_impl<T> &publisher)
-  {
-  }
+  void detach(publisher_impl<T> &publisher, local_dispatcher<T>* dispatcher);
 
   template<typename T>
-  void detach(subscriber_impl<T> &subscriber)
-  {
-  }
+  void detach(subscriber_impl<T> &subscriber, local_dispatcher<T>* dispatcher);
 
   template<typename T>
   dispatcher_group<T>* get_dispatcher_group(const std::string& topic);

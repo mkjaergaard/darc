@@ -40,14 +40,23 @@ private:
 
   dispatcher_list_type dispatcher_list_;
 
-  tag_handle_impl::listener_type listener_;
+  tag_handle_impl::listener_type new_tag_listener_;
+  tag_handle_impl::listener_type removed_tag_listener_;
   remote_dispatcher * remote_dispatcher_;
 
 public:
-  dispatcher_group(tag_handle_impl::listener_type listener, remote_dispatcher * remote_dispatcher) :
-    listener_(listener),
+  dispatcher_group(tag_handle_impl::listener_type new_tag_listener,
+                   tag_handle_impl::listener_type removed_tag_listener,
+                   remote_dispatcher * remote_dispatcher) :
+    new_tag_listener_(new_tag_listener),
+    removed_tag_listener_(removed_tag_listener),
     remote_dispatcher_(remote_dispatcher)
   {
+  }
+
+  ~dispatcher_group()
+  {
+    beam::glog<beam::Info>("~dispatcher_group");
   }
 
   local_dispatcher<T>* get_dispatcher(const tag_handle& tag)
@@ -62,7 +71,8 @@ public:
         typename dispatcher_list_type::value_type(tag->id(), dispatcher));
 
       // todo: put somewhere else?
-      dispatcher->tag_->connect_new_tag_listener(listener_);
+      dispatcher->tag_->connect_new_tag_listener(new_tag_listener_);
+      dispatcher->tag_->connect_removed_tag_listener(removed_tag_listener_);
 
       return dispatcher.get();
     }
@@ -70,6 +80,14 @@ public:
     {
       return elem->second.get();
     }
+  }
+
+  void remove_dispatcher(local_dispatcher<T>* dispatcher)
+  {
+    const ID& tag_id = dispatcher->tag_->id(); // todo: cleanup
+    typename dispatcher_list_type::iterator elem = dispatcher_list_.find(tag_id);
+    assert(elem != dispatcher_list_.end());
+    dispatcher_list_.erase(elem);
   }
 
   void join(boost::shared_ptr<basic_dispatcher_group> b_group)

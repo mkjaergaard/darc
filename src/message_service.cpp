@@ -58,6 +58,44 @@ void message_service::new_tag_event(ID tag_id,
   }
 }
 
+void message_service::removed_tag_event(ID tag_id,
+                                        ID alias_id,
+                                        ID peer_id)
+{
+  boost::mutex::scoped_lock lock(mutex_);
+
+  beam::glog<beam::Info>("removedEvent",
+                         "tag_id", beam::arg<darc::ID>(tag_id),
+                         "alias_id", beam::arg<darc::ID>(alias_id),
+                         "peer_id", beam::arg<darc::ID>(peer_id));
+
+  // Local alias
+  if(peer_id == peer_service::peer_.id())
+  {
+    /*
+    dispatcher_group_list_type::iterator elem1 = dispatcher_group_list_.find(tag_id);
+    dispatcher_group_list_type::iterator elem2 = dispatcher_group_list_.find(alias_id);
+
+    if(elem1 == dispatcher_group_list_.end() ||
+       elem2 == dispatcher_group_list_.end())
+    {
+      beam::glog<beam::Warning>("tagEvent, but no dispatcher_group");
+      return;
+    }
+
+    if(elem1->second.get() != elem2->second.get())
+    {
+      elem1->second->join(elem2->second);
+      elem2->second = elem1->second;
+    }
+    */
+  }
+  else
+  {
+    remote_dispatcher_.removed_tag_event(tag_id, alias_id, peer_id);
+  }
+}
+
 void message_service::remote_message_recv(const ID& tag_id,
                                          darc::buffer::shared_buffer data)
 {
@@ -77,13 +115,6 @@ void message_service::remote_message_recv(const ID& tag_id,
 }
 
 // /////////////////////////////////////////////
-
-void message_service::post_new_tag_event(ID tag_id,
-                                        ID alias_id,
-                                        ID peer_id)
-{
-  io_service_.post(boost::bind(&message_service::new_tag_event, this, tag_id, alias_id, peer_id));
-}
 
 }
 }
