@@ -44,8 +44,8 @@ void message_service::remote_message_recv(const ID& tag_id,
 }
 
 void message_service::new_tag_event(ID tag_id,
-                                   ID alias_id,
-                                   ID peer_id)
+                                    ID alias_id,
+                                    ID peer_id)
 {
   boost::mutex::scoped_lock lock(mutex_);
 

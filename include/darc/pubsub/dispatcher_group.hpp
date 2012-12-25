@@ -36,20 +36,13 @@ private:
   typedef local_dispatcher<T> dispatcher_type;
   typedef boost::shared_ptr<dispatcher_type> dispatcher_ptr;
 
-  typedef std::map<darc::ID, dispatcher_ptr> dispatcher_list_type;
+  typedef std::map<darc::ID/*tag_id*/, dispatcher_ptr> dispatcher_list_type;
 
   dispatcher_list_type dispatcher_list_;
-
-  tag_handle_impl::listener_type new_tag_listener_;
-  tag_handle_impl::listener_type removed_tag_listener_;
   remote_dispatcher * remote_dispatcher_;
 
 public:
-  dispatcher_group(tag_handle_impl::listener_type new_tag_listener,
-                   tag_handle_impl::listener_type removed_tag_listener,
-                   remote_dispatcher * remote_dispatcher) :
-    new_tag_listener_(new_tag_listener),
-    removed_tag_listener_(removed_tag_listener),
+  dispatcher_group(remote_dispatcher * remote_dispatcher) :
     remote_dispatcher_(remote_dispatcher)
   {
   }
@@ -69,10 +62,6 @@ public:
 
       dispatcher_list_.insert(
         typename dispatcher_list_type::value_type(tag->id(), dispatcher));
-
-      // todo: put somewhere else?
-      dispatcher->tag_->connect_new_tag_listener(new_tag_listener_);
-      dispatcher->tag_->connect_removed_tag_listener(removed_tag_listener_);
 
       return dispatcher.get();
     }

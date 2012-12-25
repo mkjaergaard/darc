@@ -78,6 +78,8 @@ public:
     {
       remote_tag_list_type& l = *(item->second);
       l.insert(remote_tag_type(peer_id, alias_id));
+      beam::glog<beam::Info>("remote: new_tag", "tag_id", beam::arg<ID>(tag_id),
+                                                "peer_id", beam::arg<ID>(peer_id));
     }
     else
     {
@@ -103,6 +105,7 @@ public:
   template<typename T>
   void dispatch_remotely(const ID& tag_id, const boost::shared_ptr<const T> &msg)
   {
+    //send_msg(tag_id, ID::null(), msg);
     remote_list_type::iterator item = list_.find(tag_id);
     if(item != list_.end())
     {

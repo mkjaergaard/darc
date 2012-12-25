@@ -40,8 +40,11 @@ public:
 
   void detach()
   {
-    message_service_.detach(*this, dispatcher_);
-    dispatcher_ = 0;
+    if(dispatcher_ != 0)
+    {
+      message_service_.detach(*this, dispatcher_);
+      dispatcher_ = 0;
+    }
   }
 
   void publish(const boost::shared_ptr<const T> &msg)

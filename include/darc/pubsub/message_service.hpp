@@ -22,6 +22,8 @@ local_dispatcher<T>* message_service::attach(publisher_impl<T> &publisher,
   tag_handle tag = nameserver_.register_tag(nameserver_.root(), topic);
   dispatcher_group<T>* group = get_dispatcher_group<T>(tag);
   local_dispatcher<T>* dispatcher = group->get_dispatcher(tag);
+  tag->connect_new_tag_listener(boost::bind(&message_service::new_tag_event, this, _1, _2, _3));
+  tag->connect_removed_tag_listener(boost::bind(&message_service::removed_tag_event, this, _1, _2, _3));
   dispatcher->attach(publisher);
   return dispatcher;
 }
@@ -41,6 +43,8 @@ local_dispatcher<T>* message_service::attach(subscriber_impl<T> &subscriber,
   tag_handle tag = nameserver_.register_tag(nameserver_.root(), topic);
   dispatcher_group<T>* group = get_dispatcher_group<T>(tag);
   local_dispatcher<T>* dispatcher = group->get_dispatcher(tag);
+  tag->connect_new_tag_listener(boost::bind(&message_service::new_tag_event, this, _1, _2, _3));
+  tag->connect_removed_tag_listener(boost::bind(&message_service::removed_tag_event, this, _1, _2, _3));
   dispatcher->attach(subscriber);
   return dispatcher;
 }
@@ -60,8 +64,7 @@ dispatcher_group<T>* message_service::get_dispatcher_group(const tag_handle& tag
   {
     boost::shared_ptr<dispatcher_group<T> > group
       = boost::make_shared<dispatcher_group<T> >(
-        boost::bind(&message_service::new_tag_event, this, _1, _2, _3),
-        boost::bind(&message_service::removed_tag_event, this, _1, _2, _3),
+
         &remote_dispatcher_);
 
     dispatcher_group_list_.insert(

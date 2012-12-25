@@ -46,8 +46,11 @@ public:
 
   void detach()
   {
-    message_service_.detach(*this, dispatcher_);
-    dispatcher_ = 0;
+    if(dispatcher_ != 0)
+    {
+      message_service_.detach(*this, dispatcher_);
+      dispatcher_ = 0;
+    }
   }
 
   void addCallback(callback_functor_type handler)
