@@ -206,8 +206,15 @@ void ProtocolManager::work(const std::string& url)
   }
   catch(zmq::error_t& e)
   {
-    // Expect an ETERM (Happens when we are shutting down)
-    if(e.num() != ETERM)
+    if(e.num() == ETERM)
+    {
+      // Expect an ETERM (Happens when we are shutting down)
+    }
+    else if(e.num() == EINTR)
+    {
+      slog<beam::Error>("ZeroMQ EINT exception");
+    }
+    else
     {
       throw e; // todo: rethrow is not proper handling of other errors
     }

@@ -94,13 +94,10 @@ public:
     // ID::null means we send to all nodes
     if( recv_node_id == ID::null() )
     {
-      assert(false);
-/*
-  for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
-  {
-  zmq_manager_.sendPacket(it->second, type, it->first, buffer, data_len );
-  }
-*/
+      for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
+      {
+        zmq_manager_.sendPacket(it->second, it->first, link_header_packet::SERVICE, data);
+      }
     }
     else
     {
