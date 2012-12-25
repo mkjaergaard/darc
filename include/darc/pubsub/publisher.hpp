@@ -68,7 +68,7 @@ public:
   publisher(boost::asio::io_service &io_service,
             message_service &message_service) :
     impl_(boost::make_shared<publisher_impl<T> >(boost::ref(io_service),
-                                                boost::ref(message_service)))
+                                                 boost::ref(message_service)))
   {
   }
 
@@ -100,4 +100,3 @@ public:
 
 }
 }
-

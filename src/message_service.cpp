@@ -13,13 +13,34 @@ message_service::message_service(peer& p, boost::asio::io_service& io_service, n
 {
 }
 
-// /////////////////////////////////////////////
-// Remap peer_service calls to remote_dispatcher
-//
+/**
+ * Network packages are passed on to remote_dispatcher.
+ */
 void message_service::recv(const darc::ID& src_peer_id,
                           darc::buffer::shared_buffer data)
 {
   remote_dispatcher_.recv(src_peer_id, data);
+}
+
+/**
+ * Callback from remote_dispatcher when a message is received.
+ */
+void message_service::remote_message_recv(const ID& tag_id,
+                                          darc::buffer::shared_buffer data)
+{
+  boost::mutex::scoped_lock lock(mutex_);
+
+  dispatcher_group_list_type::iterator elem =
+    dispatcher_group_list_.find(tag_id);
+  if(elem != dispatcher_group_list_.end())
+  {
+    elem->second->remote_message_recv(tag_id, data);
+  }
+  else
+  {
+    beam::glog<beam::Warning>("message_service: remote msg for unknown tag id",
+                              "tag_id", beam::arg<ID>(tag_id));
+  }
 }
 
 void message_service::new_tag_event(ID tag_id,
@@ -95,26 +116,6 @@ void message_service::removed_tag_event(ID tag_id,
     remote_dispatcher_.removed_tag_event(tag_id, alias_id, peer_id);
   }
 }
-
-void message_service::remote_message_recv(const ID& tag_id,
-                                         darc::buffer::shared_buffer data)
-{
-  boost::mutex::scoped_lock lock(mutex_);
-
-  dispatcher_group_list_type::iterator elem =
-    dispatcher_group_list_.find(tag_id);
-  if(elem != dispatcher_group_list_.end())
-  {
-    elem->second->remote_message_recv(tag_id, data);
-  }
-  else
-  {
-    beam::glog<beam::Warning>("message_service: remote msg for unknown tag id",
-                              "tag_id", beam::arg<ID>(tag_id));
-  }
-}
-
-// /////////////////////////////////////////////
 
 }
 }
