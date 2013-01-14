@@ -4,7 +4,7 @@ project(darc_ns)
 find_package(catkin)
 
 find_package(Boost COMPONENTS system thread regex signals serialization)
-find_package(catkin COMPONENTS beam darc_common)
+find_package(catkin COMPONENTS iris darc_common)
 
 catkin_package(
   INCLUDE_DIRS include

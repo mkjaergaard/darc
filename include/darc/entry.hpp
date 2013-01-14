@@ -38,9 +38,9 @@ struct entry
 
 }
 
-#include <beam/arg.hpp>
+#include <iris/arg.hpp>
 
-namespace beam
+namespace iris
 {
 
 template<>

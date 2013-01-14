@@ -1,6 +1,6 @@
 #include <darc/entry.hpp>
 
-namespace beam
+namespace iris
 {
 
 template<>

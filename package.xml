@@ -5,7 +5,12 @@
   <author>Morten Kjaergaard</author>
   <maintainer email="none@none.com">Morten Kjaergaard</maintainer>
   <license>BSD</license>
+
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>beam</build_depend>
+
+  <run_depend>iris</run_depend>
+  <run_depend>darc_common</run_depend>
+
+  <build_depend>iris</build_depend>
   <build_depend>darc_common</build_depend>
 </package>

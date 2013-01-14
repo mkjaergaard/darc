@@ -21,17 +21,17 @@ public:
     ns1(peer1, &mngr1),
     ns2(peer2, &mngr2)
   {
-    beam::glog<beam::Info>("Peers",
-                           "Peer1", beam::arg<darc::ID>(peer1.id()),
-                           "Peer2", beam::arg<darc::ID>(peer2.id()));
+    iris::glog<iris::Info>("Peers",
+                           "Peer1", iris::arg<darc::ID>(peer1.id()),
+                           "Peer2", iris::arg<darc::ID>(peer2.id()));
   }
 };
 
 void callback(const darc::ID& id1, const darc::ID& id2)
 {
-  beam::glog<beam::Info>("Callback",
-                         "ID1", beam::arg<darc::ID>(id1),
-                         "ID2", beam::arg<darc::ID>(id2));
+  iris::glog<iris::Info>("Callback",
+                         "ID1", iris::arg<darc::ID>(id1),
+                         "ID2", iris::arg<darc::ID>(id2));
 }
 
 void Step(const std::string& title)

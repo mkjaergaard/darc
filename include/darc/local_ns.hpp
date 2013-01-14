@@ -7,7 +7,7 @@
 #include <darc/distributed_container/shared_map.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
-#include <beam/glog.hpp>
+#include <iris/glog.hpp>
 #include <darc/entry.hpp>
 #include <darc/local_tag.hpp>
 
@@ -62,22 +62,22 @@ public:
     {
       return;
     }
-    beam::glog<beam::Trace>("New Item Callback",
-                            "instance", beam::arg<darc::ID>(instance),
-                            "owner", beam::arg<darc::ID>(owner),
-                            "key", beam::arg<ID>(key),
-                            "value", beam::arg<entry>(value));
+    iris::glog<iris::Trace>("New Item Callback",
+                            "instance", iris::arg<darc::ID>(instance),
+                            "owner", iris::arg<darc::ID>(owner),
+                            "key", iris::arg<ID>(key),
+                            "value", iris::arg<entry>(value));
 
     switch(value.type)
     {
     case entry::tag_type:
     {
       // Check if we have a local tag with he name, and trigger the callback
-      beam::glog<beam::Info>("New Tag Callback");
+      iris::glog<iris::Info>("New Tag Callback");
       local_tag_ptr tag = find_local_tag(value.name);
       if(tag.get() != 0)
       {
-        beam::glog<beam::Info>("Trigger New Tag");
+        iris::glog<iris::Info>("Trigger New Tag");
         tag->trigger_new_tag(key, list_.get_peer_id(owner));
       }
     }
@@ -85,7 +85,7 @@ public:
     case entry::namespace_type:
     {
       // Check if we have a local ns, and add the remote instance
-      beam::glog<beam::Info>("New NS Callback");
+      iris::glog<iris::Info>("New NS Callback");
       local_ns_ptr ns = find_local_ns(value.name);
       if(ns.get() != 0)
       {
