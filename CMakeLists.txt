@@ -9,7 +9,7 @@ catkin_package(
 )
 
 find_package(Boost COMPONENTS system signals thread)
-find_package(catkin COMPONENTS darc_common darc_ns beam)
+find_package(catkin COMPONENTS darc_common darc_ns iris)
 
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIRS})

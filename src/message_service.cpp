@@ -38,8 +38,8 @@ void message_service::remote_message_recv(const ID& tag_id,
   }
   else
   {
-    beam::glog<beam::Warning>("message_service: remote msg for unknown tag id",
-                              "tag_id", beam::arg<ID>(tag_id));
+    iris::glog<iris::Warning>("message_service: remote msg for unknown tag id",
+                              "tag_id", iris::arg<ID>(tag_id));
   }
 }
 
@@ -49,10 +49,10 @@ void message_service::new_tag_event(ID tag_id,
 {
   boost::mutex::scoped_lock lock(mutex_);
 
-  beam::glog<beam::Info>("tagEvent",
-                         "tag_id", beam::arg<darc::ID>(tag_id),
-                         "alias_id", beam::arg<darc::ID>(alias_id),
-                         "peer_id", beam::arg<darc::ID>(peer_id));
+  iris::glog<iris::Info>("tagEvent",
+                         "tag_id", iris::arg<darc::ID>(tag_id),
+                         "alias_id", iris::arg<darc::ID>(alias_id),
+                         "peer_id", iris::arg<darc::ID>(peer_id));
 
   // Local alias
   if(peer_id == peer_service::peer_.id())
@@ -63,7 +63,7 @@ void message_service::new_tag_event(ID tag_id,
     if(elem1 == dispatcher_group_list_.end() ||
        elem2 == dispatcher_group_list_.end())
     {
-      beam::glog<beam::Warning>("tagEvent, but no dispatcher_group");
+      iris::glog<iris::Warning>("tagEvent, but no dispatcher_group");
       return;
     }
 
@@ -85,10 +85,10 @@ void message_service::removed_tag_event(ID tag_id,
 {
   boost::mutex::scoped_lock lock(mutex_);
 
-  beam::glog<beam::Info>("removedEvent",
-                         "tag_id", beam::arg<darc::ID>(tag_id),
-                         "alias_id", beam::arg<darc::ID>(alias_id),
-                         "peer_id", beam::arg<darc::ID>(peer_id));
+  iris::glog<iris::Info>("removedEvent",
+                         "tag_id", iris::arg<darc::ID>(tag_id),
+                         "alias_id", iris::arg<darc::ID>(alias_id),
+                         "peer_id", iris::arg<darc::ID>(peer_id));
 
   // Local alias
   if(peer_id == peer_service::peer_.id())
@@ -100,7 +100,7 @@ void message_service::removed_tag_event(ID tag_id,
     if(elem1 == dispatcher_group_list_.end() ||
        elem2 == dispatcher_group_list_.end())
     {
-      beam::glog<beam::Warning>("tagEvent, but no dispatcher_group");
+      iris::glog<iris::Warning>("tagEvent, but no dispatcher_group");
       return;
     }
 

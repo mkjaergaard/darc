@@ -61,9 +61,9 @@ public:
     }
     break;
     default:
-      beam::glog<beam::Fatal>
+      iris::glog<iris::Fatal>
         ("Unknown payload",
-         "payload_id:", beam::arg<int>(payload_type_i.get().payload_type));
+         "payload_id:", iris::arg<int>(payload_type_i.get().payload_type));
       assert(0);
       break;
     }
@@ -78,8 +78,8 @@ public:
     {
       remote_tag_list_type& l = *(item->second);
       l.insert(remote_tag_type(peer_id, alias_id));
-      beam::glog<beam::Info>("remote: new_tag", "tag_id", beam::arg<ID>(tag_id),
-                                                "peer_id", beam::arg<ID>(peer_id));
+      iris::glog<iris::Info>("remote: new_tag", "tag_id", iris::arg<ID>(tag_id),
+                                                "peer_id", iris::arg<ID>(peer_id));
     }
     else
     {

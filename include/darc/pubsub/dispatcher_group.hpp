@@ -6,7 +6,7 @@
 #include <darc/tag_handle.hpp>
 #include <darc/pubsub/remote_dispatcher.hpp>
 
-#include <beam/glog.hpp>
+#include <iris/glog.hpp>
 
 #include <darc/inbound_data.hpp>
 #include <darc/serializer/boost.hpp>
@@ -49,7 +49,7 @@ public:
 
   ~dispatcher_group()
   {
-    beam::glog<beam::Info>("~dispatcher_group");
+    iris::glog<iris::Info>("~dispatcher_group");
   }
 
   local_dispatcher<T>* get_dispatcher(const tag_handle& tag)
