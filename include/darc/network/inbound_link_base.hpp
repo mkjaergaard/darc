@@ -46,7 +46,7 @@
 #include <darc/buffer/const_size_buffer.hpp>
 #include <darc/inbound_data.hpp>
 #include <darc/id_arg.hpp>
-#include <beam/glog.hpp>
+#include <iris/glog.hpp>
 
 namespace darc
 {
@@ -88,9 +88,9 @@ public:
   {
     inbound_data<darc::serializer::boost_serializer, discover_packet> dp_i(data);
 
-    beam::glog<beam::Debug>("Received DISCOVER",
-                            "peer_id", beam::arg<ID>(src_peer_id),
-                            "remote outbound_id", beam::arg<ID>(dp_i.get().outbound_id));
+    iris::glog<iris::Debug>("Received DISCOVER",
+                            "peer_id", iris::arg<ID>(src_peer_id),
+                            "remote outbound_id", iris::arg<ID>(dp_i.get().outbound_id));
 
     discover_reply_packet drp;
     drp.outbound_id = dp_i.get().outbound_id;
@@ -107,8 +107,8 @@ public:
 
   void sendDiscover(const ID& outbound_id)
   {
-    beam::glog<beam::Debug>("Sending DISCOVER",
-                            "Outbound ID", beam::arg<ID>(outbound_id));
+    iris::glog<iris::Debug>("Sending DISCOVER",
+                            "Outbound ID", iris::arg<ID>(outbound_id));
 
     discover_packet dp;
     dp.outbound_id = outbound_id;

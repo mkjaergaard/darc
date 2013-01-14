@@ -5,6 +5,10 @@
   <author>Morten Kjaergaard</author>
   <maintainer email="none@none.com">Morten Kjaergaard</maintainer>
   <license>BSD</license>
-  <run_depend>beam</run_depend>
+
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>iris</build_depend>
+
+  <run_depend>iris</run_depend>
 </package>

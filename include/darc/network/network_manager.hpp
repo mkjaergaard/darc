@@ -43,7 +43,7 @@
 #include <darc/serializer/boost.hpp>
 #include <darc/network/protocol_manager_base.hpp>
 #include <darc/network/link_header_packet.hpp>
-#include <beam/glog.hpp>
+#include <iris/glog.hpp>
 #include <darc/id_arg.hpp>
 #include <darc/network/zmq/protocol_manager.hpp>
 
@@ -108,8 +108,8 @@ public:
       }
       else
       {
-        beam::glog<beam::Warning>("network_manager: sending packet to unknown peer_id",
-                                  "peer_id", beam::arg<ID>(recv_node_id));
+        iris::glog<iris::Warning>("network_manager: sending packet to unknown peer_id",
+                                  "peer_id", iris::arg<ID>(recv_node_id));
       }
     }
   }
@@ -129,14 +129,14 @@ public:
         }
         else
         {
-          beam::glog<beam::Error>("network_manager: unsupported protocol",
-                                  "url", beam::arg<std::string>(url));
+          iris::glog<iris::Error>("network_manager: unsupported protocol",
+                                  "url", iris::arg<std::string>(url));
         }
       }
       else
       {
-        beam::glog<beam::Error>("network_manager: invalid url",
-                                "url", beam::arg<std::string>(url));
+        iris::glog<iris::Error>("network_manager: invalid url",
+                                "url", iris::arg<std::string>(url));
       }
     }
     catch(std::exception& e) //todo: handle the possible exceptions
@@ -159,14 +159,14 @@ public:
         }
         else
         {
-          beam::glog<beam::Error>("network_manager: unsupported protocol",
-                                  "url", beam::arg<std::string>(url));
+          iris::glog<iris::Error>("network_manager: unsupported protocol",
+                                  "url", iris::arg<std::string>(url));
         }
       }
       else
       {
-        beam::glog<beam::Error>("network_manager: invalid url",
-                                "url", beam::arg<std::string>(url));
+        iris::glog<iris::Error>("network_manager: invalid url",
+                                "url", iris::arg<std::string>(url));
       }
     }
     catch(std::exception& e) //todo: handle the possible exceptions

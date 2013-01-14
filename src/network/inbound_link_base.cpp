@@ -11,9 +11,9 @@ void inbound_link_base::handle_discover_reply_packet(const ID& src_peer_id, buff
 {
   inbound_data<darc::serializer::boost_serializer, discover_reply_packet> drp_i(data);
 
-  beam::glog<beam::Info>("Received DISCOVER_REPLY",
-                         "peer_id", beam::arg<ID>(src_peer_id),
-                         "outbound_id", beam::arg<ID>(drp_i.get().outbound_id));
+  iris::glog<iris::Info>("Received DISCOVER_REPLY",
+                         "peer_id", iris::arg<ID>(src_peer_id),
+                         "outbound_id", iris::arg<ID>(drp_i.get().outbound_id));
 
   manager_->discover_reply_received(src_peer_id, drp_i.get().outbound_id);
 
@@ -52,14 +52,14 @@ void inbound_link_base::packet_received(buffer::shared_buffer header_data,
   }
   case link_header_packet::DISCONNECT:
   {
-    beam::glog<beam::Info>("DISCONNECT Received");
+    iris::glog<iris::Info>("DISCONNECT Received");
     manager_->disconnect_received(header_i.get().src_peer_id);
     break;
   }
   default:
   {
-    beam::glog<beam::Warning>("NetworkManager: Unknown packet type",
-                              "type", beam::arg<int>(header_i.get().packet_type));
+    iris::glog<iris::Warning>("NetworkManager: Unknown packet type",
+                              "type", iris::arg<int>(header_i.get().packet_type));
     break;
   }
   }

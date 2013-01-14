@@ -42,7 +42,7 @@
 
 #include <boost/make_shared.hpp>
 
-#include <beam/glog.hpp>
+#include <iris/glog.hpp>
 
 namespace darc
 {
@@ -78,17 +78,17 @@ void container_manager::recv(const ID& peer_id, buffer::shared_buffer data)
   list_type::iterator item = list_.find(i_hdr.get().dest_instance_id);
   if(item != list_.end())
   {
-    beam::glog<beam::Trace>(
+    iris::glog<iris::Trace>(
       "DistributedManager",
-      "Data recv for", beam::arg<ID>(i_hdr.get().dest_instance_id));
+      "Data recv for", iris::arg<ID>(i_hdr.get().dest_instance_id));
 
     item->second->recv(peer_id, i_hdr.get(), data);
   }
   else
   {
-    beam::glog<beam::Warning>(
+    iris::glog<iris::Warning>(
       "DistributedManager: Data recv for unknown instance ID",
-      "Data recv for", beam::arg<ID>(i_hdr.get().dest_instance_id));
+      "Data recv for", iris::arg<ID>(i_hdr.get().dest_instance_id));
   }
 }
 
@@ -108,9 +108,9 @@ void container_manager::send_to_instance(const ID& src_instance_id,
   }
   else
   {
-    beam::glog<beam::Warning>(
+    iris::glog<iris::Warning>(
       "DistributedManager: Unknown node",
-      "InstanceID", beam::arg<ID>(dest_instance_id));
+      "InstanceID", iris::arg<ID>(dest_instance_id));
   }
 }
 
@@ -120,11 +120,11 @@ void container_manager::send_to_location(const ID& src_instance_id,
                                          const uint32_t payload_type,
                                          const outbound_data_base& data)
 {
-  beam::glog<beam::Trace>(
+  iris::glog<iris::Trace>(
     "Send To Location",
-    "Src Inst", beam::arg<ID>(src_instance_id),
-    "Dst Loca", beam::arg<ID>(dest_location_id),
-    "Dst Inst", beam::arg<ID>(dest_instance_id));
+    "Src Inst", iris::arg<ID>(src_instance_id),
+    "Dst Loca", iris::arg<ID>(dest_location_id),
+    "Dst Inst", iris::arg<ID>(dest_instance_id));
 
   header_packet hdr;
   hdr.src_instance_id = src_instance_id;

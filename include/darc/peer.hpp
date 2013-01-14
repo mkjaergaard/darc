@@ -12,7 +12,7 @@
 #include <darc/inbound_data.hpp>
 #include <darc/outbound_data.hpp>
 #include <darc/serializer/boost.hpp>
-#include <beam/glog.hpp>
+#include <iris/glog.hpp>
 #include <darc/id_arg.hpp>
 
 namespace darc
@@ -72,16 +72,16 @@ public:
 
   void peer_connected(const ID& peer_id)
   {
-    beam::glog<beam::Info>("Peer Connected",
-                           "peer_id", beam::arg<ID>(peer_id));
+    iris::glog<iris::Info>("Peer Connected",
+                           "peer_id", iris::arg<ID>(peer_id));
 
     peer_connected_signal_(peer_id);
   }
 
   void peer_disconnected(const ID& peer_id)
   {
-    beam::glog<beam::Info>("Peer Disconnected",
-                           "peer_id", beam::arg<ID>(peer_id));
+    iris::glog<iris::Info>("Peer Disconnected",
+                           "peer_id", iris::arg<ID>(peer_id));
 
     peer_disconnected_signal_(peer_id);
   }

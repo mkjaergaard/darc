@@ -5,7 +5,7 @@
 #include <darc/distributed_container/shared_map.hpp>
 
 #include <boost/bind.hpp>
-#include <beam/glog.hpp>
+#include <iris/glog.hpp>
 #include <darc/id_arg.hpp>
 
 class SharedMapTest : public darc::test::two_peer_sim, public testing::Test
@@ -48,11 +48,11 @@ bool equal(const darc::distributed_container::shared_map<std::string, uint32_t>&
 template<typename Key, typename T>
 void callback(const darc::ID& instance, const darc::ID& owner, const Key& key, const T& value)
 {
-  beam::glog<beam::Info>("New Item Callback",
-                         "instance", beam::arg<darc::ID>(instance),
-                         "owner", beam::arg<darc::ID>(owner),
-                         "key", beam::arg<Key>(key),
-                         "value", beam::arg<T>(value));
+  iris::glog<iris::Info>("New Item Callback",
+                         "instance", iris::arg<darc::ID>(instance),
+                         "owner", iris::arg<darc::ID>(owner),
+                         "key", iris::arg<Key>(key),
+                         "value", iris::arg<T>(value));
 }
 
 TEST_F(SharedMapTest, Subscribe)
@@ -61,11 +61,11 @@ TEST_F(SharedMapTest, Subscribe)
   darc::distributed_container::shared_map<std::string, uint32_t> my_set1;
   darc::distributed_container::shared_map<std::string, uint32_t> my_set2;
 
-  beam::glog<beam::Info>("Shared Map Created",
-                         "Node1", beam::arg<darc::ID>(peer1.id()),
-                         "Node2", beam::arg<darc::ID>(peer2.id()),
-                         "Map1", beam::arg<darc::ID>(my_set1.id()),
-                         "Map2", beam::arg<darc::ID>(my_set2.id()));
+  iris::glog<iris::Info>("Shared Map Created",
+                         "Node1", iris::arg<darc::ID>(peer1.id()),
+                         "Node2", iris::arg<darc::ID>(peer2.id()),
+                         "Map1", iris::arg<darc::ID>(my_set1.id()),
+                         "Map2", iris::arg<darc::ID>(my_set2.id()));
 
   darc::test::step("Attach to managers");
   my_set1.attach(&mngr1);

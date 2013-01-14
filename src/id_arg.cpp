@@ -35,7 +35,7 @@
 
 #include <darc/id_arg.hpp>
 
-namespace beam
+namespace iris
 {
 
 template<>

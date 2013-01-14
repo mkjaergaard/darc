@@ -301,11 +301,11 @@ protected:
        update.start_index != last_sent_index_ + 1)
     {
       // todo: request full update
-      beam::glog<beam::Fatal>("shared_map, incorrect index",
-                              "set_id", beam::arg<ID>(parent_->id()),
-                              "update.start_index", beam::arg<int>(update.start_index),
-                              "last_received_index_ + 1", beam::arg<int>(last_received_index_ + 1),
-                              "last_sent_index_ + 1", beam::arg<int>(last_sent_index_ + 1));
+      iris::glog<iris::Fatal>("shared_map, incorrect index",
+                              "set_id", iris::arg<ID>(parent_->id()),
+                              "update.start_index", iris::arg<int>(update.start_index),
+                              "last_received_index_ + 1", iris::arg<int>(last_received_index_ + 1),
+                              "last_sent_index_ + 1", iris::arg<int>(last_sent_index_ + 1));
       assert(false);
     }
 
@@ -318,12 +318,12 @@ protected:
   {
     int state_copy = State::value;
     int event_copy = Event::value;
-    beam::glog<beam::Warning>(
+    iris::glog<iris::Warning>(
       "Unhandled Event",
-      "Instance", beam::arg<ID>(parent_->id()),
-      "State", beam::arg<int>(state_copy),
-      "Event", beam::arg<int>(event_copy),
-      "Type", beam::arg<std::string>(typeid(Event).name()));
+      "Instance", iris::arg<ID>(parent_->id()),
+      "State", iris::arg<int>(state_copy),
+      "Event", iris::arg<int>(event_copy),
+      "Type", iris::arg<std::string>(typeid(Event).name()));
   }
 
 };

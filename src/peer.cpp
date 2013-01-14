@@ -15,8 +15,8 @@ void peer::recv(const ID& src_peer_id, buffer::shared_buffer data)
   }
   else
   {
-    beam::glog<beam::Warning>("Received Data for unknown service id",
-                              "service", beam::arg<uint32_t>(header_i.get().service_type));
+    iris::glog<iris::Warning>("Received Data for unknown service id",
+                              "service", iris::arg<uint32_t>(header_i.get().service_type));
   }
 }
 

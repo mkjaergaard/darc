@@ -55,7 +55,7 @@
 
 #include <darc/serializer/boost.hpp>
 
-#include <beam/static_scope.hpp>
+#include <iris/static_scope.hpp>
 #include <darc/id_arg.hpp>
 
 namespace darc
@@ -64,7 +64,7 @@ namespace distributed_container
 {
 
 template<typename Key, typename T>
-class shared_map : public container_base, public beam::static_scope<beam::Info>
+class shared_map : public container_base, public iris::static_scope<iris::Info>
 {
   friend class connection<Key, T>;
 
@@ -178,9 +178,9 @@ protected:
                const ID& origin,
                const T& value)
   {
-    slog<beam::Trace>("insert_",
-                      "key", beam::arg<Key>(key),
-                      "value", beam::arg<T>(value));
+    slog<iris::Trace>("insert_",
+                      "key", iris::arg<Key>(key),
+                      "value", iris::arg<T>(value));
 
     entry_type entry(origin, value);
     list_.insert(
@@ -203,8 +203,8 @@ protected:
   void remove_(const ID& informer,
                const Key& key)
   {
-    slog<beam::Trace>("remove_",
-                      "key", beam::arg<Key>(key));
+    slog<iris::Trace>("remove_",
+                      "key", iris::arg<Key>(key));
 
     typename list_type::iterator item = list_.find(key);
     assert(item != list_.end());

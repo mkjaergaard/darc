@@ -42,7 +42,7 @@
 #include <darc/network/zmq/zmq_buffer.hpp>
 #include <darc/network/link_header_packet.hpp>
 
-#include <beam/glog.hpp>
+#include <iris/glog.hpp>
 
 using namespace boost::asio;
 
@@ -70,7 +70,7 @@ ProtocolManager::~ProtocolManager()
   buffer::shared_buffer dummy_data = boost::make_shared<buffer::const_size_buffer>(1024);
   o_d.pack(dummy_data);
 
-  slog<beam::Info>("Sending DISCONNECT");
+  slog<iris::Info>("Sending DISCONNECT");
   send_packet_to_all(link_header_packet::DISCONNECT, dummy_data);
 }
 
@@ -131,8 +131,8 @@ const ID& ProtocolManager::accept(const std::string& protocol, const std::string
   assert(protocol == "zmq+tcp");
 
   std::string zmq_url = std::string("tcp://").append(url);
-  slog<beam::Info>("ZeroMQ accepting",
-                   "URL", beam::arg<std::string>(zmq_url));
+  slog<iris::Info>("ZeroMQ accepting",
+                   "URL", iris::arg<std::string>(zmq_url));
 
   recv_thread_ = boost::thread(boost::bind(&ProtocolManager::work, this, zmq_url));
   return inbound_id_;
@@ -144,8 +144,8 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
 
   std::string zmq_url = std::string("tcp://").append(url);
 
-  slog<beam::Info>("ZeroMQ connecting",
-                   "URL", beam::arg<std::string>(zmq_url.c_str()));
+  slog<iris::Info>("ZeroMQ connecting",
+                   "URL", iris::arg<std::string>(zmq_url.c_str()));
 
   SocketPtr publisher_socket = SocketPtr(new ::zmq::socket_t(*context_, ZMQ_PUB));
 
@@ -169,7 +169,7 @@ void ProtocolManager::work(const std::string& url)
   {
     while(1)
     {
-      slog<beam::Debug>("ZeroMQ Waiting");
+      slog<iris::Debug>("ZeroMQ Waiting");
 
       int64_t more;
       size_t more_size = sizeof(more);
@@ -180,7 +180,7 @@ void ProtocolManager::work(const std::string& url)
       bool recv1 = socket.recv(header_msg.get());
       if(!recv1)
       {
-        slog<beam::Warning>("ZeroMQ1 recv returned non-zero");
+        slog<iris::Warning>("ZeroMQ1 recv returned non-zero");
       }
 
       socket.getsockopt (ZMQ_RCVMORE, &more, &more_size);
@@ -189,7 +189,7 @@ void ProtocolManager::work(const std::string& url)
       bool recv2 = socket.recv(body_msg.get());
       if(!recv2)
       {
-        slog<beam::Warning>("ZeroMQ2 recv returned non-zero");
+        slog<iris::Warning>("ZeroMQ2 recv returned non-zero");
       }
 
       socket.getsockopt (ZMQ_RCVMORE, &more, &more_size);
@@ -197,9 +197,9 @@ void ProtocolManager::work(const std::string& url)
       header_msg->update_buffer();
       body_msg->update_buffer();
 
-      slog<beam::Debug>("ZeroMQ message",
-                        "size1", beam::arg<int>(header_msg->size()),
-                        "size2", beam::arg<int>(body_msg->size()));
+      slog<iris::Debug>("ZeroMQ message",
+                        "size1", iris::arg<int>(header_msg->size()),
+                        "size2", iris::arg<int>(body_msg->size()));
 
       packet_received(header_msg, body_msg);
     }
@@ -212,14 +212,14 @@ void ProtocolManager::work(const std::string& url)
     }
     else if(e.num() == EINTR)
     {
-      slog<beam::Error>("ZeroMQ EINT exception");
+      slog<iris::Error>("ZeroMQ EINT exception");
     }
     else
     {
       throw e; // todo: rethrow is not proper handling of other errors
     }
   }
-  slog<beam::Info>("ZeroMQ Exiting work thread");
+  slog<iris::Info>("ZeroMQ Exiting work thread");
 
 }
 

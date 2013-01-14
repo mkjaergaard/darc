@@ -1,5 +1,5 @@
 #include <boost/bind.hpp>
-#include <beam/glog.hpp>
+#include <iris/glog.hpp>
 #include <darc/peer.hpp>
 #include <darc/id_arg.hpp>
 
@@ -24,13 +24,13 @@ public:
 
   void send_to_node1(const darc::ID& peer_id, darc::buffer::shared_buffer data)
   {
-    beam::glog<beam::Info>("Data Received from node 2");
+    iris::glog<iris::Info>("Data Received from node 2");
     peer1.recv(peer2.id(), data);
   }
 
   void send_to_node2(const darc::ID& peer_id, darc::buffer::shared_buffer data)
   {
-    beam::glog<beam::Info>("Data Received from node 1");
+    iris::glog<iris::Info>("Data Received from node 1");
     peer2.recv(peer1.id(), data);
   }
 };

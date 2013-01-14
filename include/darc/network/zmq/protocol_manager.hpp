@@ -42,7 +42,7 @@
 #include <darc/peer.hpp>
 #include <darc/network/protocol_manager_base.hpp>
 #include <darc/network/inbound_link_base.hpp>
-#include <beam/static_scope.hpp>
+#include <iris/static_scope.hpp>
 
 namespace darc
 {
@@ -56,7 +56,7 @@ class network_manager;
 namespace zeromq
 {
 
-class ProtocolManager : public ProtocolManagerBase, public inbound_link_base, public beam::static_scope<beam::Info>
+class ProtocolManager : public ProtocolManagerBase, public inbound_link_base, public iris::static_scope<iris::Info>
 {
 private:
   boost::asio::io_service * io_service_;
