@@ -1,24 +1,19 @@
 cmake_minimum_required(VERSION 2.8)
 project(darc)
 
-set(CMAKE_PREFIX_PATH /opt/ros/fuerte)
 find_package(catkin)
-catkin_stack()
 
-catkin_project(darc
+catkin_package(
   INCLUDE_DIRS include
   LIBRARIES darc
-  DEPENDS cpp_common roscpp_serialization roscpp_traits rostime
-  CFG_EXTRAS darc-macros.cmake)
-
-SET(CMAKE_BUILD_TYPE Debug)
+  DEPENDS cpp_common roscpp_serialization roscpp_traits rostime)
 
 find_package(Boost COMPONENTS system thread regex signals)
-find_package(ROS REQUIRED COMPONENTS cpp_common rostime roscpp_traits roscpp_serialization)
+find_package(catkin REQUIRED COMPONENTS cpp_common rostime roscpp_traits roscpp_serialization)
 
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${ROS_INCLUDE_DIRS})
+include_directories(${catkin_INCLUDE_DIRS})
 
 add_library(darc SHARED
   src/lib/component.cpp

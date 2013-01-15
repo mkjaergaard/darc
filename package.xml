@@ -1,0 +1,11 @@
+<package>
+  <name>darc</name>
+  <version>0.1.0</version>
+  <description>DARC Distributed Asynchronous Reactive Components (aka. prototype of roscpp implementation using boost.asio)</description>
+  <author>Morten Kjaergaard</author>
+  <maintainer email="none@none.com">Morten Kjaergaard</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>
