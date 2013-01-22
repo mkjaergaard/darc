@@ -71,7 +71,7 @@ ProtocolManager::~ProtocolManager()
   o_d.pack(dummy_data);
 
   slog<iris::Info>("Sending DISCONNECT");
-  send_packet_to_all(link_header_packet::DISCONNECT, dummy_data);
+  send_packet_to_all(ID::null(), link_header_packet::DISCONNECT, dummy_data);
 }
 
 #include <unistd.h>
@@ -106,11 +106,21 @@ void ProtocolManager::sendPacket(const ConnectionID& outbound_id,
                           &zmq_buffer::free_func,
                           keep_alive2);
 
-  outbound_connection_list_[outbound_id]->send(message1, ZMQ_SNDMORE);
-  outbound_connection_list_[outbound_id]->send(message2);
+  OutboundConnectionListType::iterator item = outbound_connection_list_.find(outbound_id);
+  if(item != outbound_connection_list_.end())
+  {
+    item->second->send(message1, ZMQ_SNDMORE);
+    item->second->send(message2);
+  }
+  else
+  {
+    slog<iris::Warning>("Attempting to send to unknown outbound connection",
+			"outbound id", iris::arg<ID>(outbound_id));
+  }
 }
 
-void ProtocolManager::send_packet_to_all(const uint16_t packet_type,
+void ProtocolManager::send_packet_to_all(const ID& dest_peer_id,
+					 const uint16_t packet_type,
                                          buffer::shared_buffer data)
 {
   // todo, only create the packet once and send to all
@@ -119,7 +129,7 @@ void ProtocolManager::send_packet_to_all(const uint16_t packet_type,
       it++)
   {
     sendPacket(it->first,
-               ID::null(),
+               dest_peer_id,
                packet_type,
                data);
   }
@@ -131,11 +141,17 @@ const ID& ProtocolManager::accept(const std::string& protocol, const std::string
   assert(protocol == "zmq+tcp");
 
   std::string zmq_url = std::string("tcp://").append(url);
-  slog<iris::Info>("ZeroMQ accepting",
+
+  boost::shared_ptr<zmq::socket_t> socket = boost::make_shared<zmq::socket_t>(boost::ref(*context_), ZMQ_SUB);
+
+  socket->bind(zmq_url.c_str());
+  socket->setsockopt(ZMQ_SUBSCRIBE, "", 0);
+
+  slog<iris::Info>("ZeroMQ accept",
                    "URL", iris::arg<std::string>(zmq_url));
 
-  recv_thread_ = boost::thread(boost::bind(&ProtocolManager::work, this, zmq_url));
-  return inbound_id_;
+  recv_thread_list_.push_back(boost::make_shared<boost::thread>(boost::bind(&ProtocolManager::work, this, socket)));
+  return ID::null();
 }
 
 void ProtocolManager::connect(const std::string& protocol, const std::string& url)
@@ -143,9 +159,6 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
   assert(protocol == "zmq+tcp");
 
   std::string zmq_url = std::string("tcp://").append(url);
-
-  slog<iris::Info>("ZeroMQ connecting",
-                   "URL", iris::arg<std::string>(zmq_url.c_str()));
 
   SocketPtr publisher_socket = SocketPtr(new ::zmq::socket_t(*context_, ZMQ_PUB));
 
@@ -155,16 +168,16 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
 
   ConnectionID id = ID::create();
   outbound_connection_list_.insert(OutboundConnectionListType::value_type(id, publisher_socket));
+
+  slog<iris::Info>("ZeroMQ connect",
+                   "URL", iris::arg<std::string>(zmq_url.c_str()),
+		   "Out-ID", iris::arg<ID>(id));
+
   sendDiscover(id);
 }
 
-void ProtocolManager::work(const std::string& url)
+void ProtocolManager::work(boost::shared_ptr<zmq::socket_t> socket)
 {
-  zmq::socket_t socket(*context_, ZMQ_SUB);
-
-  socket.bind(url.c_str());
-  socket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
-
   try
   {
     while(1)
@@ -177,22 +190,22 @@ void ProtocolManager::work(const std::string& url)
       boost::shared_ptr<zmq_buffer> header_msg = boost::make_shared<zmq_buffer>();
       boost::shared_ptr<zmq_buffer> body_msg = boost::make_shared<zmq_buffer>();
 
-      bool recv1 = socket.recv(header_msg.get());
+      bool recv1 = socket->recv(header_msg.get());
       if(!recv1)
       {
         slog<iris::Warning>("ZeroMQ1 recv returned non-zero");
       }
 
-      socket.getsockopt (ZMQ_RCVMORE, &more, &more_size);
+      socket->getsockopt (ZMQ_RCVMORE, &more, &more_size);
       assert(more != 0);
 
-      bool recv2 = socket.recv(body_msg.get());
+      bool recv2 = socket->recv(body_msg.get());
       if(!recv2)
       {
         slog<iris::Warning>("ZeroMQ2 recv returned non-zero");
       }
 
-      socket.getsockopt (ZMQ_RCVMORE, &more, &more_size);
+      socket->getsockopt (ZMQ_RCVMORE, &more, &more_size);
       assert(more == 0);
       header_msg->update_buffer();
       body_msg->update_buffer();

@@ -56,7 +56,7 @@ class network_manager;
 namespace zeromq
 {
 
-class ProtocolManager : public ProtocolManagerBase, public inbound_link_base, public iris::static_scope<iris::Info>
+class ProtocolManager : public ProtocolManagerBase, public inbound_link_base
 {
 private:
   boost::asio::io_service * io_service_;
@@ -64,7 +64,7 @@ private:
   boost::scoped_ptr<zmq::context_t> context_;
 
   ConnectionID inbound_id_;
-  boost::thread recv_thread_;
+  std::list<boost::shared_ptr<boost::thread> > recv_thread_list_;
 
   typedef boost::shared_ptr<zmq::socket_t> SocketPtr;
   typedef std::map<const ConnectionID, SocketPtr> OutboundConnectionListType;
@@ -81,14 +81,16 @@ public:
                   const uint16_t packet_type,
                   buffer::shared_buffer data);
 
-  virtual void send_packet_to_all(const uint16_t packet_type,
+  virtual void send_packet_to_all(const ID& dest_peer_id,
+				  const uint16_t packet_type,
                                   buffer::shared_buffer data);
 
   const ConnectionID& accept(const std::string& protocol, const std::string& url);
   void connect(const std::string& protocol, const std::string& url);
+  void accept(const std::string&);
 
 protected:
-  void work(const std::string&);
+  void work(boost::shared_ptr<zmq::socket_t> socket);
 
 };
 

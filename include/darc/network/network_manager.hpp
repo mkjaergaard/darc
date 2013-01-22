@@ -116,7 +116,7 @@ public:
 
   void accept(const std::string& url)
   {
-    try
+//    try
     {
       boost::smatch what;
       if(boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ))
@@ -139,15 +139,15 @@ public:
                                 "url", iris::arg<std::string>(url));
       }
     }
-    catch(std::exception& e) //todo: handle the possible exceptions
-    {
-      std::cout << e.what() << std::endl;
-    }
+//    catch(std::exception& e) //todo: handle the possible exceptions
+//    {
+//      std::cout << e.what() << std::endl;
+//    }
   }
 
   void connect(const std::string& url)
   {
-    try
+//    try
     {
       boost::smatch what;
       if( boost::regex_match(url, what, boost::regex("^(.+)://(.+)$")) )
@@ -169,10 +169,10 @@ public:
                                 "url", iris::arg<std::string>(url));
       }
     }
-    catch(std::exception& e) //todo: handle the possible exceptions
-    {
-      std::cout << e.what() << std::endl;
-    }
+//    catch(std::exception& e) //todo: handle the possible exceptions
+//    {
+//      std::cout << e.what() << std::endl;
+//    }
   }
 
   void discover_reply_received(const ID& src_peer_id, ID& connection_id)

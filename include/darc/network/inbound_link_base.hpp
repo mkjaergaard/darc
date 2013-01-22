@@ -46,7 +46,7 @@
 #include <darc/buffer/const_size_buffer.hpp>
 #include <darc/inbound_data.hpp>
 #include <darc/id_arg.hpp>
-#include <iris/glog.hpp>
+#include <iris/static_scope.hpp>
 
 namespace darc
 {
@@ -55,7 +55,7 @@ namespace network
 
 class network_manager;
 
-class inbound_link_base
+class inbound_link_base : public virtual iris::static_scope<iris::Info>
 {
 protected:
   peer& peer_;
@@ -78,7 +78,8 @@ public:
                           const uint16_t packet_type,
                           buffer::shared_buffer data) = 0;
 
-  virtual void send_packet_to_all(const uint16_t packet_type,
+  virtual void send_packet_to_all(const ID& dest_peer_id,
+				  const uint16_t packet_type,
                                   buffer::shared_buffer data) = 0;
 
   void packet_received(buffer::shared_buffer header_data,
@@ -88,9 +89,9 @@ public:
   {
     inbound_data<darc::serializer::boost_serializer, discover_packet> dp_i(data);
 
-    iris::glog<iris::Debug>("Received DISCOVER",
-                            "peer_id", iris::arg<ID>(src_peer_id),
-                            "remote outbound_id", iris::arg<ID>(dp_i.get().outbound_id));
+    slog<iris::Debug>("Received DISCOVER",
+		      "peer_id", iris::arg<ID>(src_peer_id),
+		      "remote outbound_id", iris::arg<ID>(dp_i.get().outbound_id));
 
     discover_reply_packet drp;
     drp.outbound_id = dp_i.get().outbound_id;
@@ -100,15 +101,15 @@ public:
 
     o_drp.pack(buffer);
 
-    send_packet_to_all(link_header_packet::DISCOVER_REPLY, buffer);
+    send_packet_to_all(src_peer_id, link_header_packet::DISCOVER_REPLY, buffer);
   }
 
   void handle_discover_reply_packet(const ID& src_peer_id, buffer::shared_buffer& data);
 
   void sendDiscover(const ID& outbound_id)
   {
-    iris::glog<iris::Debug>("Sending DISCOVER",
-                            "Outbound ID", iris::arg<ID>(outbound_id));
+    slog<iris::Debug>("Sending DISCOVER",
+		      "Outbound ID", iris::arg<ID>(outbound_id));
 
     discover_packet dp;
     dp.outbound_id = outbound_id;
