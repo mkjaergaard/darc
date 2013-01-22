@@ -16,9 +16,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 add_library(darc_ns
   src/ns_service.cpp
-  src/entry.cpp
-  src/local_tag.cpp
-  src/local_ns.cpp)
+#  src/entry.cpp
+  src/local_tag.cpp)
+#  src/local_ns.cpp)
 
 set(my_LIBRARIES
   darc_ns
@@ -27,8 +27,8 @@ set(my_LIBRARIES
   -lstdc++)
 
 # Add test cpp file
-catkin_add_gtest(darc_ns_gtest_name_server test/name_server_gtest.cpp)
-target_link_libraries(darc_ns_gtest_name_server ${my_LIBRARIES} ${GTEST_BOTH_LIBRARIES})
+#catkin_add_gtest(darc_ns_gtest_name_server test/name_server_gtest.cpp)
+#target_link_libraries(darc_ns_gtest_name_server ${my_LIBRARIES} ${GTEST_BOTH_LIBRARIES})
 
 # Install
 install(TARGETS ${PROJECT_NAME}

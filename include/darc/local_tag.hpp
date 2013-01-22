@@ -4,26 +4,23 @@
 #include <boost/signals.hpp>
 #include <boost/signals/connection.hpp>
 #include <darc/id.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include <boost/uuid/name_generator.hpp>
 
 namespace darc
 {
 class ns_service;
-class local_ns;
 
 class local_tag;
-typedef boost::shared_ptr<local_tag> local_tag_internal_ptr;
 typedef boost::shared_ptr<local_tag> local_tag_ptr;
 
 // manages lifetime of a local tag
 class local_tag
 {
 protected:
+  boost::uuids::name_generator gen_;
   ns_service * ns_service_;
-  local_ns * parent_;
 
   ID id_;
-  ID parent_ns_id_;
   std::string name_;
 
 public:
@@ -37,12 +34,10 @@ protected:
 
 public:
   local_tag(ns_service *,
-            const std::string name,
-            local_ns * parent);
+            const std::string name);
 
   static local_tag_ptr create(ns_service *,
-                              const std::string name,
-                              local_ns * parent);
+                              const std::string name);
   ~local_tag();
 
   void trigger_new_tag(const ID& tag_id, const ID& peer_id)
@@ -69,11 +64,6 @@ public:
   const ID& id() const
   {
     return id_;
-  }
-
-  const ID& namespace_id() const
-  {
-    return parent_ns_id_;
   }
 
   const std::string& name() const
