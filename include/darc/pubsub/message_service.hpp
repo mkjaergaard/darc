@@ -19,7 +19,7 @@ local_dispatcher<T>* message_service::attach(publisher_impl<T> &publisher,
                                              const std::string& topic)
 {
   boost::mutex::scoped_lock lock(mutex_);
-  tag_handle tag = nameserver_.register_tag(nameserver_.root(), topic);
+  tag_handle tag = nameserver_.register_tag(/*nameserver_.root(),*/ topic);
   dispatcher_group<T>* group = get_dispatcher_group<T>(tag);
   local_dispatcher<T>* dispatcher = group->get_dispatcher(tag);
   tag->connect_new_tag_listener(boost::bind(&message_service::new_tag_event, this, _1, _2, _3));
@@ -40,7 +40,7 @@ local_dispatcher<T>* message_service::attach(subscriber_impl<T> &subscriber,
                                              const std::string& topic)
 {
   boost::mutex::scoped_lock lock(mutex_);
-  tag_handle tag = nameserver_.register_tag(nameserver_.root(), topic);
+  tag_handle tag = nameserver_.register_tag(/*nameserver_.root(),*/ topic);
   dispatcher_group<T>* group = get_dispatcher_group<T>(tag);
   local_dispatcher<T>* dispatcher = group->get_dispatcher(tag);
   tag->connect_new_tag_listener(boost::bind(&message_service::new_tag_event, this, _1, _2, _3));

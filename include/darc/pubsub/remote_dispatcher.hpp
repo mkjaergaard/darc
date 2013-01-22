@@ -78,8 +78,6 @@ public:
     {
       remote_tag_list_type& l = *(item->second);
       l.insert(remote_tag_type(peer_id, alias_id));
-      iris::glog<iris::Info>("remote: new_tag", "tag_id", iris::arg<ID>(tag_id),
-                                                "peer_id", iris::arg<ID>(peer_id));
     }
     else
     {

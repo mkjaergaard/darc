@@ -49,7 +49,6 @@ public:
 
   ~dispatcher_group()
   {
-    iris::glog<iris::Info>("~dispatcher_group");
   }
 
   local_dispatcher<T>* get_dispatcher(const tag_handle& tag)
