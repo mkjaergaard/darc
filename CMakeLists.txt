@@ -8,10 +8,12 @@ catkin_package(
   LIBRARIES darc_common
 )
 
+find_package(catkin REQUIRED COMPONENTS roscpp_serialization)
 find_package(Boost REQUIRED COMPONENTS system thread regex signals serialization)
 find_package(iris REQUIRED)
 
 include_directories(include)
+include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${iris_INCLUDE_DIRS})
 
@@ -26,7 +28,7 @@ add_library(darc_common
   src/network/zmq/protocol_manager.cpp
 )
 
-target_link_libraries(darc_common ${Boost_LIBRARIES} ${iris_LIBRARIES} -lstdc++ -lzmq)
+target_link_libraries(darc_common ${Boost_LIBRARIES} ${iris_LIBRARIES} ${catkin_LIBRARIES} -lstdc++ -lzmq)
 
 # Add test cpp file
 catkin_add_gtest(darc_common_gtest_buffer test/buffer_gtest.cpp)

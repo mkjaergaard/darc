@@ -45,10 +45,11 @@ namespace buffer
 class raw_buffer : public std::streambuf, public darc::buffer::buffer
 {
 public:
-  raw_buffer(char* data, size_t len)
+  raw_buffer(char* data, size_t size)
   {
-    setp(data, data+len);
-    setg(data, data, data+len);
+    setbuf(data, size);
+    //setp(data, data+len);
+    //setg(data, data, data+len);
   }
 
   virtual std::streambuf * streambuf()
@@ -56,7 +57,17 @@ public:
     return this;
   }
 
-  virtual const char* data() const
+  char * pptr()
+  {
+    return std::streambuf::pptr();
+  }
+
+  virtual char * gptr()
+  {
+    return std::streambuf::gptr();
+  }
+
+  virtual char * data()
   {
     return pbase();
   }

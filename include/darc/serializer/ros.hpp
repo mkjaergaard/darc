@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Prevas A/S
+ * Copyright (c) 2013, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,23 +35,34 @@
 
 #pragma once
 
-#include <streambuf>
+#include <ros/serialization.h>
+#include <darc/buffer/shared_buffer.hpp>
+#include <iris/glog.hpp>
 
 namespace darc
 {
-namespace buffer
+namespace serializer
 {
 
-class buffer
+struct ros_serializer
 {
-public:
+  template<typename T>
+  static void pack(buffer::shared_buffer& buffer, const T& data)
+  {
+    ros::serialization::OStream out((uint8_t*)buffer->pptr(), 999);
+    uint32_t initial_len = out.getLength();
+    ros::serialization::serialize(out, data);
+    buffer->streambuf()->pubseekoff(out.getLength() - initial_len, std::ios_base::cur);
+  }
 
-  virtual std::streambuf * streambuf() = 0;
-  virtual char* gptr() = 0;
-  virtual char* pptr() = 0;
-  virtual char* data() = 0;
-  virtual ~buffer() {}
-
+  template<typename T>
+  static void unpack(buffer::shared_buffer& buffer, T& data)
+  {
+    ros::serialization::IStream in((uint8_t*)buffer->gptr(), 999);
+    uint32_t initial_len = in.getLength();
+    ros::serialization::deserialize(in, data);
+    buffer->streambuf()->pubseekoff(initial_len - in.getLength(), std::ios_base::cur);
+  }
 };
 
 }
