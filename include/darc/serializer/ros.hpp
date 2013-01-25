@@ -49,7 +49,7 @@ struct ros_serializer
   template<typename T>
   static void pack(buffer::shared_buffer& buffer, const T& data)
   {
-    ros::serialization::OStream out((uint8_t*)buffer->pptr(), 999);
+    ros::serialization::OStream out((uint8_t*)buffer->pptr(), 1024*5); //todo: get correct size
     uint32_t initial_len = out.getLength();
     ros::serialization::serialize(out, data);
     buffer->streambuf()->pubseekoff(out.getLength() - initial_len, std::ios_base::cur);
@@ -58,7 +58,7 @@ struct ros_serializer
   template<typename T>
   static void unpack(buffer::shared_buffer& buffer, T& data)
   {
-    ros::serialization::IStream in((uint8_t*)buffer->gptr(), 999);
+    ros::serialization::IStream in((uint8_t*)buffer->gptr(), 1024*5); //todo: get correct size
     uint32_t initial_len = in.getLength();
     ros::serialization::deserialize(in, data);
     buffer->streambuf()->pubseekoff(initial_len - in.getLength(), std::ios_base::cur);

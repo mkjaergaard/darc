@@ -48,7 +48,7 @@ class zmq_buffer : public buffer::raw_buffer, public ::zmq::message_t
 {
 public:
   zmq_buffer() :
-    raw_buffer(0,0)
+    raw_buffer(0, 0)
   {
   }
 
