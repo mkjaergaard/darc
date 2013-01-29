@@ -9,7 +9,7 @@
 #include <iris/glog.hpp>
 
 #include <darc/inbound_data.hpp>
-#include <darc/serializer/boost.hpp>
+#include <darc/serializer/ros.hpp>
 
 namespace darc
 {
@@ -114,7 +114,7 @@ public:
   void remote_message_recv(const ID& tag_id,
                            darc::buffer::shared_buffer data)
   {
-    inbound_data_ptr<serializer::boost_serializer, T> i_msg(data);
+    inbound_data_ptr<serializer::ros_serializer, T> i_msg(data);
     dispatch_locally_to_group(tag_id, i_msg.get());
   }
 

@@ -1,5 +1,6 @@
 #include <darc/pubsub/remote_dispatcher.hpp>
 #include <darc/pubsub/message_service.hpp>
+#include <darc/serializer/boost.hpp>
 
 namespace darc
 {

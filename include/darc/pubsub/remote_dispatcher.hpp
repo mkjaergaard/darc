@@ -3,6 +3,7 @@
 #include <boost/shared_ptr.hpp>
 #include <darc/inbound_data.hpp>
 #include <darc/serializer/boost.hpp>
+#include <darc/serializer/ros.hpp>
 
 #include <darc/payload_header_packet.hpp>
 #include <darc/pubsub/message_packet.hpp>
@@ -129,7 +130,7 @@ public:
     message_packet msg_hdr(tag_id);
     outbound_data<serializer::boost_serializer, message_packet> o_msg_hdr(msg_hdr);
 
-    outbound_ptr<serializer::boost_serializer, T> o_msg(msg);
+    outbound_ptr<serializer::ros_serializer, T> o_msg(msg);
 
     outbound_pair o_pair1(o_hdr, o_msg_hdr);
     outbound_pair o_pair2(o_pair1, o_msg);
