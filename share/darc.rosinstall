@@ -1,0 +1,8 @@
+- git: {local-name: iris, uri: 'git://github.com/mkjaergaard/iris.git'}
+- git: {local-name: darc_common, uri: 'git://github.com/mkjaergaard/darc_common.git'}
+- git: {local-name: darc_ns, uri: 'git://github.com/mkjaergaard/darc_ns.git'}
+- git: {local-name: darc_pubsub, uri: 'git://github.com/mkjaergaard/darc_pubsub.git'}
+- git: {local-name: darc_procedure, uri: 'git://github.com/mkjaergaard/darc_procedure.git'}
+- git: {local-name: darc_component, uri: 'git://github.com/mkjaergaard/darc_component.git'}
+- git: {local-name: darc, uri: 'git://github.com/mkjaergaard/darc.git'}
+- git: {local-name: darc_examples, uri: 'git://github.com/mkjaergaard/darc_examples.git'}
