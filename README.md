@@ -189,6 +189,134 @@ mngr.accept("zmq+tcp://127.0.0.1:5009")
 mngr.run_current_thread()
 ```
 
+Running the examples:
+---------------------
+Download code:
+```console
+mkdir darc_ws
+cd darc_ws
+rosinstall . --catkin https://raw.github.com/mkjaergaard/darc/master/share/darc.rosinstall
+```
+
+Configure:
+```console
+mkdir build
+cd build
+cmake .. -DCMAKE_PREFIX_PATH=/opt/ros/groovy
+```
+Note: The ROS path is required since DARC supports ros serialization.
+
+Build:
+```console
+make -j8
+make pybindings
+```
+
+Setup Paths:
+```console
+source ./devel/setup.sh
+```
+
+Run Component Manager:
+```console
+./devel/lib/darc_component/darc_component_manager
+```
+
+So nothing really happens since we dont have any running components:
+
+```console
+[INFO  13:45:41.596249] Darc ComponentManager Running
+[INFO  13:45:41.600465] ZeroMQ accept [URL:tcp://127.0.0.1:5000]
+[INFO  13:45:41.601049] ZeroMQ connect [URL:tcp://127.0.0.1:5001] [Out-ID:6d52d5dc]
+[INFO  13:45:41.601673] ZeroMQ connect [URL:tcp://127.0.0.1:5002] [Out-ID:8283b4c0]
+[INFO  13:45:41.601909] ZeroMQ connect [URL:tcp://127.0.0.1:5003] [Out-ID:8aa83778]
+[INFO  13:45:41.602153] ZeroMQ connect [URL:tcp://127.0.0.1:5004] [Out-ID:881cfc43]
+[INFO  13:45:41.602390] ZeroMQ connect [URL:tcp://127.0.0.1:5005] [Out-ID:17184999]
+[INFO  13:45:41.602631] ZeroMQ connect [URL:tcp://127.0.0.1:5006] [Out-ID:8570997f]
+[INFO  13:45:41.602863] ZeroMQ connect [URL:tcp://127.0.0.1:5007] [Out-ID:e333ce40]
+[INFO  13:45:41.603098] ZeroMQ connect [URL:tcp://127.0.0.1:5008] [Out-ID:d154002b]
+[INFO  13:45:41.603341] ZeroMQ connect [URL:tcp://127.0.0.1:5009] [Out-ID:32c5f209]
+No component to load
+[INFO  13:45:41.603478] Running component_manager
+```
+CTRL+C to stop
+
+The example executable can load and run components specified with -l:
+```console
+./devel/lib/darc_component/darc_component_manager -l talker_component -l listener_component
+```
+
+Now we have the components running:
+
+```console
+[INFO  13:48:10.104477] Darc ComponentManager Running
+[INFO  13:48:10.105511] ZeroMQ accept [URL:tcp://127.0.0.1:5000]
+[INFO  13:48:10.106011] ZeroMQ connect [URL:tcp://127.0.0.1:5001] [Out-ID:34d9d32f]
+[INFO  13:48:10.106495] ZeroMQ connect [URL:tcp://127.0.0.1:5002] [Out-ID:78706adb]
+[INFO  13:48:10.106655] ZeroMQ connect [URL:tcp://127.0.0.1:5003] [Out-ID:7f521b65]
+[INFO  13:48:10.106787] ZeroMQ connect [URL:tcp://127.0.0.1:5004] [Out-ID:fee31d03]
+[INFO  13:48:10.106941] ZeroMQ connect [URL:tcp://127.0.0.1:5005] [Out-ID:91771adb]
+[INFO  13:48:10.107081] ZeroMQ connect [URL:tcp://127.0.0.1:5006] [Out-ID:b6077a2e]
+[INFO  13:48:10.107223] ZeroMQ connect [URL:tcp://127.0.0.1:5007] [Out-ID:3e0b2ea4]
+[INFO  13:48:10.107364] ZeroMQ connect [URL:tcp://127.0.0.1:5008] [Out-ID:dcd0bde2]
+[INFO  13:48:10.107506] ZeroMQ connect [URL:tcp://127.0.0.1:5009] [Out-ID:ccb4ce84]
+[INFO  13:48:10.107589] Loading Component [name:talker_component]
+Loading: libtalker_component.so
+[INFO  13:48:10.110807] Registered Component [Name:talker_component]
+[INFO  13:48:10.110885] Instantiating Component [Name:talker_component]
+[INFO  13:48:10.111185] Loading Component [name:listener_component]
+Loading: liblistener_component.so
+[INFO  13:48:10.111206] Running Component [Name:talker_component]
+[INFO  13:48:10.112782] Registered Component [Name:listener_component]
+[INFO  13:48:10.112809] Instantiating Component [Name:listener_component]
+[INFO  13:48:10.112899] Running component_manager
+[INFO  13:48:10.112915] Running Component [Name:listener_component]
+[INFO  13:48:11.111666] Publishing [Msg:Hello World 1]
+[INFO  13:48:11.111816] Received [msg:Hello World 1]
+[INFO  13:48:12.111639] Publishing [Msg:Hello World 2]
+[INFO  13:48:12.111764] Received [msg:Hello World 2]
+[INFO  13:48:13.111628] Publishing [Msg:Hello World 3]
+[INFO  13:48:13.111766] Received [msg:Hello World 3]
+[INFO  13:48:14.111638] Publishing [Msg:Hello World 4]
+[INFO  13:48:14.111787] Received [msg:Hello World 4]
+...
+...
+```
+
+Lets try the python version in a different shell.
+(Remember to source the setup.sh file again)
+
+```console
+python ../darc_examples/python/listener_peer.py
+```
+
+And we start receiving the messages:
+
+```console
+Loading: liblistener_component.so
+[INFO  13:50:35.473240] Registered Component [Name:listener_component]
+[INFO  13:50:35.473345] Instantiating Component [Name:listener_component]
+[INFO  13:50:35.473646] Running Component [Name:listener_component]
+[INFO  13:50:35.473936] ZeroMQ connect [URL:tcp://127.0.0.1:5000] [Out-ID:bf5cd3c4]
+[INFO  13:50:35.474312] ZeroMQ connect [URL:tcp://127.0.0.1:5001] [Out-ID:9bb6f22e]
+[INFO  13:50:35.474571] ZeroMQ connect [URL:tcp://127.0.0.1:5002] [Out-ID:b96a1d20]
+[INFO  13:50:35.474827] ZeroMQ connect [URL:tcp://127.0.0.1:5003] [Out-ID:57ef2237]
+[INFO  13:50:35.475101] ZeroMQ connect [URL:tcp://127.0.0.1:5004] [Out-ID:47922663]
+[INFO  13:50:35.475364] ZeroMQ connect [URL:tcp://127.0.0.1:5005] [Out-ID:51271b7f]
+[INFO  13:50:35.475609] ZeroMQ connect [URL:tcp://127.0.0.1:5006] [Out-ID:e23c114a]
+[INFO  13:50:35.475925] ZeroMQ connect [URL:tcp://127.0.0.1:5007] [Out-ID:5a38cf47]
+[INFO  13:50:35.476191] ZeroMQ connect [URL:tcp://127.0.0.1:5008] [Out-ID:258e3b53]
+[INFO  13:50:35.476587] ZeroMQ accept [URL:tcp://127.0.0.1:5009]
+[INFO  13:50:35.476704] Running component_manager
+[INFO  13:50:59.235725] Peer Connected [peer_id:101639b7]
+[INFO  13:51:03.144473] Received [msg:Hello World 24]
+[INFO  13:51:04.144472] Received [msg:Hello World 25]
+[INFO  13:51:05.144511] Received [msg:Hello World 26]
+[INFO  13:51:06.144410] Received [msg:Hello World 27]
+[INFO  13:51:07.144499] Received [msg:Hello World 28]
+...
+...
+```
 
 Brief overview of packages:
 ---------------------------
@@ -213,8 +341,8 @@ The other packages are basically raw services dcesigned to work similar as a boo
 The component package provides a component model for the user and wraps the pub/sub etc. in a more used friendly way and provides threading control, state control etc.
 Components are intended to be compiled into a dynamic library that can be deployed (loaded dynamically) on peer.
 
-## darc
-Documentation
+### darc
+Documentation and wrapper for dependencies
 
 ### darc_examples:
 Contain examples of talker and listener components.
