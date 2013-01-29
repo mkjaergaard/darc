@@ -12,7 +12,7 @@ https://github.com/mkjaergaard/darc_examples/tree/0.1-prototype
 
 Version 0.2 has been redesigned in several ways such as:
 * The implementaion have been split into several sub-projects to motivate a higly seperated architecture
-* Nodes have been reaplaced by Peers, to better symbolize their purpose in the p2p system
+* Nodes have been replaced by Peers, to better symbolize their purpose in the p2p system
 * A decentralized name service
 * General architecture cleanup
 
