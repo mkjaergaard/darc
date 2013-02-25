@@ -3,9 +3,10 @@
 #include <darc/pubsub/message_service__decl.hpp>
 
 #include <boost/make_shared.hpp>
-#include <darc/pubsub/dispatcher_group.hpp>
+#include <darc/pubsub/local_dispatcher.hpp>
 
 #include <darc/id.hpp>
+
 
 typedef darc::ID IDType;
 
@@ -20,10 +21,9 @@ local_dispatcher<T>* message_service::attach(publisher_impl<T> &publisher,
 {
   boost::mutex::scoped_lock lock(mutex_);
   tag_handle tag = nameserver_.register_tag(/*nameserver_.root(),*/ topic);
-  dispatcher_group<T>* group = get_dispatcher_group<T>(tag);
-  local_dispatcher<T>* dispatcher = group->get_dispatcher(tag);
-  tag->connect_new_tag_listener(boost::bind(&message_service::new_tag_event, this, _1, _2, _3));
-  tag->connect_removed_tag_listener(boost::bind(&message_service::removed_tag_event, this, _1, _2, _3));
+  local_dispatcher<T>* dispatcher = get_dispatcher<T>(tag);
+//  tag->connect_new_tag_listener(boost::bind(&message_service::new_tag_event, this, _1, _2, _3));
+//  tag->connect_removed_tag_listener(boost::bind(&message_service::removed_tag_event, this, _1, _2, _3));
   dispatcher->attach(publisher);
   return dispatcher;
 }
@@ -41,10 +41,9 @@ local_dispatcher<T>* message_service::attach(subscriber_impl<T> &subscriber,
 {
   boost::mutex::scoped_lock lock(mutex_);
   tag_handle tag = nameserver_.register_tag(/*nameserver_.root(),*/ topic);
-  dispatcher_group<T>* group = get_dispatcher_group<T>(tag);
-  local_dispatcher<T>* dispatcher = group->get_dispatcher(tag);
-  tag->connect_new_tag_listener(boost::bind(&message_service::new_tag_event, this, _1, _2, _3));
-  tag->connect_removed_tag_listener(boost::bind(&message_service::removed_tag_event, this, _1, _2, _3));
+  local_dispatcher<T>* dispatcher = get_dispatcher<T>(tag);
+//  tag->connect_new_tag_listener(boost::bind(&message_service::new_tag_event, this, _1, _2, _3));
+//  tag->connect_removed_tag_listener(boost::bind(&message_service::removed_tag_event, this, _1, _2, _3));
   dispatcher->attach(subscriber);
   return dispatcher;
 }
@@ -57,29 +56,67 @@ void message_service::detach(subscriber_impl<T> &subscriber, local_dispatcher<T>
 }
 
 template<typename T>
-dispatcher_group<T>* message_service::get_dispatcher_group(const tag_handle& tag)
+local_dispatcher<T>* message_service::get_dispatcher(const tag_handle& tag)
 {
-  typename dispatcher_group_list_type::iterator elem = dispatcher_group_list_.find(tag->id());
-  if(elem == dispatcher_group_list_.end())
+  typename dispatcher_list_type::iterator elem = dispatcher_list_.find(tag->id());
+  if(elem == dispatcher_list_.end())
   {
-    boost::shared_ptr<dispatcher_group<T> > group
-      = boost::make_shared<dispatcher_group<T> >(
+    boost::shared_ptr<local_dispatcher<T> > dispatcher
+      = boost::make_shared<local_dispatcher<T> >(this, tag);
 
-        &remote_dispatcher_);
+    dispatcher_list_.insert(
+      typename dispatcher_list_type::value_type(tag->id(), dispatcher));
 
-    dispatcher_group_list_.insert(
-      typename dispatcher_group_list_type::value_type(tag->id(), group));
-
-    return group.get();
+    return dispatcher.get();
   }
   else
   {
-    boost::shared_ptr<basic_dispatcher_group> &basic_dispatcher_group = elem->second;
+    boost::shared_ptr<local_dispatcher_base> &dispatcher_base = elem->second;
     // todo, try
-    boost::shared_ptr<dispatcher_group<T> > group
-      = boost::dynamic_pointer_cast<dispatcher_group<T> >(basic_dispatcher_group);
-    return group.get();
+    boost::shared_ptr<local_dispatcher<T> > dispatcher
+      = boost::dynamic_pointer_cast<local_dispatcher<T> >(dispatcher_base);
+    return dispatcher.get();
   }
+}
+
+///////////////////
+// Network stuff
+///////////////////
+template<typename T>
+void message_service::send_msg(const ID& tag_id, const ID& peer_id, const boost::shared_ptr<const T> &msg)
+{
+  payload_header_packet hdr;
+  hdr.payload_type = message_packet::payload_id;
+  outbound_data<serializer::boost_serializer, payload_header_packet> o_hdr(hdr);
+
+  message_packet msg_hdr(tag_id);
+  outbound_data<serializer::boost_serializer, message_packet> o_msg_hdr(msg_hdr);
+
+  outbound_ptr<serializer::ros_serializer, T> o_msg(msg);
+
+  outbound_pair o_pair1(o_hdr, o_msg_hdr);
+  outbound_pair o_pair2(o_pair1, o_msg);
+
+  send_to(peer_id, o_pair2);
+}
+
+template<typename T>
+void message_service::dispatch_remotely(const ID& tag_id, const boost::shared_ptr<const T> &msg)
+{
+  send_msg(tag_id, ID::null(), msg);
+  /*
+  remote_list_type::iterator item = list_.find(tag_id);
+  if(item != list_.end())
+  {
+    for(remote_tag_list_type::iterator it = item->second->begin();
+        it != item->second->end();
+        it++)
+    {
+      // todo: here we send a copy to all
+      send_msg(/tag_id/it->second, it->first, msg);
+    }
+  }
+  */
 }
 
 }

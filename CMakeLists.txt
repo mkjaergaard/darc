@@ -16,7 +16,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${catkin_INCLUDE_DIRS})
 
 add_library(darc_pubsub SHARED
-  src/remote_dispatcher.cpp
   src/message_service.cpp)
 
 catkin_add_gtest(darc_pubsub_gtest test/darc_pubsub_gtest.cpp)

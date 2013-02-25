@@ -4,6 +4,7 @@
 #include <darc/pubsub/subscriber.hpp>
 #include <darc/pubsub/publisher.hpp>
 #include <darc/tag_handle.hpp>
+#include <darc/pubsub/message_service__decl.hpp>
 
 namespace darc
 {
@@ -13,8 +14,21 @@ namespace pubsub
 template<typename T>
 class dispatcher_group;
 
+class local_dispatcher_base
+{
+public:
+  virtual ~local_dispatcher_base()
+  {
+  }
+
+  virtual void remote_message_recv(const ID& tag_id,
+                                   darc::buffer::shared_buffer data) = 0;
+
+  virtual void inform_remote_peer(const ID& peer_id) = 0;
+};
+
 template<typename T>
-class local_dispatcher
+class local_dispatcher : public local_dispatcher_base
 {
 private:
   typedef std::vector<publisher_impl<T> *> publishers_list_type;
@@ -23,38 +37,31 @@ private:
   publishers_list_type publishers_;
   subscribers_list_type subscribers_;
 
-  dispatcher_group<T> * group_;
-
-public: //todo:
+  message_service * message_service_;
   tag_handle tag_;
 
 public:
-  local_dispatcher(dispatcher_group<T> * group, const tag_handle& tag) :
-    group_(group),
+  local_dispatcher(message_service * message_service, const tag_handle& tag) :
+    message_service_(message_service),
     tag_(tag)
   {
   }
 
-  void set_group(dispatcher_group<T> * group)
-  {
-    group_ = group;
-  }
-
-  void check_empty()
-  {
-    if(publishers_.empty() && subscribers_.empty())
-    {
-      group_->remove_dispatcher(this);
-    }
-  }
-
   void attach(subscriber_impl<T> &subscriber)
   {
+    if(subscribers_.empty())
+    {
+      message_service_->send_subscription(tag_->id(), ID::null());
+    }
     subscribers_.push_back(&subscriber);
   }
 
   void attach(publisher_impl<T> &publisher)
   {
+    if(subscribers_.empty())
+    {
+      message_service_->send_publish(tag_->id(), ID::null());
+    }
     publishers_.push_back(&publisher);
   }
 
@@ -67,7 +74,6 @@ public:
       if(*it == &subscriber)
       {
         subscribers_.erase(it);
-        check_empty();
         return;
       }
     }
@@ -83,7 +89,6 @@ public:
       if(*it == &publisher)
       {
         publishers_.erase(it);
-        check_empty();
         return;
       }
     }
@@ -102,7 +107,28 @@ public:
 
   void dispatch_from_publisher(const boost::shared_ptr<const T> &msg)
   {
-    group_->dispatch_to_group(tag_->id(), msg);
+    dispatch_locally(msg);
+    message_service_->dispatch_remotely(tag_->id(), msg);
+  }
+
+  void remote_message_recv(const ID& tag_id,
+                           darc::buffer::shared_buffer data)
+  {
+    inbound_data_ptr<serializer::ros_serializer, T> i_msg(data);
+    dispatch_locally(i_msg.get());
+  }
+
+  void inform_remote_peer(const ID& peer_id)
+  {
+    if(!publishers_.empty())
+    {
+      message_service_->send_publish(tag_->id(), peer_id);
+    }
+
+    if(!subscribers_.empty())
+    {
+      message_service_->send_subscription(tag_->id(), peer_id);
+    }
   }
 
 };
