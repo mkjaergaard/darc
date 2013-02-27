@@ -52,9 +52,17 @@ private:
   typedef std::list<subscribed_topic_record> subscribed_topics_list_type;
   subscribed_topics_list_type subscribed_topics_list_;
 
-  // Topics we publish (todo: tmp hack, not really required by the msg system, should be handled differently)
+  // Topics we publish (TODO: tmp hack, not really required by the msg system, should be handled differently)
   typedef std::set<subscribed_topic_record> published_topics_list_type;
   published_topics_list_type published_topics_list_;
+
+  // New Topics
+  typedef void(topic_change_callback_type)(bool event, const ID& peer_id, const std::string& topic, const std::string& type);
+public:
+  typedef boost::function<topic_change_callback_type> topic_change_functor_type;
+protected:
+  typedef boost::signal<topic_change_callback_type> topic_change_signal_type;
+  topic_change_signal_type topic_change_signal_;
 
 public:
   ns_service& nameserver_;
@@ -70,8 +78,8 @@ public:
   void peer_connected_handler(const ID& peer_id);
   void peer_disconnected_handler(const ID& peer_id);
 
-  void send_subscription(const ID& tag_id, const ID& peer_id);
-  void send_publish(const ID& tag_id, const ID& peer_id);
+  void send_subscription(const ID& peer_id, const ID& tag_id, const std::string& tag_name, const std::string& type_name);
+  void send_publish(const ID& peer_id, const ID& tag_id, const std::string& tag_name, const std::string& type_name);
 
   void recv(const darc::ID& src_peer_id,
             darc::buffer::shared_buffer data);
@@ -82,8 +90,13 @@ public:
   template<typename T>
   void dispatch_remotely(const ID& tag_id, const boost::shared_ptr<const T> &msg);
 
-  void remote_message_recv(const ID& tag_id,
-                           darc::buffer::shared_buffer data);
+  void handle_message_packet(const ID& remote_peer_id,
+                             darc::buffer::shared_buffer data);
+  void handle_publish_packet(const ID& remote_peer_id,
+                             darc::buffer::shared_buffer data);
+  void handle_subscribe_packet(const ID& remote_peer_id,
+                               darc::buffer::shared_buffer data);
+
   ///////////////////////////
   // Local dispatchers stuff
   template<typename T>
@@ -100,6 +113,13 @@ public:
 
   template<typename T>
   local_dispatcher<T>* get_dispatcher(const tag_handle& tag);
+
+  ////////////////////////////
+  // Topic Change Callback
+  topic_change_signal_type& topic_change_signal()
+  {
+    return topic_change_signal_;
+  }
 
 };
 

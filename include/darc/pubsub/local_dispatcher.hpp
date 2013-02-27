@@ -51,7 +51,9 @@ public:
   {
     if(subscribers_.empty())
     {
-      message_service_->send_subscription(tag_->id(), ID::null());
+      message_service_->send_subscription(ID::null(), tag_->id(),
+                                                      tag_->name(),
+                                                      "");
     }
     subscribers_.push_back(&subscriber);
   }
@@ -60,7 +62,9 @@ public:
   {
     if(subscribers_.empty())
     {
-      message_service_->send_publish(tag_->id(), ID::null());
+      message_service_->send_publish(ID::null(), tag_->id(),
+                                     tag_->name(),
+                                     "");
     }
     publishers_.push_back(&publisher);
   }
@@ -122,12 +126,16 @@ public:
   {
     if(!publishers_.empty())
     {
-      message_service_->send_publish(tag_->id(), peer_id);
+      message_service_->send_publish(ID::null(), tag_->id(),
+                                     tag_->name(),
+                                     "");
     }
 
     if(!subscribers_.empty())
     {
-      message_service_->send_subscription(tag_->id(), peer_id);
+      message_service_->send_subscription(ID::null(), tag_->id(),
+                                          tag_->name(),
+                                          "");
     }
   }
 

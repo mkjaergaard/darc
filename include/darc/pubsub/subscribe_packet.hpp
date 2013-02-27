@@ -13,7 +13,7 @@ struct subscribe_packet
 
   darc::ID topic_id;
 
-  subscribe_packet(const darc::ID& topic_id) :
+  subscribe_packet(const darc::ID& topic_id = ID::null()) :
     topic_id(topic_id)
   {
   }

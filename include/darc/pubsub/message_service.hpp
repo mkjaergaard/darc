@@ -22,8 +22,6 @@ local_dispatcher<T>* message_service::attach(publisher_impl<T> &publisher,
   boost::mutex::scoped_lock lock(mutex_);
   tag_handle tag = nameserver_.register_tag(/*nameserver_.root(),*/ topic);
   local_dispatcher<T>* dispatcher = get_dispatcher<T>(tag);
-//  tag->connect_new_tag_listener(boost::bind(&message_service::new_tag_event, this, _1, _2, _3));
-//  tag->connect_removed_tag_listener(boost::bind(&message_service::removed_tag_event, this, _1, _2, _3));
   dispatcher->attach(publisher);
   return dispatcher;
 }
@@ -42,8 +40,6 @@ local_dispatcher<T>* message_service::attach(subscriber_impl<T> &subscriber,
   boost::mutex::scoped_lock lock(mutex_);
   tag_handle tag = nameserver_.register_tag(/*nameserver_.root(),*/ topic);
   local_dispatcher<T>* dispatcher = get_dispatcher<T>(tag);
-//  tag->connect_new_tag_listener(boost::bind(&message_service::new_tag_event, this, _1, _2, _3));
-//  tag->connect_removed_tag_listener(boost::bind(&message_service::removed_tag_event, this, _1, _2, _3));
   dispatcher->attach(subscriber);
   return dispatcher;
 }

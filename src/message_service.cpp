@@ -30,20 +30,19 @@ void message_service::recv(const darc::ID& src_peer_id,
   {
   case subscribe_packet::payload_id:
   {
-    //handle_subscribe_packet(src_peer_id, data);
+    handle_subscribe_packet(src_peer_id, data);
   }
   break;
   case publish_packet::payload_id:
   {
-    //handle_publish_packet(src_peer_id, data);
+    handle_publish_packet(src_peer_id, data);
   }
   break;
   case message_packet::payload_id:
   {
-    inbound_data<serializer::boost_serializer, message_packet> msg_i(data);
 
     // Just send the buffer to the dispatcher. not the nicest way
-    remote_message_recv(msg_i.get().tag_id, data);
+    handle_message_packet(src_peer_id, data);
   }
   break;
   default:
@@ -59,9 +58,12 @@ void message_service::recv(const darc::ID& src_peer_id,
 /**
  * Callback from remote_dispatcher when a message is received.
  */
-void message_service::remote_message_recv(const ID& tag_id,
-                                          darc::buffer::shared_buffer data)
+void message_service::handle_message_packet(const ID& remote_peer_id,
+                                            darc::buffer::shared_buffer data)
 {
+  inbound_data<serializer::boost_serializer, message_packet> msg_i(data);
+  const ID& tag_id = msg_i.get().tag_id;
+
   boost::mutex::scoped_lock lock(mutex_);
 
   dispatcher_list_type::iterator elem =
@@ -76,6 +78,19 @@ void message_service::remote_message_recv(const ID& tag_id,
 //    iris::glog<iris::Warning>("message_service: remote msg for unknown tag id",
 //                              "tag_id", iris::arg<ID>(tag_id));
   }
+}
+
+void message_service::handle_publish_packet(const ID& remote_peer_id,
+                                            darc::buffer::shared_buffer data)
+{
+  inbound_data<serializer::boost_serializer, publish_packet> pub_i(data);
+  topic_change_signal_(true, pub_i.get().topic_id, pub_i.get().topic_name, pub_i.get().type_name);
+}
+
+void message_service::handle_subscribe_packet(const ID& remote_peer_id,
+                                            darc::buffer::shared_buffer data)
+{
+  inbound_data<serializer::boost_serializer, subscribe_packet> sub_i(data);
 }
 
 void message_service::peer_connected_handler(const ID& peer_id)
@@ -93,13 +108,13 @@ void message_service::peer_disconnected_handler(const ID& peer_id)
 
 }
 
-void message_service::send_subscription(const ID& tag_id, const ID& peer_id)
+void message_service::send_subscription(const ID& peer_id, const ID& tag_id, const std::string& tag_name, const std::string& type_name)
 {
   payload_header_packet hdr;
   hdr.payload_type = subscribe_packet::payload_id;
   outbound_data<serializer::boost_serializer, payload_header_packet> o_hdr(hdr);
 
-  subscribe_packet sub(tag_id);
+  subscribe_packet sub(tag_id);//, tag_name, type_name);
   outbound_data<serializer::boost_serializer, subscribe_packet> o_sub(sub);
 
   outbound_pair o_combined(o_hdr, o_sub);
@@ -107,13 +122,13 @@ void message_service::send_subscription(const ID& tag_id, const ID& peer_id)
   send_to(peer_id, o_combined);
 }
 
-void message_service::send_publish(const ID& tag_id, const ID& peer_id)
+void message_service::send_publish(const ID& peer_id, const ID& tag_id, const std::string& tag_name, const std::string& type_name)
 {
   payload_header_packet hdr;
   hdr.payload_type = publish_packet::payload_id;
   outbound_data<serializer::boost_serializer, payload_header_packet> o_hdr(hdr);
 
-  publish_packet pub(tag_id);
+  publish_packet pub(tag_id, tag_name, type_name);
   outbound_data<serializer::boost_serializer, publish_packet> o_pub(pub);
 
   outbound_pair o_combined(o_hdr, o_pub);
