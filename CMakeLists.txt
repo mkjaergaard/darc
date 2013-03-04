@@ -31,6 +31,10 @@ add_library(darc_common
 target_link_libraries(darc_common ${Boost_LIBRARIES} ${iris_LIBRARIES} ${catkin_LIBRARIES} -lstdc++ -lzmq)
 
 # Add test cpp file
+catkin_add_gtest(darc_common_gtest_type_string test/type_string_of_gtest.cpp)
+target_link_libraries(darc_common_gtest_type_string darc_common ${GTEST_BOTH_LIBRARIES})
+
+# Add test cpp file
 catkin_add_gtest(darc_common_gtest_buffer test/buffer_gtest.cpp)
 target_link_libraries(darc_common_gtest_buffer darc_common ${GTEST_BOTH_LIBRARIES})
 
