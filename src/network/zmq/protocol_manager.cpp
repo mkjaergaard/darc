@@ -41,6 +41,7 @@
 
 #include <darc/network/zmq/zmq_buffer.hpp>
 #include <darc/network/link_header_packet.hpp>
+#include <darc/network/network_manager.hpp>
 
 #include <iris/glog.hpp>
 
@@ -65,6 +66,8 @@ ProtocolManager::ProtocolManager(boost::asio::io_service& io_service, network_ma
 ProtocolManager::~ProtocolManager()
 {
   // todo: fix this creation of a dummy buffer
+//  return;
+
   int d = 0;
   outbound_data<darc::serializer::boost_serializer, int> o_d(d);
   buffer::shared_buffer dummy_data = boost::make_shared<buffer::const_size_buffer>(1024);
@@ -92,6 +95,11 @@ void ProtocolManager::sendPacket(const ConnectionID& outbound_id,
   buffer::shared_buffer header_data = boost::make_shared<buffer::const_size_buffer>(1024); // todo
 
   o_lhp.pack(header_data);
+
+  //
+  zmq::message_t topic_msg(dest_peer_id.size());
+  memcpy(topic_msg.data(), dest_peer_id.data, dest_peer_id.size());
+
   //
   buffer::shared_buffer * keep_alive1 = new buffer::shared_buffer(header_data);
   zmq::message_t message1((void*)header_data->data(),
@@ -109,18 +117,19 @@ void ProtocolManager::sendPacket(const ConnectionID& outbound_id,
   OutboundConnectionListType::iterator item = outbound_connection_list_.find(outbound_id);
   if(item != outbound_connection_list_.end())
   {
+    item->second->send(topic_msg, ZMQ_SNDMORE);
     item->second->send(message1, ZMQ_SNDMORE);
     item->second->send(message2);
   }
   else
   {
     slog<iris::Warning>("Attempting to send to unknown outbound connection",
-			"outbound id", iris::arg<ID>(outbound_id));
+                        "outbound id", iris::arg<ID>(outbound_id));
   }
 }
 
 void ProtocolManager::send_packet_to_all(const ID& dest_peer_id,
-					 const uint16_t packet_type,
+                                         const uint16_t packet_type,
                                          buffer::shared_buffer data)
 {
   // todo, only create the packet once and send to all
@@ -145,7 +154,8 @@ const ID& ProtocolManager::accept(const std::string& protocol, const std::string
   boost::shared_ptr<zmq::socket_t> socket = boost::make_shared<zmq::socket_t>(boost::ref(*context_), ZMQ_SUB);
 
   socket->bind(zmq_url.c_str());
-  socket->setsockopt(ZMQ_SUBSCRIBE, "", 0);
+  socket->setsockopt(ZMQ_SUBSCRIBE, ID::null().data, ID::static_size());
+  socket->setsockopt(ZMQ_SUBSCRIBE, peer_.id().data, ID::static_size());
 
   slog<iris::Info>("ZeroMQ accept",
                    "URL", iris::arg<std::string>(zmq_url));
@@ -160,7 +170,7 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
 
   std::string zmq_url = std::string("tcp://").append(url);
 
-  SocketPtr publisher_socket = SocketPtr(new ::zmq::socket_t(*context_, ZMQ_PUB));
+  SocketPtr publisher_socket = SocketPtr(new ::zmq::socket_t(*context_, ZMQ_XPUB));
 
   int linger_value = 2000;
   publisher_socket->setsockopt(ZMQ_LINGER, &linger_value, sizeof(linger_value));
@@ -171,9 +181,55 @@ void ProtocolManager::connect(const std::string& protocol, const std::string& ur
 
   slog<iris::Info>("ZeroMQ connect",
                    "URL", iris::arg<std::string>(zmq_url.c_str()),
-		   "Out-ID", iris::arg<ID>(id));
+                   "Out-ID", iris::arg<ID>(id));
 
-  sendDiscover(id);
+  recv_thread_list_.push_back(boost::make_shared<boost::thread>(boost::bind(&ProtocolManager::pub_work, this, publisher_socket, id)));
+// sendDiscover(id);
+}
+
+void ProtocolManager::pub_work(boost::shared_ptr<zmq::socket_t> socket, darc::ID id)
+{
+  try
+  {
+    while(1)
+    {
+      ::zmq::message_t msg;
+      bool recv1 = socket->recv(&msg);
+      if(!recv1)
+      {
+        slog<iris::Warning>("ZeroMQ recv returned non-zero");
+      }
+      int event = ((char*)(msg.data()))[0];
+      if(event == 1)
+      {
+        ID topic;
+        memcpy(topic.data, (char*)msg.data() + 1, ID::static_size());
+        if(topic != ID::null())
+        {
+          manager_->neighbour_peer_discovered(topic, id);
+        };
+
+      }
+      slog<iris::Info>("PUB SOMETHING!!!!!!!!",
+                       "event", iris::arg<int>(((char*)(msg.data()))[0]),
+                       "size", iris::arg<int>(msg.size()));
+    }
+  }
+  catch(zmq::error_t& e)
+  {
+    if(e.num() == ETERM)
+    {
+      // Expect an ETERM (Happens when we are shutting down)
+    }
+    else if(e.num() == EINTR)
+    {
+      slog<iris::Error>("ZeroMQ EINT exception");
+    }
+    else
+    {
+      throw e; // todo: rethrow is not proper handling of other errors
+    }
+  }
 }
 
 void ProtocolManager::work(boost::shared_ptr<zmq::socket_t> socket)
@@ -189,6 +245,12 @@ void ProtocolManager::work(boost::shared_ptr<zmq::socket_t> socket)
 
       boost::shared_ptr<zmq_buffer> header_msg = boost::make_shared<zmq_buffer>();
       boost::shared_ptr<zmq_buffer> body_msg = boost::make_shared<zmq_buffer>();
+
+      zmq::message_t topic_msg;
+      bool recv_topic = socket->recv(&topic_msg);
+
+      socket->getsockopt (ZMQ_RCVMORE, &more, &more_size);
+      assert(more != 0);
 
       bool recv1 = socket->recv(header_msg.get());
       if(!recv1)
@@ -206,7 +268,13 @@ void ProtocolManager::work(boost::shared_ptr<zmq::socket_t> socket)
       }
 
       socket->getsockopt (ZMQ_RCVMORE, &more, &more_size);
-      assert(more == 0);
+
+      if(more == 0)
+      {
+        slog<iris::Warning>("ZeroMQ recv single msg",
+                            "size", iris::arg<int>(header_msg.get()->size()));
+        continue;
+      }
       header_msg->update_buffer();
       body_msg->update_buffer();
 

@@ -82,7 +82,7 @@ public:
                   buffer::shared_buffer data);
 
   virtual void send_packet_to_all(const ID& dest_peer_id,
-				  const uint16_t packet_type,
+                                  const uint16_t packet_type,
                                   buffer::shared_buffer data);
 
   const ConnectionID& accept(const std::string& protocol, const std::string& url);
@@ -91,6 +91,7 @@ public:
 
 protected:
   void work(boost::shared_ptr<zmq::socket_t> socket);
+  void pub_work(boost::shared_ptr<zmq::socket_t> socket, darc::ID);
 
 };
 

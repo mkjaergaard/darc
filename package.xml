@@ -9,6 +9,8 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>iris</build_depend>
+  <build_depend>zeromq_catkin</build_depend>
 
   <run_depend>iris</run_depend>
+  <run_depend>zeromq_catkin</run_depend>
 </package>

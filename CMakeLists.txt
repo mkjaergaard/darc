@@ -6,9 +6,11 @@ find_package(catkin)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES darc_common
+  CATKIN_DEPENDS zeromq_catkin
 )
 
-find_package(catkin REQUIRED COMPONENTS roscpp_serialization)
+
+find_package(catkin REQUIRED COMPONENTS roscpp_serialization zeromq_catkin)
 find_package(Boost REQUIRED COMPONENTS system thread regex signals serialization)
 find_package(iris REQUIRED)
 
@@ -16,6 +18,8 @@ include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${iris_INCLUDE_DIRS})
+message(STATUS "ZMQ DIRS" "${zeromq_catkin_INCLUDE_DIRS}")
+message(STATUS "catkin DIRS" "${catkin_INCLUDE_DIRS}")
 
 add_library(darc_common
   src/id.cpp
@@ -28,7 +32,7 @@ add_library(darc_common
   src/network/zmq/protocol_manager.cpp
 )
 
-target_link_libraries(darc_common ${Boost_LIBRARIES} ${iris_LIBRARIES} ${catkin_LIBRARIES} -lstdc++ -lzmq)
+target_link_libraries(darc_common ${Boost_LIBRARIES} ${iris_LIBRARIES} ${catkin_LIBRARIES} -lstdc++)
 
 # Add test cpp file
 catkin_add_gtest(darc_common_gtest_type_string test/type_string_of_gtest.cpp)
@@ -48,7 +52,7 @@ target_link_libraries(darc_common_gtest_shared_map darc_common ${GTEST_BOTH_LIBR
 
 # Add test cpp file
 catkin_add_gtest(darc_common_gtest_network test/network_test.cpp)
-target_link_libraries(darc_common_gtest_network darc_common ${GTEST_BOTH_LIBRARIES} -lzmq)
+target_link_libraries(darc_common_gtest_network darc_common ${GTEST_BOTH_LIBRARIES})
 
 # Install
 install(TARGETS ${PROJECT_NAME}

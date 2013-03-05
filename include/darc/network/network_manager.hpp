@@ -175,14 +175,14 @@ public:
 //    }
   }
 
-  void discover_reply_received(const ID& src_peer_id, ID& connection_id)
+  void neighbour_peer_discovered(const ID& src_peer_id, const ID& connection_id)
   {
     //todo: check if it exists already
     neighbour_nodes_.insert(NeighbourNodesType::value_type(src_peer_id, connection_id));
     peer_.peer_connected(src_peer_id);
   }
 
-  void disconnect_received(const ID& src_peer_id)
+  void neighbour_peer_disconnected(const ID& src_peer_id, const ID& connection_id)
   {
     // todo: verify we have the node
     neighbour_nodes_.erase(src_peer_id);

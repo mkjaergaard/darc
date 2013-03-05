@@ -55,7 +55,7 @@ namespace network
 
 class network_manager;
 
-class inbound_link_base : public virtual iris::static_scope<iris::Info>
+class inbound_link_base : public virtual iris::static_scope<iris::Debug>
 {
 protected:
   peer& peer_;
