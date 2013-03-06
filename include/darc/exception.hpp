@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2013, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,32 +28,19 @@
  */
 
 /**
- * DARC Invalid Url Exception class
- *
  * \author Morten Kjaergaard
  */
 
-#ifndef __DARC_NETWORK_INVALID_URL_EXCEPTION_H_INCLUDED__
-#define __DARC_NETWORK_INVALID_URL_EXCEPTION_H_INCLUDED__
+#pragma once
 
-#include <darc/exception.h>
+#include <exception>
+#include <boost/exception/all.hpp>
 
 namespace darc
 {
-namespace network
-{
 
-class InvalidUrlException : darc::Exception
+struct exception : virtual boost::exception, std::exception
 {
-
-public:
-  InvalidUrlException(const std::string& url) :
-    darc::Exception("Invalid URL Specified: ", url)
-  {
-  }
 };
 
-} // namespace network
 } // namespace darc
-
-#endif

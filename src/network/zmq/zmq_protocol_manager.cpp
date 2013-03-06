@@ -42,6 +42,7 @@
 #include <darc/network/zmq/zmq_buffer.hpp>
 #include <darc/network/link_header_packet.hpp>
 #include <darc/network/network_manager.hpp>
+#include <darc/network/address_in_use_exception.hpp>
 
 #include <iris/glog.hpp>
 
@@ -139,10 +140,25 @@ void zmq_protocol_manager::accept(const std::string& protocol, const std::string
 
   std::string zmq_url = std::string("tcp://").append(url);
 
-  boost::shared_ptr<zmq_listen_worker> worker = boost::make_shared<zmq_listen_worker>(this,
-                                                                                      zmq_url,
-                                                                                      boost::ref(*context_));
-  listen_list_.insert(listen_list_type::value_type(worker->id(), worker));
+  try
+  {
+    boost::shared_ptr<zmq_listen_worker> worker = boost::make_shared<zmq_listen_worker>(this,
+                                                                                        zmq_url,
+                                                                                        boost::ref(*context_));
+    listen_list_.insert(listen_list_type::value_type(worker->id(), worker));
+  }
+  catch(zmq::error_t& e)
+  {
+    if(e.num() == EADDRINUSE)
+    {
+      throw address_in_use_exception() << address_in_use_exception::address(url);
+    }
+    else
+    {
+      // TODO: put into proper exception
+      throw;
+    }
+  }
 }
 
 void zmq_protocol_manager::connect(const std::string& protocol, const std::string& url)

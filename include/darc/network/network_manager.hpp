@@ -45,7 +45,6 @@
 #include <darc/network/link_header_packet.hpp>
 #include <iris/glog.hpp>
 #include <darc/id_arg.hpp>
-#include <darc/network/zmq/zmq_protocol_manager.hpp>
 
 namespace darc
 {
@@ -57,11 +56,8 @@ class network_manager
 private:
   peer& peer_;
 
-  // Protocol Managers
-  zeromq::zmq_protocol_manager zmq_manager_;
-
-  // Map "protocol" -> Manager
-  typedef std::map<const std::string, protocol_manager_base*> ManagerProtocolMapType;
+  // Map "protocol" string -> Manager
+  typedef std::map<const std::string, boost::shared_ptr<protocol_manager_base> > ManagerProtocolMapType;
   ManagerProtocolMapType manager_protocol_map_;
 
   // Map "Inbound ConnectionID" -> Manager
@@ -86,7 +82,7 @@ public:
 
 private:
   // Get the protocol manager from a protocol name
-  protocol_manager_base * getManager(const std::string& protocol);
+  boost::shared_ptr<protocol_manager_base>& getManager(const std::string& protocol);
 
 };
 

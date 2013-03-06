@@ -38,9 +38,10 @@
 #include <darc/serializer/boost.hpp>
 #include <darc/network/protocol_manager_base.hpp>
 #include <darc/network/link_header_packet.hpp>
+#include <darc/network/invalid_url_exception.hpp>
 #include <iris/glog.hpp>
 #include <darc/id_arg.hpp>
-//#include <darc/network/zmq/protocol_manager.hpp>
+#include <darc/network/zmq/zmq_protocol_manager.hpp>
 
 namespace darc
 {
@@ -48,130 +49,126 @@ namespace network
 {
 
 network_manager::network_manager(boost::asio::io_service &io_service, darc::peer& p) :
-    peer_(p),
-    zmq_manager_(this, p)
-  {
-    peer_.set_send_to_function(boost::bind(&network_manager::sendPacket, this, _1, _2));
-    manager_protocol_map_["zmq+tcp"] = &zmq_manager_;
-  }
+  peer_(p)
+{
+  peer_.set_send_to_function(boost::bind(&network_manager::sendPacket, this, _1, _2));
+  manager_protocol_map_.insert(
+    ManagerProtocolMapType::value_type(std::string("zmq+tcp"),
+                                       boost::make_shared<zeromq::zmq_protocol_manager>(this, boost::ref(p))));
+}
 
-  void network_manager::sendPacket(const darc::ID& recv_node_id, buffer::shared_buffer data)
+void network_manager::sendPacket(const darc::ID& recv_node_id, buffer::shared_buffer data)
+{
+  // ID::null means we send to all nodes
+  if( recv_node_id == ID::null() )
   {
-    // ID::null means we send to all nodes
-    if( recv_node_id == ID::null() )
+    for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
     {
-      for( NeighbourNodesType::iterator it = neighbour_nodes_.begin(); it != neighbour_nodes_.end(); it++ )
+      // TODO: find correct protocol manager
+      manager_protocol_map_.begin()->second->send_packet(it->second, it->first, link_header_packet::SERVICE, data);
+    }
+  }
+  else
+  {
+    NeighbourNodesType::iterator item = neighbour_nodes_.find(recv_node_id);
+    if(item != neighbour_nodes_.end())
+    {
+      // TODO: find correct protocol manager
+      manager_protocol_map_.begin()->second->send_packet(item->second, recv_node_id, link_header_packet::SERVICE, data);
+    }
+    else
+    {
+      iris::glog<iris::Warning>("network_manager: sending packet to unknown peer_id",
+                                "peer_id", iris::arg<ID>(recv_node_id));
+    }
+  }
+}
+
+void network_manager::accept(const std::string& url)
+{
+  try
+  {
+    boost::smatch what;
+    if(boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ))
+    {
+      getManager(what[1])->accept(what[1], what[2]);
+      if (0)
       {
-        zmq_manager_.send_packet(it->second, it->first, link_header_packet::SERVICE, data);
+        iris::glog<iris::Error>("network_manager: unsupported protocol",
+                                "url", iris::arg<std::string>(url));
       }
     }
     else
     {
-      NeighbourNodesType::iterator item = neighbour_nodes_.find(recv_node_id);
-      if(item != neighbour_nodes_.end())
-      {
-        zmq_manager_.send_packet(item->second, recv_node_id, link_header_packet::SERVICE, data);
-      }
-      else
-      {
-        iris::glog<iris::Warning>("network_manager: sending packet to unknown peer_id",
-                                  "peer_id", iris::arg<ID>(recv_node_id));
-      }
+      iris::glog<iris::Error>("network_manager: invalid url",
+                              "url", iris::arg<std::string>(url));
     }
   }
-
-  void network_manager::accept(const std::string& url)
+  catch(invalid_url_exception& e)
   {
-//    try
+    e << invalid_url_exception::url(url);
+    throw;
+  }
+}
+
+void network_manager::connect(const std::string& url)
+{
+  try
+  {
+    boost::smatch what;
+    if( boost::regex_match(url, what, boost::regex("^(.+)://(.+)$")) )
     {
-      boost::smatch what;
-      if(boost::regex_match( url, what, boost::regex("^(.+)://(.+)$") ))
+      getManager(what[1])->connect(what[1], what[2]);
+      if(0)
       {
-        protocol_manager_base * mngr = getManager(what[1]);
-        if(mngr)
-        {
-          mngr->accept(what[1], what[2]);
-//          manager_connection_map_.insert(ManagerConnectionMapType::value_type(inbound_id, mngr));
-        }
-        else
-        {
-          iris::glog<iris::Error>("network_manager: unsupported protocol",
-                                  "url", iris::arg<std::string>(url));
-        }
-      }
-      else
-      {
-        iris::glog<iris::Error>("network_manager: invalid url",
+        iris::glog<iris::Error>("network_manager: unsupported protocol",
                                 "url", iris::arg<std::string>(url));
       }
-    }
-//    catch(std::exception& e) //todo: handle the possible exceptions
-//    {
-//      std::cout << e.what() << std::endl;
-//    }
-  }
-
-  void network_manager::connect(const std::string& url)
-  {
-//    try
-    {
-      boost::smatch what;
-      if( boost::regex_match(url, what, boost::regex("^(.+)://(.+)$")) )
-      {
-        protocol_manager_base * mngr = getManager(what[1]);
-        if(mngr)
-        {
-          mngr->connect(what[1], what[2]);
-        }
-        else
-        {
-          iris::glog<iris::Error>("network_manager: unsupported protocol",
-                                  "url", iris::arg<std::string>(url));
-        }
-      }
-      else
-      {
-        iris::glog<iris::Error>("network_manager: invalid url",
-                                "url", iris::arg<std::string>(url));
-      }
-    }
-//    catch(std::exception& e) //todo: handle the possible exceptions
-//    {
-//      std::cout << e.what() << std::endl;
-//    }
-  }
-
-  void network_manager::neighbour_peer_discovered(const ID& src_peer_id, const ID& connection_id)
-  {
-    //todo: check if it exists already
-    neighbour_nodes_.insert(NeighbourNodesType::value_type(src_peer_id, connection_id));
-    peer_.peer_connected(src_peer_id);
-  }
-
-  void network_manager::neighbour_peer_disconnected(const ID& src_peer_id, const ID& connection_id)
-  {
-    // todo: verify we have the node
-    neighbour_nodes_.erase(src_peer_id);
-    peer_.peer_disconnected(src_peer_id);
-  }
-
-  void network_manager::service_packet_received(const ID& src_peer_id, buffer::shared_buffer data)
-  {
-    peer_.recv(src_peer_id, data);
-  }
-
-  protocol_manager_base * network_manager::getManager(const std::string& protocol)
-  {
-    ManagerProtocolMapType::iterator elem = manager_protocol_map_.find(protocol);
-    if( elem != manager_protocol_map_.end() )
-    {
-      return elem->second;
     }
     else
     {
-      return 0;
+      iris::glog<iris::Error>("network_manager: invalid url",
+                              "url", iris::arg<std::string>(url));
     }
   }
+  catch(invalid_url_exception& e)
+  {
+    e << invalid_url_exception::url(url);
+    throw;
+  }
+}
+
+void network_manager::neighbour_peer_discovered(const ID& src_peer_id, const ID& connection_id)
+{
+  //todo: check if it exists already
+  neighbour_nodes_.insert(NeighbourNodesType::value_type(src_peer_id, connection_id));
+  peer_.peer_connected(src_peer_id);
+}
+
+void network_manager::neighbour_peer_disconnected(const ID& src_peer_id, const ID& connection_id)
+{
+  // todo: verify we have the node
+  neighbour_nodes_.erase(src_peer_id);
+  peer_.peer_disconnected(src_peer_id);
+}
+
+void network_manager::service_packet_received(const ID& src_peer_id, buffer::shared_buffer data)
+{
+  peer_.recv(src_peer_id, data);
+}
+
+boost::shared_ptr<protocol_manager_base>& network_manager::getManager(const std::string& protocol)
+{
+  ManagerProtocolMapType::iterator elem = manager_protocol_map_.find(protocol);
+  if( elem != manager_protocol_map_.end() )
+  {
+    return elem->second;
+  }
+  else
+  {
+    throw invalid_url_exception() << invalid_url_exception::problem("Unsupported protocol");
+  }
+}
 
 }
 }
