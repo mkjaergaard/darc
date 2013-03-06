@@ -28,11 +28,18 @@ add_library(darc_common
   src/container_base.cpp
   src/peer.cpp
   src/system_signals.cpp
+  src/network/network_manager.cpp
   src/network/inbound_link_base.cpp
-  src/network/zmq/protocol_manager.cpp
+  src/network/zmq/zmq_protocol_manager.cpp
+  src/network/zmq/zmq_worker.cpp
+  src/network/zmq/zmq_listen_worker.cpp
+  src/network/zmq/zmq_connect_worker.cpp
 )
 
 target_link_libraries(darc_common ${Boost_LIBRARIES} ${iris_LIBRARIES} ${catkin_LIBRARIES} -lstdc++)
+
+add_executable(darc_common_test_shutdown1 test/shutdown_test.cpp)
+target_link_libraries(darc_common_test_shutdown1 darc_common )
 
 # Add test cpp file
 catkin_add_gtest(darc_common_gtest_type_string test/type_string_of_gtest.cpp)

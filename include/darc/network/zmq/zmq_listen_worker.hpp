@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2013, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,54 +28,40 @@
  */
 
 /**
- * DARC ProtocolManagerBase class
- *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <string>
 #include <darc/id.hpp>
-#include <darc/buffer/shared_buffer.hpp>
+#include <darc/network/zmq/zmq_worker.hpp>
 
 namespace darc
 {
 namespace network
 {
-
-class protocol_manager_base
+namespace zeromq
 {
-protected:
-  protocol_manager_base()
-  {
-  }
+
+class zmq_listen_worker : public zmq_worker
+{
+  ID id_; // outbound_id
 
 public:
-  virtual ~protocol_manager_base()
+  zmq_listen_worker(zmq_protocol_manager * parent,
+                    const std::string& url,
+                    zmq::context_t& context);
+
+  const darc::ID& id()
   {
+    return id_;
   }
 
-  virtual void accept(const std::string& protocol, const std::string& url) = 0;
-  virtual void connect(const std::string& protocol, const std::string& url) = 0;
+protected:
+  void work_receive();
 
-  virtual void send_packet(const darc::ID& outbound_id,
-                           const ID& dest_peer_id,
-                           const uint16_t packet_type,
-                           buffer::shared_buffer data) = 0;
-/*
-  void sendDiscover(const ID& outbound_id)
-  {
-  std::size_t data_len = 1024*32;
-  SharedBuffer buffer = SharedBufferArray::create(data_len);
-
-  // Create packet
-  network::packet::Discover discover(outbound_id);
-  std::size_t len = discover.write(buffer.data(), buffer.size());
-  sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
-  }
-*/
 };
 
+} // namespace zeromq
 } // namespace network
 } // namespace darc

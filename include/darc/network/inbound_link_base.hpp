@@ -55,14 +55,14 @@ namespace network
 
 class network_manager;
 
-class inbound_link_base : public virtual iris::static_scope<iris::Debug>
+class inbound_link_base : public virtual iris::static_scope<iris::Info>
 {
 protected:
   peer& peer_;
-  network_manager * manager_;
+  class network_manager * manager_;
 
 protected:
-  inbound_link_base(network_manager * manager, peer& p) :
+  inbound_link_base(class network_manager * manager, peer& p) :
     manager_(manager),
     peer_(p)
   {
@@ -73,14 +73,19 @@ protected:
   }
 
 public:
-  virtual void sendPacket(const ID& outbound_id,
+  virtual void send_packet(const ID& outbound_id,
                           const ID& dest_peer_id,
                           const uint16_t packet_type,
                           buffer::shared_buffer data) = 0;
 
   virtual void send_packet_to_all(const ID& dest_peer_id,
-				  const uint16_t packet_type,
+                                  const uint16_t packet_type,
                                   buffer::shared_buffer data) = 0;
+
+  class network_manager* network_manager()
+  {
+    return manager_;
+  }
 
   void packet_received(buffer::shared_buffer header_data,
                        buffer::shared_buffer body_data);
@@ -90,8 +95,8 @@ public:
     inbound_data<darc::serializer::boost_serializer, discover_packet> dp_i(data);
 
     slog<iris::Debug>("Received DISCOVER",
-		      "peer_id", iris::arg<ID>(src_peer_id),
-		      "remote outbound_id", iris::arg<ID>(dp_i.get().outbound_id));
+                      "peer_id", iris::arg<ID>(src_peer_id),
+                      "remote outbound_id", iris::arg<ID>(dp_i.get().outbound_id));
 
     discover_reply_packet drp;
     drp.outbound_id = dp_i.get().outbound_id;
@@ -109,7 +114,7 @@ public:
   void sendDiscover(const ID& outbound_id)
   {
     slog<iris::Debug>("Sending DISCOVER",
-		      "Outbound ID", iris::arg<ID>(outbound_id));
+                      "Outbound ID", iris::arg<ID>(outbound_id));
 
     discover_packet dp;
     dp.outbound_id = outbound_id;
@@ -119,7 +124,7 @@ public:
 
     o_dp.pack(buffer);
 
-    sendPacket(outbound_id, ID::null(), link_header_packet::DISCOVER, buffer);
+    send_packet(outbound_id, ID::null(), link_header_packet::DISCOVER, buffer);
   }
 
 /*

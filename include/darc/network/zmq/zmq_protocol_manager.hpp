@@ -36,12 +36,12 @@
 #pragma once
 
 #include <zmq.hpp>
-#include <boost/asio.hpp> // do we really need asio is this?
-#include <boost/thread.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <darc/peer.hpp>
 #include <darc/network/protocol_manager_base.hpp>
 #include <darc/network/inbound_link_base.hpp>
+#include <darc/network/zmq/zmq_listen_worker.hpp>
+#include <darc/network/zmq/zmq_connect_worker.hpp>
 #include <iris/static_scope.hpp>
 
 namespace darc
@@ -49,49 +49,43 @@ namespace darc
 namespace network
 {
 
-typedef ConnectionID ID;
-
-class network_manager;
+class network_manager; // fwd
 
 namespace zeromq
 {
 
-class ProtocolManager : public ProtocolManagerBase, public inbound_link_base
+class zmq_protocol_manager : public protocol_manager_base, public inbound_link_base
 {
 private:
-  boost::asio::io_service * io_service_;
   peer& peer_;
+
+  typedef std::list<boost::shared_ptr<zmq_connect_worker> > connect_list_type;
+  typedef std::map</*outbound*/ID, boost::shared_ptr<zmq_listen_worker> > listen_list_type;
+  connect_list_type connect_list_;
+  listen_list_type listen_list_;
+
   boost::scoped_ptr<zmq::context_t> context_;
 
-  ConnectionID inbound_id_;
-  std::list<boost::shared_ptr<boost::thread> > recv_thread_list_;
-
-  typedef boost::shared_ptr<zmq::socket_t> SocketPtr;
-  typedef std::map<const ConnectionID, SocketPtr> OutboundConnectionListType;
-
-  OutboundConnectionListType outbound_connection_list_;
-
 public:
-  ProtocolManager(boost::asio::io_service& io_service, network_manager * manager, peer& p);
+  zmq_protocol_manager(class network_manager * manager, peer& p);
+  ~zmq_protocol_manager();
 
-  ~ProtocolManager();
-
-  void sendPacket(const ConnectionID& outbound_id,
-                  const ID& dest_peer_id,
-                  const uint16_t packet_type,
-                  buffer::shared_buffer data);
+  void send_packet(const darc::ID& outbound_id,
+                   const ID& dest_peer_id,
+                   const uint16_t packet_type,
+                   buffer::shared_buffer data);
 
   virtual void send_packet_to_all(const ID& dest_peer_id,
                                   const uint16_t packet_type,
                                   buffer::shared_buffer data);
 
-  const ConnectionID& accept(const std::string& protocol, const std::string& url);
+  void accept(const std::string& protocol, const std::string& url);
   void connect(const std::string& protocol, const std::string& url);
-  void accept(const std::string&);
 
-protected:
-  void work(boost::shared_ptr<zmq::socket_t> socket);
-  void pub_work(boost::shared_ptr<zmq::socket_t> socket, darc::ID);
+  const darc::ID& peer_id()
+  {
+    return peer_.id();
+  }
 
 };
 

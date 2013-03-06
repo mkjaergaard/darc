@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2013, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,54 +28,56 @@
  */
 
 /**
- * DARC ProtocolManagerBase class
- *
  * \author Morten Kjaergaard
  */
 
-#pragma once
-
-#include <string>
-#include <darc/id.hpp>
-#include <darc/buffer/shared_buffer.hpp>
+#include <darc/network/zmq/zmq_worker.hpp>
 
 namespace darc
 {
 namespace network
 {
-
-class protocol_manager_base
+namespace zeromq
 {
-protected:
-  protocol_manager_base()
+
+zmq_worker::zmq_worker(zmq_protocol_manager * parent,
+                       zmq::context_t& context,
+                       int socket_type) :
+  parent_(parent),
+  socket_(context, socket_type)
+{
+}
+
+void zmq_worker::work()
+{
+  try
   {
+    while(1)
+    {
+      slog<iris::Debug>("ZeroMQ Waiting");
+      work_receive();
+    }
   }
-
-public:
-  virtual ~protocol_manager_base()
+  catch(zmq::error_t& e)
   {
+    if(e.num() == ETERM)
+    {
+      // Expect an ETERM (Happens when we are shutting down)
+    }
+    else if(e.num() == EINTR)
+    {
+      slog<iris::Warning>("ZeroMQ EINT exception");
+    }
+    else
+    {
+      std::cout << e.what() << std::endl;
+      throw e; // TODO: Handle possible errors properly!
+    }
   }
+  slog<iris::Info>("ZeroMQ Exiting work thread");
+  socket_.close();
+}
 
-  virtual void accept(const std::string& protocol, const std::string& url) = 0;
-  virtual void connect(const std::string& protocol, const std::string& url) = 0;
-
-  virtual void send_packet(const darc::ID& outbound_id,
-                           const ID& dest_peer_id,
-                           const uint16_t packet_type,
-                           buffer::shared_buffer data) = 0;
-/*
-  void sendDiscover(const ID& outbound_id)
-  {
-  std::size_t data_len = 1024*32;
-  SharedBuffer buffer = SharedBufferArray::create(data_len);
-
-  // Create packet
-  network::packet::Discover discover(outbound_id);
-  std::size_t len = discover.write(buffer.data(), buffer.size());
-  sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
-  }
-*/
-};
-
-} // namespace network
-} // namespace darc
+}
+}
+}

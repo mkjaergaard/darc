@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2013, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,54 +28,61 @@
  */
 
 /**
- * DARC ProtocolManagerBase class
- *
  * \author Morten Kjaergaard
  */
 
-#pragma once
-
-#include <string>
-#include <darc/id.hpp>
-#include <darc/buffer/shared_buffer.hpp>
+#include <darc/network/zmq/zmq_connect_worker.hpp>
+#include <darc/network/zmq/zmq_protocol_manager.hpp>
+#include <darc/network/zmq/zmq_buffer.hpp>
 
 namespace darc
 {
 namespace network
 {
-
-class protocol_manager_base
+namespace zeromq
 {
-protected:
-  protocol_manager_base()
-  {
-  }
 
-public:
-  virtual ~protocol_manager_base()
-  {
-  }
+zmq_connect_worker::zmq_connect_worker(zmq_protocol_manager * parent,
+                                       const std::string& url,
+                                       zmq::context_t& context) :
+  zmq_worker(parent, context, ZMQ_SUB)
+{
+  slog<iris::Info>("ZeroMQ connect",
+                   "URL", iris::arg<std::string>(url));
 
-  virtual void accept(const std::string& protocol, const std::string& url) = 0;
-  virtual void connect(const std::string& protocol, const std::string& url) = 0;
+  int linger_value = 500;
+  socket_.setsockopt(ZMQ_LINGER, &linger_value, sizeof(linger_value));
+  socket_.connect(url.c_str());
+  socket_.setsockopt(ZMQ_SUBSCRIBE, ID::null().data, ID::static_size());
+  socket_.setsockopt(ZMQ_SUBSCRIBE, parent_->peer_id().data, ID::static_size());
+  run();
+}
 
-  virtual void send_packet(const darc::ID& outbound_id,
-                           const ID& dest_peer_id,
-                           const uint16_t packet_type,
-                           buffer::shared_buffer data) = 0;
-/*
-  void sendDiscover(const ID& outbound_id)
-  {
-  std::size_t data_len = 1024*32;
-  SharedBuffer buffer = SharedBufferArray::create(data_len);
+void zmq_connect_worker::work_receive()
+{
+  zmq::message_t topic_msg;
+  boost::shared_ptr<zmq_buffer> header_msg = boost::make_shared<zmq_buffer>();
+  boost::shared_ptr<zmq_buffer> body_msg = boost::make_shared<zmq_buffer>();
 
-  // Create packet
-  network::packet::Discover discover(outbound_id);
-  std::size_t len = discover.write(buffer.data(), buffer.size());
-  sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
-  }
-*/
-};
+  check_ok(socket_.recv(&topic_msg) != 0);
+  check_ok(has_more());
 
-} // namespace network
-} // namespace darc
+  check_ok(socket_.recv(header_msg.get()) != 0);
+  check_ok(has_more());
+
+  check_ok(socket_.recv(body_msg.get()) != 0);
+  check_ok(!has_more());
+
+  header_msg->update_buffer();
+  body_msg->update_buffer();
+
+  slog<iris::Debug>("ZeroMQ message",
+                    "size1", iris::arg<int>(header_msg->size()),
+                    "size2", iris::arg<int>(body_msg->size()));
+
+  parent_->packet_received(header_msg, body_msg);
+}
+
+}
+}
+}

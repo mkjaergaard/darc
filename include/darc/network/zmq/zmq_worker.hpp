@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Prevas A/S
+ * Copyright (c) 2013, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,54 +28,72 @@
  */
 
 /**
- * DARC ProtocolManagerBase class
- *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <string>
-#include <darc/id.hpp>
-#include <darc/buffer/shared_buffer.hpp>
+#include <zmq.hpp>
+#include <boost/thread.hpp>
+#include <iris/static_scope.hpp>
 
 namespace darc
 {
 namespace network
 {
+namespace zeromq
+{
 
-class protocol_manager_base
+class zmq_protocol_manager;
+
+class zmq_worker : public iris::static_scope<iris::Info>
 {
 protected:
-  protocol_manager_base()
-  {
-  }
+  zmq_protocol_manager * parent_;
+  zmq::socket_t socket_;
+  boost::thread thread_;
 
 public:
-  virtual ~protocol_manager_base()
+  zmq_worker(zmq_protocol_manager * parent,
+             zmq::context_t& context,
+             int socket_type);
+
+  virtual ~zmq_worker()
   {
+    socket_.close();
+    thread_.join();
   }
 
-  virtual void accept(const std::string& protocol, const std::string& url) = 0;
-  virtual void connect(const std::string& protocol, const std::string& url) = 0;
-
-  virtual void send_packet(const darc::ID& outbound_id,
-                           const ID& dest_peer_id,
-                           const uint16_t packet_type,
-                           buffer::shared_buffer data) = 0;
-/*
-  void sendDiscover(const ID& outbound_id)
+  zmq::socket_t& socket()
   {
-  std::size_t data_len = 1024*32;
-  SharedBuffer buffer = SharedBufferArray::create(data_len);
-
-  // Create packet
-  network::packet::Discover discover(outbound_id);
-  std::size_t len = discover.write(buffer.data(), buffer.size());
-  sendPacket(outbound_id, network::packet::Header::DISCOVER_PACKET, ID::null(), buffer, len);
+    return socket_;
   }
-*/
+
+protected:
+  void run()
+  {
+    thread_ = boost::thread(boost::bind(&zmq_worker::work, this));
+  }
+
+  bool has_more()
+  {
+    int64_t more;
+    size_t more_size = sizeof(more);
+    socket_.getsockopt (ZMQ_RCVMORE, &more, &more_size);
+    return (more != 0);
+  }
+
+  void check_ok(bool condition)
+  {
+    assert(condition);
+  }
+
+protected:
+  virtual void work_receive() = 0;
+  void work();
+
 };
 
+} // namespace zeromq
 } // namespace network
 } // namespace darc
