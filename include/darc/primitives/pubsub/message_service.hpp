@@ -75,45 +75,5 @@ local_dispatcher<T>* message_service::get_dispatcher(const tag_handle& tag)
   }
 }
 
-///////////////////
-// Network stuff
-///////////////////
-template<typename T>
-void message_service::send_msg(const ID& tag_id, const ID& peer_id, const T &msg)
-{
-  payload_header_packet hdr;
-  hdr.payload_type = message_packet::payload_id;
-  outbound_data<serializer::boost_serializer, payload_header_packet> o_hdr(hdr);
-
-  message_packet msg_hdr(tag_id);
-  outbound_data<serializer::boost_serializer, message_packet> o_msg_hdr(msg_hdr);
-
-  outbound_data<serializer::ros_serializer, T> o_msg(msg);
-
-  outbound_pair o_pair1(o_hdr, o_msg_hdr);
-  outbound_pair o_pair2(o_pair1, o_msg);
-
-  send_to(peer_id, o_pair2);
-}
-
-template<typename T>
-void message_service::dispatch_remotely(const ID& tag_id, const T &msg)
-{
-  send_msg(tag_id, ID::null(), msg);
-  /*
-  remote_list_type::iterator item = list_.find(tag_id);
-  if(item != list_.end())
-  {
-    for(remote_tag_list_type::iterator it = item->second->begin();
-        it != item->second->end();
-        it++)
-    {
-      // todo: here we send a copy to all
-      send_msg(/tag_id/it->second, it->first, msg);
-    }
-  }
-  */
-}
-
 }
 }

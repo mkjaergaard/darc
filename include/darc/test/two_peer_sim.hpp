@@ -3,6 +3,8 @@
 #include <darc/peer/peer.hpp>
 #include <darc/id_arg.hpp>
 
+#include <darc/buffer/raw_buffer.hpp>
+
 namespace darc
 {
 namespace test
@@ -25,13 +27,13 @@ public:
   void send_to_node1(const darc::ID& peer_id, darc::buffer::shared_buffer data)
   {
     iris::glog<iris::Info>("Data Received from node 2");
-    peer1.recv(peer2.id(), data);
+    peer1.recv(peer2.id(), boost::make_shared<darc::buffer::raw_buffer>(data->data(), 1024, 1024));
   }
 
   void send_to_node2(const darc::ID& peer_id, darc::buffer::shared_buffer data)
   {
     iris::glog<iris::Info>("Data Received from node 1");
-    peer2.recv(peer1.id(), data);
+    peer2.recv(peer1.id(), boost::make_shared<darc::buffer::raw_buffer>(data->data(), 1024, 1024));
   }
 };
 

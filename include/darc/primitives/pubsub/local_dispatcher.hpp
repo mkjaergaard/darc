@@ -34,6 +34,8 @@ private:
   typedef std::vector<publisher_impl<T> *> publishers_list_type;
   typedef std::vector<subscriber_impl<T> *> subscribers_list_type;
 
+  typedef serializer::boost_serializer serializer_type;
+
   publishers_list_type publishers_;
   subscribers_list_type subscribers_;
 
@@ -122,19 +124,23 @@ public:
   void dispatch_from_publisher(const boost::shared_ptr<const T> &msg)
   {
     dispatch_locally(msg);
-    message_service_->dispatch_remotely(tag_->id(), *msg);
+
+    outbound_data<serializer_type, T> o_msg(*msg);
+    message_service_->dispatch_remotely(tag_->id(), o_msg);
   }
 
   void dispatch_from_publisher(const T& msg)
   {
     dispatch_locally(msg);
-    message_service_->dispatch_remotely(tag_->id(), msg);
+
+    outbound_data<serializer_type, T> o_msg(msg);
+    message_service_->dispatch_remotely(tag_->id(), o_msg);
   }
 
   void remote_message_recv(const ID& tag_id,
                            darc::buffer::shared_buffer data)
   {
-    inbound_data_ptr<serializer::ros_serializer, T> i_msg(data);
+    inbound_data_ptr<serializer_type, T> i_msg(data);
     dispatch_locally(i_msg.get());
   }
 

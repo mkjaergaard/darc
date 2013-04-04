@@ -84,11 +84,9 @@ public:
   void recv(const darc::ID& src_peer_id,
             darc::buffer::shared_buffer data);
 
-  template<typename T>
-  void send_msg(const ID& tag_id, const ID& peer_id, const T &msg);
+  void send_msg(const ID& tag_id, const ID& peer_id, const outbound_data_base& msg_data);
 
-  template<typename T>
-  void dispatch_remotely(const ID& tag_id, const T &msg);
+  void dispatch_remotely(const ID& tag_id, const outbound_data_base& msg_data);
 
   void handle_message_packet(const ID& remote_peer_id,
                              darc::buffer::shared_buffer data);

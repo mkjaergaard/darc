@@ -169,5 +169,39 @@ void message_service::send_publish(const ID& peer_id, const ID& tag_id, const st
   send_to(peer_id, o_combined);
 }
 
+void message_service::send_msg(const ID& tag_id, const ID& peer_id, const outbound_data_base &msg_data)
+{
+  payload_header_packet hdr;
+  hdr.payload_type = message_packet::payload_id;
+  outbound_data<serializer::boost_serializer, payload_header_packet> o_hdr(hdr);
+
+  message_packet msg_hdr(tag_id);
+  outbound_data<serializer::boost_serializer, message_packet> o_msg_hdr(msg_hdr);
+
+
+  outbound_pair o_pair1(o_hdr, o_msg_hdr);
+  outbound_pair o_pair2(o_pair1, msg_data);
+
+  send_to(peer_id, o_pair2);
+}
+
+void message_service::dispatch_remotely(const ID& tag_id, const outbound_data_base &msg_data)
+{
+  send_msg(tag_id, ID::null(), msg_data);
+  /*
+  remote_list_type::iterator item = list_.find(tag_id);
+  if(item != list_.end())
+  {
+    for(remote_tag_list_type::iterator it = item->second->begin();
+        it != item->second->end();
+        it++)
+    {
+      // todo: here we send a copy to all
+      send_msg(/tag_id/it->second, it->first, msg);
+    }
+  }
+  */
+}
+
 }
 }
