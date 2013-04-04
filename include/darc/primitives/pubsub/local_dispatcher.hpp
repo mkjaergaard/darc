@@ -1,10 +1,10 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <darc/pubsub/subscriber.hpp>
-#include <darc/pubsub/publisher.hpp>
-#include <darc/tag_handle.hpp>
-#include <darc/pubsub/message_service__decl.hpp>
+#include <darc/primitives/pubsub/subscriber.hpp>
+#include <darc/primitives/pubsub/publisher.hpp>
+#include <darc/ns/tag_handle.hpp>
+#include <darc/primitives/pubsub/message_service__decl.hpp>
 
 namespace darc
 {

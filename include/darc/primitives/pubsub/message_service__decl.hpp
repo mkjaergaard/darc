@@ -8,17 +8,17 @@
 #include <boost/shared_ptr.hpp>
 
 #include <darc/id.hpp>
-#include <darc/ns_service.hpp>
-#include <darc/peer_service.hpp>
-#include <darc/inbound_data.hpp>
+#include <darc/ns/ns_service.hpp>
+#include <darc/peer/peer_service.hpp>
+#include <darc/network/inbound_data.hpp>
 #include <darc/serializer/boost.hpp>
 #include <darc/serializer/ros.hpp>
 
-#include <darc/payload_header_packet.hpp>
-#include <darc/pubsub/message_packet.hpp>
-#include <darc/pubsub/subscribe_packet.hpp>
-#include <darc/pubsub/publish_packet.hpp>
-#include <darc/pubsub/subscribed_topic_record.hpp>
+#include <darc/network/payload_header_packet.hpp>
+#include <darc/primitives/pubsub/message_packet.hpp>
+#include <darc/primitives/pubsub/subscribe_packet.hpp>
+#include <darc/primitives/pubsub/publish_packet.hpp>
+#include <darc/primitives/pubsub/subscribed_topic_record.hpp>
 
 namespace darc
 {

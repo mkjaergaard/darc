@@ -4,7 +4,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/signals.hpp>
 
-#include <darc/pubsub/message_service__decl.hpp>
+#include <darc/primitives/pubsub/message_service__decl.hpp>
 
 #include <darc/id.hpp>
 

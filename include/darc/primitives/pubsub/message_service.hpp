@@ -1,9 +1,9 @@
 #pragma once
 
-#include <darc/pubsub/message_service__decl.hpp>
+#include <darc/primitives/pubsub/message_service__decl.hpp>
 
 #include <boost/make_shared.hpp>
-#include <darc/pubsub/local_dispatcher.hpp>
+#include <darc/primitives/pubsub/local_dispatcher.hpp>
 
 #include <darc/id.hpp>
 

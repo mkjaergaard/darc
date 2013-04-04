@@ -1,6 +1,6 @@
 #include <boost/bind.hpp>
 #include <iris/glog.hpp>
-#include <darc/peer.hpp>
+#include <darc/peer/peer.hpp>
 #include <darc/id_arg.hpp>
 
 namespace darc

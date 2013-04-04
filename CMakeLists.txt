@@ -6,7 +6,7 @@ find_package(catkin)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES darc
-  CATKIN_DEPENDS zeromq_catkin
+  CATKIN_DEPENDS zeromq_catkin iris
 )
 
 #find_package(catkin REQUIRED COMPONENTS roscpp_serialization zeromq_catkin)
@@ -41,7 +41,7 @@ add_library(darc
   src/lib/ns/ns_service.cpp
   src/lib/ns/local_tag.cpp
   # pubsub
-  src/lib/primitives/topics/message_service.cpp
+  src/lib/primitives/pubsub/message_service.cpp
 )
 target_link_libraries(darc ${Boost_LIBRARIES} ${iris_LIBRARIES} ${catkin_LIBRARIES} -lstdc++)
 

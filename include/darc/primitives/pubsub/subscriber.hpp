@@ -5,7 +5,7 @@
 #include <boost/signals.hpp>
 #include <boost/bind.hpp>
 
-#include <darc/pubsub/message_service__decl.hpp>
+#include <darc/primitives/pubsub/message_service__decl.hpp>
 
 #include <darc/id.hpp>
 

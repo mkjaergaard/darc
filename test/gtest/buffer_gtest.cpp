@@ -9,8 +9,8 @@
 
 #include <boost/make_shared.hpp>
 
-#include <darc/outbound_data.hpp>
-#include <darc/inbound_data.hpp>
+#include <darc/network/outbound_data.hpp>
+#include <darc/network/inbound_data.hpp>
 #include <darc/serializer/boost.hpp>
 
 TEST(BufferTest, Raw)
