@@ -82,12 +82,12 @@ protected:
     socket_.getsockopt (ZMQ_RCVMORE, &more, &more_size);
     return (more != 0);
   }
-
+/*
   void check_ok(bool condition)
   {
     assert(condition);
   }
-
+*/
 protected:
   virtual void work_receive() = 0;
   void work();

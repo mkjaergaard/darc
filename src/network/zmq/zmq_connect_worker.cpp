@@ -64,14 +64,14 @@ void zmq_connect_worker::work_receive()
   boost::shared_ptr<zmq_buffer> header_msg = boost::make_shared<zmq_buffer>();
   boost::shared_ptr<zmq_buffer> body_msg = boost::make_shared<zmq_buffer>();
 
-  check_ok(socket_.recv(&topic_msg) != 0);
-  check_ok(has_more());
+  assert(socket_.recv(&topic_msg));
+  assert(has_more());
 
-  check_ok(socket_.recv(header_msg.get()) != 0);
-  check_ok(has_more());
+  assert(socket_.recv(header_msg.get()));
+  assert(has_more());
 
-  check_ok(socket_.recv(body_msg.get()) != 0);
-  check_ok(!has_more());
+  assert(socket_.recv(body_msg.get()));
+//  assert(!has_more());
 
   header_msg->update_buffer();
   body_msg->update_buffer();

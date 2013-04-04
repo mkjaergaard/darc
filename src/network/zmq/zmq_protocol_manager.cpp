@@ -99,7 +99,7 @@ void zmq_protocol_manager::send_packet(const darc::ID& outbound_id,
 
   buffer::shared_buffer * keep_alive2 = new buffer::shared_buffer(data);
   zmq::message_t message2((void*)data->data(),
-                          1024*10,//data->len(),
+                          1024,//data->len(),
                           &zmq_buffer::free_func,
                           keep_alive2);
 

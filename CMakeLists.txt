@@ -9,10 +9,11 @@ catkin_package(
   CATKIN_DEPENDS zeromq_catkin
 )
 
-
-find_package(catkin REQUIRED COMPONENTS roscpp_serialization zeromq_catkin)
+#find_package(catkin REQUIRED COMPONENTS roscpp_serialization zeromq_catkin)
+find_package(catkin REQUIRED COMPONENTS zeromq_catkin)
 find_package(Boost REQUIRED COMPONENTS system thread regex signals serialization)
 find_package(iris REQUIRED)
+find_package(Threads REQUIRED)
 
 include_directories(include)
 include_directories(${catkin_INCLUDE_DIRS})

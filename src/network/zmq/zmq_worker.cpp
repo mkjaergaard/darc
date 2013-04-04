@@ -70,7 +70,6 @@ void zmq_worker::work()
     }
     else
     {
-      std::cout << e.what() << std::endl;
       throw e; // TODO: Handle possible errors properly!
     }
   }

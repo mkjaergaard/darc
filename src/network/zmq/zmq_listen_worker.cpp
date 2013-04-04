@@ -61,7 +61,7 @@ zmq_listen_worker::zmq_listen_worker(zmq_protocol_manager * parent,
 void zmq_listen_worker::work_receive()
 {
   zmq::message_t msg;
-  check_ok(socket_.recv(&msg) != 0);
+  assert(socket_.recv(&msg));
 
   int event = ((char*)(msg.data()))[0];
   ID topic;
