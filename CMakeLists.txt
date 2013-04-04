@@ -40,6 +40,8 @@ add_library(darc
   # ns
   src/lib/ns/ns_service.cpp
   src/lib/ns/local_tag.cpp
+  # pubsub
+  src/lib/primitives/topics/message_service.cpp
 )
 target_link_libraries(darc ${Boost_LIBRARIES} ${iris_LIBRARIES} ${catkin_LIBRARIES} -lstdc++)
 
