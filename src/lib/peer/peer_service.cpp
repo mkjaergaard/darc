@@ -1,4 +1,4 @@
-#include <darc/peer_service.hpp>
+#include <darc/peer/peer_service.hpp>
 
 namespace darc
 {

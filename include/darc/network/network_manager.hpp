@@ -37,10 +37,10 @@
 
 #include <boost/regex.hpp>
 #include <boost/asio.hpp>
-#include <darc/peer.hpp>
+#include <darc/peer/peer.hpp>
 #include <darc/id.hpp>
-#include <darc/inbound_data.hpp>
 #include <darc/serializer/boost.hpp>
+#include <darc/network/inbound_data.hpp>
 #include <darc/network/protocol_manager_base.hpp>
 #include <darc/network/link_header_packet.hpp>
 #include <iris/glog.hpp>

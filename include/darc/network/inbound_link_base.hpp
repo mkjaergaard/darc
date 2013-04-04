@@ -36,15 +36,15 @@
 #pragma once
 
 #include <boost/shared_ptr.hpp>
-#include <darc/peer.hpp>
+#include <darc/peer/peer.hpp>
 #include <darc/buffer/shared_buffer.hpp>
 #include <darc/network/link_header_packet.hpp>
 #include <darc/network/discover_packet.hpp>
 #include <darc/network/discover_reply_packet.hpp>
-#include <darc/outbound_data.hpp>
+#include <darc/network/outbound_data.hpp>
+#include <darc/network/inbound_data.hpp>
 #include <darc/serializer/boost.hpp>
 #include <darc/buffer/const_size_buffer.hpp>
-#include <darc/inbound_data.hpp>
 #include <darc/id_arg.hpp>
 #include <iris/static_scope.hpp>
 

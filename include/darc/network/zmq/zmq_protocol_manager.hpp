@@ -37,7 +37,7 @@
 
 #include <zmq.hpp>
 #include <boost/scoped_ptr.hpp>
-#include <darc/peer.hpp>
+#include <darc/peer/peer.hpp>
 #include <darc/network/protocol_manager_base.hpp>
 #include <darc/network/inbound_link_base.hpp>
 #include <darc/network/zmq/zmq_listen_worker.hpp>

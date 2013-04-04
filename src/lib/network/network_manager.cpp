@@ -34,7 +34,6 @@
 #include <darc/network/network_manager.hpp>
 
 #include <boost/regex.hpp>
-#include <darc/inbound_data.hpp>
 #include <darc/serializer/boost.hpp>
 #include <darc/network/protocol_manager_base.hpp>
 #include <darc/network/link_header_packet.hpp>

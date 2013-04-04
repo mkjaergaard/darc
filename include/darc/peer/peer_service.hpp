@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Prevas A/S
+ * Copyright (c) 2013, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,67 +28,49 @@
  */
 
 /**
- *
- *
  * \author Morten Kjaergaard
  */
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
-
-#include <darc/distributed_container/header_packet.hpp>
-
-#include <darc/outbound_data.hpp>
+#include <boost/function.hpp>
+#include <darc/id.hpp>
+#include <darc/peer/peer.hpp>
 #include <darc/buffer/shared_buffer.hpp>
 
 namespace darc
 {
-namespace distributed_container
-{
 
-class container_manager; // fwd
-
-class container_base
+class peer_service
 {
 protected:
-  ID id_;
-  container_manager * manager_;
+  typedef boost::function<void(const darc::ID&,
+                               peer::service_type,
+                               darc::buffer::shared_buffer)> send_to_function_type;
+
+  peer& peer_;
+  peer::service_type service_id_;
 
 public:
-  container_base() :
-    id_(ID::create()),
-    manager_(0)
-  {
-  }
-
-  virtual void recv(const ID& src_location_id,
-                    const header_packet& hdr,
+  virtual void recv(const darc::ID& src_peer_id,
                     darc::buffer::shared_buffer data) = 0;
 
-  virtual ~container_base()
+  peer_service(darc::peer& p, peer::service_type service_id) :
+    peer_(p),
+    service_id_(service_id)
+  {
+    peer_.attach(service_id, this);
+  }
+
+  virtual ~peer_service()
   {
   }
 
-  const ID& id() const
+  void send_to(const ID& peer_id, const outbound_data_base& data)
   {
-    return id_;
+    peer_.send_to(peer_id, service_id_, data);
   }
-
-  void attach(container_manager * manager);
-
-  void send_to_location(const ID& dest_location_id,
-                        const ID& dest_instance_id,
-                        const uint32_t payload_type,
-                        const outbound_data_base& data);
-
-  void send_to_instance(const ID& dest_instance_id,
-                        const uint32_t payload_type,
-                        const outbound_data_base& data);
 
 };
 
-typedef boost::shared_ptr<container_base> container_base_ptr;
-
-}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, Prevas A/S
+ * Copyright (c) 2013, Prevas A/S
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,55 +28,5 @@
  */
 
 /**
- *
- *
  * \author Morten Kjaergaard
  */
-
-#pragma once
-
-#include <map>
-#include <boost/function.hpp>
-#include <darc/peer_service.hpp>
-#include <darc/buffer/shared_buffer.hpp>
-#include <darc/outbound_data.hpp>
-#include <darc/id.hpp>
-
-namespace darc
-{
-namespace distributed_container
-{
-
-class container_base; // fwd
-
-class container_manager : public peer_service
-{
-protected:
-  typedef std::map<ID, container_base*> list_type;
-  list_type list_;
-
-  typedef std::map<ID, ID> instance_location_map_type;
-  instance_location_map_type instance_location_map;
-
-public:
-  container_manager(darc::peer& p);
-  void attach(container_base* entry);
-  void detatch(container_base* entry);
-  void recv(const ID& peer_id, darc::buffer::shared_buffer data);
-
-  void send_to_instance(const ID& src_instance_id,
-                        const ID& dest_instance_id,
-                        const uint32_t payload_type,
-                        const outbound_data_base& data);
-
-  void send_to_location(const ID& src_instance_id,
-                        const ID& dest_location_id,
-                        const ID& dest_instance_id,
-                        const uint32_t payload_type,
-                        const outbound_data_base& data);
-
-
-};
-
-}
-}
