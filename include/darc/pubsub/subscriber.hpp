@@ -18,7 +18,7 @@ template<typename T>
 class subscriber_impl
 {
 public:
-  typedef void(callback_type)(const boost::shared_ptr<const T>&);
+  typedef void(callback_type)(const T&);
   typedef boost::function<callback_type> callback_functor_type;
 
 private:
@@ -61,11 +61,22 @@ public:
 
   void postCallback(const boost::shared_ptr<const T> &msg)
   {
+    io_service_.post(boost::bind(&subscriber_impl::triggerCallback_, this, msg));
+//    io_service_.post(callback_, msg);
+  }
+
+  void postCallback(const T &msg)
+  {
     io_service_.post(boost::bind(&subscriber_impl::triggerCallback, this, msg));
 //    io_service_.post(callback_, msg);
   }
 
-  void triggerCallback(const boost::shared_ptr<const T> &msg)
+  void triggerCallback_(const boost::shared_ptr<const T> &msg)
+  {
+    callback_(*msg);
+  }
+
+  void triggerCallback(const T &msg)
   {
     callback_(msg);
   }
@@ -109,7 +120,7 @@ public:
     }
   }
 
-  void addCallback(boost::function<void(const boost::shared_ptr<const T>&)> handler)
+  void addCallback(callback_functor_type handler)
   {
     if(impl_.get() != 0)
     {

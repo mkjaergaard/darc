@@ -19,7 +19,7 @@ template<typename T>
 local_dispatcher<T>* message_service::attach(publisher_impl<T> &publisher,
                                              const std::string& topic)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+//  boost::mutex::scoped_lock lock(mutex_);
   tag_handle tag = nameserver_.register_tag(/*nameserver_.root(),*/ topic);
   local_dispatcher<T>* dispatcher = get_dispatcher<T>(tag);
   dispatcher->attach(publisher);
@@ -29,7 +29,7 @@ local_dispatcher<T>* message_service::attach(publisher_impl<T> &publisher,
 template<typename T>
 void message_service::detach(publisher_impl<T> &publisher, local_dispatcher<T>* dispatcher)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+//  boost::mutex::scoped_lock lock(mutex_);
   dispatcher->detach(publisher);
 }
 
@@ -37,7 +37,7 @@ template<typename T>
 local_dispatcher<T>* message_service::attach(subscriber_impl<T> &subscriber,
                                              const std::string& topic)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+//  boost::mutex::scoped_lock lock(mutex_);
   tag_handle tag = nameserver_.register_tag(/*nameserver_.root(),*/ topic);
   local_dispatcher<T>* dispatcher = get_dispatcher<T>(tag);
   dispatcher->attach(subscriber);
@@ -47,7 +47,7 @@ local_dispatcher<T>* message_service::attach(subscriber_impl<T> &subscriber,
 template<typename T>
 void message_service::detach(subscriber_impl<T> &subscriber, local_dispatcher<T>* dispatcher)
 {
-  boost::mutex::scoped_lock lock(mutex_);
+//  boost::mutex::scoped_lock lock(mutex_);
   dispatcher->detach(subscriber);
 }
 
@@ -79,7 +79,7 @@ local_dispatcher<T>* message_service::get_dispatcher(const tag_handle& tag)
 // Network stuff
 ///////////////////
 template<typename T>
-void message_service::send_msg(const ID& tag_id, const ID& peer_id, const boost::shared_ptr<const T> &msg)
+void message_service::send_msg(const ID& tag_id, const ID& peer_id, const T &msg)
 {
   payload_header_packet hdr;
   hdr.payload_type = message_packet::payload_id;
@@ -88,7 +88,7 @@ void message_service::send_msg(const ID& tag_id, const ID& peer_id, const boost:
   message_packet msg_hdr(tag_id);
   outbound_data<serializer::boost_serializer, message_packet> o_msg_hdr(msg_hdr);
 
-  outbound_ptr<serializer::ros_serializer, T> o_msg(msg);
+  outbound_data<serializer::ros_serializer, T> o_msg(msg);
 
   outbound_pair o_pair1(o_hdr, o_msg_hdr);
   outbound_pair o_pair2(o_pair1, o_msg);
@@ -97,7 +97,7 @@ void message_service::send_msg(const ID& tag_id, const ID& peer_id, const boost:
 }
 
 template<typename T>
-void message_service::dispatch_remotely(const ID& tag_id, const boost::shared_ptr<const T> &msg)
+void message_service::dispatch_remotely(const ID& tag_id, const T &msg)
 {
   send_msg(tag_id, ID::null(), msg);
   /*

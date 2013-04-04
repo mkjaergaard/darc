@@ -64,7 +64,7 @@ void message_service::handle_message_packet(const ID& remote_peer_id,
   inbound_data<serializer::boost_serializer, message_packet> msg_i(data);
   const ID& tag_id = msg_i.get().tag_id;
 
-  boost::mutex::scoped_lock lock(mutex_);
+  //boost::mutex::scoped_lock lock(mutex_);
 
   dispatcher_list_type::iterator elem =
     dispatcher_list_.find(tag_id);

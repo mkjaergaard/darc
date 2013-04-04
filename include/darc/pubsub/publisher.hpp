@@ -55,6 +55,14 @@ public:
     }
   }
 
+  void publish(const T &msg)
+  {
+    if(dispatcher_ != 0)
+    {
+      dispatcher_->dispatch_from_publisher(msg);
+    }
+  }
+
 };
 
 template<typename T>
@@ -62,22 +70,33 @@ class publisher
 {
 private:
   boost::shared_ptr<publisher_impl<T> > impl_;
+  bool ok_;
 
 public:
-  publisher()
+  publisher() :
+    ok_(false)
   {
   }
 
   publisher(boost::asio::io_service &io_service,
             message_service &message_service) :
     impl_(boost::make_shared<publisher_impl<T> >(boost::ref(io_service),
-                                                 boost::ref(message_service)))
+                                                 boost::ref(message_service))),
+    ok_(true)
   {
   }
 
   void publish(const boost::shared_ptr<const T> &msg)
   {
-    if(impl_.get() != 0)
+    if(ok_)
+    {
+      impl_->publish(msg);
+    }
+  }
+
+  void publish(const T &msg)
+  {
+    if(ok_)
     {
       impl_->publish(msg);
     }
@@ -85,7 +104,7 @@ public:
 
   void attach(const std::string& topic)
   {
-    if(impl_.get() != 0)
+    if(ok_)
     {
       impl_->attach(topic);
     }
@@ -93,7 +112,7 @@ public:
 
   void detach()
   {
-    if(impl_.get() != 0)
+    if(ok_)
     {
       impl_->detach();
     }

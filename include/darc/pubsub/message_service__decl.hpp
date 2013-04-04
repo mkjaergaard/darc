@@ -85,10 +85,10 @@ public:
             darc::buffer::shared_buffer data);
 
   template<typename T>
-  void send_msg(const ID& tag_id, const ID& peer_id, const boost::shared_ptr<const T> &msg);
+  void send_msg(const ID& tag_id, const ID& peer_id, const T &msg);
 
   template<typename T>
-  void dispatch_remotely(const ID& tag_id, const boost::shared_ptr<const T> &msg);
+  void dispatch_remotely(const ID& tag_id, const T &msg);
 
   void handle_message_packet(const ID& remote_peer_id,
                              darc::buffer::shared_buffer data);

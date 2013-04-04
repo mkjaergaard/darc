@@ -109,7 +109,23 @@ public:
     }
   }
 
+  void dispatch_locally(const T &msg)
+  {
+    for(typename subscribers_list_type::iterator it = subscribers_.begin();
+        it != subscribers_.end();
+        it++)
+    {
+      (*it)->postCallback(msg);
+    }
+  }
+
   void dispatch_from_publisher(const boost::shared_ptr<const T> &msg)
+  {
+    dispatch_locally(msg);
+    message_service_->dispatch_remotely(tag_->id(), *msg);
+  }
+
+  void dispatch_from_publisher(const T& msg)
   {
     dispatch_locally(msg);
     message_service_->dispatch_remotely(tag_->id(), msg);
