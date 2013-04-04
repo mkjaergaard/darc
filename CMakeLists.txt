@@ -37,6 +37,9 @@ add_library(darc
   src/lib/network/zmq/zmq_worker.cpp
   src/lib/network/zmq/zmq_listen_worker.cpp
   src/lib/network/zmq/zmq_connect_worker.cpp
+  # ns
+  src/lib/ns/ns_service.cpp
+  src/lib/ns/local_tag.cpp
 )
 target_link_libraries(darc ${Boost_LIBRARIES} ${iris_LIBRARIES} ${catkin_LIBRARIES} -lstdc++)
 
